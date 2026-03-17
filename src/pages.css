@@ -100,11 +100,17 @@
 
 
 
-/* Fix footer positioning */
+/* Fix footer positioning - match Ready to Build section exactly */
 .api-docs-page .footer {
   margin-left: 280px;
   width: calc(100% - 280px);
   z-index: 10;
+}
+
+.api-docs-page .footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
 /* Endpoint Cards */
