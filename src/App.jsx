@@ -9,7 +9,6 @@ import './pages.css'
 
 function AppContent() {
   const location = useLocation()
-  const shouldShowFooter = location.pathname !== '/api'
 
   return (
     <div className="App">
@@ -19,7 +18,7 @@ function AppContent() {
         <Route path="/api" element={<ApiDocs />} />
         <Route path="/app" element={<AppMarketplace />} />
       </Routes>
-      {shouldShowFooter && <Footer />}
+      <Footer />
     </div>
   )
 }

@@ -4,6 +4,7 @@ const ApiDocs = () => {
   const [activeSection, setActiveSection] = useState('overview')
   const [quickStartResponse, setQuickStartResponse] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const navigationSections = [
     { id: 'overview', label: 'Overview' },
@@ -530,8 +531,22 @@ const ApiDocs = () => {
 
   return (
     <div className="api-docs-page">
+      {/* Mobile Menu Toggle */}
+      <button 
+        className="mobile-menu-toggle"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+      >
+        ☰ Menu
+      </button>
+
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-menu-overlay ${sidebarOpen ? 'active' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
       {/* Navigation Sidebar */}
-      <aside className="api-docs-sidebar">
+      <aside className={`api-docs-sidebar ${sidebarOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-content">
           <h3 className="sidebar-title">API Documentation</h3>
           <nav className="sidebar-nav">
@@ -539,7 +554,10 @@ const ApiDocs = () => {
               <button
                 key={section.id}
                 className={`nav-item ${activeSection === section.id ? 'active' : ''}`}
-                onClick={() => scrollToSection(section.id)}
+                onClick={() => {
+                  scrollToSection(section.id)
+                  setSidebarOpen(false) // Close mobile menu after navigation
+                }}
               >
                 {section.label}
               </button>

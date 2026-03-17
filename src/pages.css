@@ -676,6 +676,49 @@
   line-height: 1.6;
 }
 
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  background: #15803d;
+  color: #fff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.mobile-menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* Fix API page footer alignment with sidebar */
+.api-docs-page .footer {
+  margin-left: 280px;
+  width: calc(100% - 280px);
+}
+
+.api-docs-page .footer-content {
+  text-align: center;
+}
+
+.api-docs-page .footer-tagline {
+  margin: 0 auto;
+  text-align: center;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .table-header,
@@ -692,13 +735,33 @@
   .env-var-item {
     grid-template-columns: 1fr;
   }
+  
+  .api-docs-container {
+    padding: 0 1rem;
+  }
+  
+  .endpoint-card {
+    padding: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+  
+  .mobile-menu-overlay.active {
+    display: block;
+  }
+  
   .api-docs-sidebar {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     z-index: 1000;
+  }
+  
+  .api-docs-sidebar.mobile-open {
+    transform: translateX(0);
   }
   
   .api-docs-main {
@@ -706,23 +769,96 @@
     width: 100%;
   }
   
-  .api-docs-page.sidebar-open .api-docs-sidebar {
-    transform: translateX(0);
+  .api-docs-page .footer {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .sidebar-content {
+    padding-top: 6rem; /* Account for mobile menu button */
+  }
+  
+  .api-docs-header {
+    padding: 6rem 1rem 3rem;
+  }
+  
+  .api-docs-title {
+    font-size: 2rem;
+  }
+  
+  .api-docs-subtitle {
+    font-size: 1rem;
+  }
+  
+  .api-base-url {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .base-url {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .quick-start-section, 
+  .endpoints-section, 
+  .integrations-section {
+    padding: 3rem 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .endpoint-card {
+    padding: 1rem;
+    margin-bottom: 2rem;
   }
   
   .endpoint-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .method {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .endpoint-path {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    word-break: break-all;
+  }
+  
+  .parameters-title,
+  .example-title,
+  .response-title {
+    font-size: 1rem;
   }
   
   .chains-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .chain-item {
+    padding: 1rem;
   }
   
   .chain-header {
     flex-direction: column;
     text-align: center;
     gap: 0.5rem;
+  }
+  
+  .dex-support-table {
+    overflow-x: auto;
+  }
+  
+  .dex-table {
+    min-width: 500px;
   }
   
   .dex-table th,
@@ -742,16 +878,126 @@
   }
   
   .code-header {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
   }
   
   .code-block {
     padding: 1rem;
+    font-size: 0.75rem;
   }
   
   .code-block pre {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
   }
+  
+  .integrations-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .integration-item {
+    padding: 0.75rem;
+  }
+  
+  .api-cta-section {
+    padding: 3rem 1rem;
+  }
+  
+  .cta-title {
+    font-size: 1.5rem;
+  }
+  
+  .cta-description {
+    font-size: 1rem;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .cta-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .api-docs-header {
+    padding: 5rem 1rem 2rem;
+  }
+  
+  .api-docs-title {
+    font-size: 1.75rem;
+  }
+  
+  .api-docs-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .quick-start-section, 
+  .endpoints-section, 
+  .integrations-section {
+    padding: 2rem 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+  }
+  
+  .endpoint-card {
+    padding: 0.75rem;
+  }
+  
+  .endpoint-path {
+    font-size: 0.75rem;
+    word-break: break-all;
+  }
+  
+  .code-block {
+    padding: 0.75rem;
+    font-size: 0.7rem;
+  }
+  
+  .code-block pre {
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+  
+  .parameters-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .table-header,
+  .table-row {
+    display: block;
+    border: none;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+  }
+  
+  .table-row {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+  }
+  
+  .table-header span,
+  .table-row > * {
+    display: block;
+    margin: 0.25rem 0;
+  }
+  
+  .param-name::before { content: "Name: "; font-weight: 600; }
+  .param-type::before { content: "Type: "; font-weight: 600; }
+  .param-required::before { content: "Required: "; font-weight: 600; }
+  .param-default::before { content: "Default: "; font-weight: 600; }
+  .param-description::before { content: "Description: "; font-weight: 600; }
 }
 
 .api-docs-header {
