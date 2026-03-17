@@ -167,29 +167,8 @@ body {
   font-weight: 700;
 }
 
-.site-image-section {
-  margin: 2rem 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  animation: fadeInUp 1.0s ease-out;
-}
-
-.site-homepage-image {
-  max-width: 70%;
-  height: auto;
-  min-width: 300px;
-  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.1));
-  transition: all 0.3s ease;
-}
-
-.site-homepage-image:hover {
-  filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.15));
-  transform: scale(1.02);
-}
-
 .hero-logo-section {
-  margin: 3rem 0;
+  margin: 2rem 0;
   display: flex;
   justify-content: center;
   align-items: center;
