@@ -13,8 +13,8 @@ const Footer = () => {
           <div className="footer-products">
             <h3 className="footer-heading">Products</h3>
             <div className="footer-links">
-              <a href="https://api.claw.click" className="footer-link">API</a>
-              <a href="https://app.claw.click" className="footer-link">APP</a>
+              <a href="https://www.claw.click/api" className="footer-link">API</a>
+              <a href="https://www.claw.click/app" className="footer-link">APP</a>
             </div>
           </div>
         </div>
