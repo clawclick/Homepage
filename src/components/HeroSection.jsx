@@ -1,8 +1,12 @@
 import React from 'react'
+import AnimatedNetworkBackground from './AnimatedNetworkBackground'
 
 const HeroSection = () => {
   return (
     <section className="hero-section">
+      <div className="hero-network-layer">
+        <AnimatedNetworkBackground />
+      </div>
       <div className="hero-container">
         <div className="stats-grid">
           <div className="stat-box">
