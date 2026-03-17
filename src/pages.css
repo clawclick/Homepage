@@ -100,7 +100,7 @@
 
 
 
-/* Fix footer positioning - match Ready to Build section exactly */
+
 .api-docs-page .footer {
   margin-left: 280px;
   width: calc(100% - 280px);
@@ -704,20 +704,7 @@
   z-index: 999;
 }
 
-/* Fix API page footer alignment with sidebar */
-.api-docs-page .footer {
-  margin-left: 280px;
-  width: calc(100% - 280px);
-}
 
-.api-docs-page .footer-content {
-  text-align: center;
-}
-
-.api-docs-page .footer-tagline {
-  margin: 0 auto;
-  text-align: center;
-}
 
 /* Responsive Design */
 @media (max-width: 1024px) {
@@ -769,10 +756,7 @@
     width: 100%;
   }
   
-  .api-docs-page .footer {
-    margin-left: 0;
-    width: 100%;
-  }
+
   
   .sidebar-content {
     padding-top: 6rem; /* Account for mobile menu button */
