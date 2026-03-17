@@ -1,112 +1,131 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 const ApiDocs = () => {
+  const [activeSection, setActiveSection] = useState('overview')
+
+  const navigationSections = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'quickstart', label: 'Quick Start' },
+    { id: 'supported-chains', label: 'Supported Chains' },
+    { id: 'common-response', label: 'Response Format' },
+    { id: 'market-data', label: 'Market Data' },
+    { id: 'risk-assessment', label: 'Risk Assessment' },
+    { id: 'wallet-analysis', label: 'Wallet Analysis' },
+    { id: 'trading-dex', label: 'Trading & DEX' },
+    { id: 'social-sentiment', label: 'Social & Sentiment' },
+    { id: 'discovery-monitoring', label: 'Discovery & Monitoring' },
+    { id: 'websockets', label: 'WebSockets' },
+    { id: 'error-handling', label: 'Error Handling' },
+    { id: 'environment', label: 'Environment Variables' },
+    { id: 'integrations', label: 'Data Providers' }
+  ]
+
   const endpointCategories = [
     {
+      category: "Core Endpoints",
+      description: "Essential API endpoints for health checks and provider status",
+      endpoints: [
+        {
+          method: "GET",
+          path: "/health",
+          description: "Health check endpoint",
+          params: ["None"]
+        },
+        {
+          method: "GET",
+          path: "/providers",
+          description: "List all registered providers and their configuration status",
+          params: ["None"]
+        }
+      ]
+    },
+    {
       category: "Market Data",
-      description: "Token prices, historical data, and market information",
+      description: "Real-time and historical market data for tokens and trading pairs",
       endpoints: [
         {
           method: "GET",
           path: "/tokenPoolInfo",
-          description: "Token price, market cap, liquidity, volume, and pool info",
-          params: ["tokenAddress*", "chain?", "poolAddress?", "symbol?", "tokenName?"]
+          description: "Get token price, market cap, liquidity, volume, and pool info",
+          params: ["chain", "tokenAddress*", "poolAddress", "symbol", "tokenName"]
         },
         {
           method: "GET",
           path: "/tokenPriceHistory",
           description: "Historical OHLCV price data for charting",
-          params: ["tokenAddress*", "chain?", "limit?", "interval?", "asset?"]
+          params: ["chain", "tokenAddress*", "asset", "limit", "interval"]
         },
         {
           method: "GET",
           path: "/detailedTokenStats",
-          description: "Bucketed token stats from Codex (cached 30 min)",
-          params: ["tokenAddress*", "chain?", "durations?", "bucketCount?"]
+          description: "Bucketed token stats from Codex, cached for 30 minutes",
+          params: ["chain", "tokenAddress*", "durations", "bucketCount", "timestamp"]
         },
         {
           method: "GET",
-          path: "/trendingTokens",
-          description: "Currently trending tokens across all chains",
-          params: []
-        },
-        {
-          method: "GET",
-          path: "/tokenSearch",
-          description: "Search tokens by name, symbol, or address",
-          params: ["query*"]
-        },
-        {
-          method: "GET",
-          path: "/filterTokens",
-          description: "Filter and rank tokens by on-chain metrics",
-          params: ["network?", "phrase?", "minLiquidity?", "sortBy?", "limit?"]
+          path: "/gasFeed",
+          description: "Current gas prices for EVM chains",
+          params: ["chain"]
         }
       ]
     },
     {
-      category: "Risk Assessment", 
-      description: "Token security analysis and risk scoring",
+      category: "Risk Assessment",
+      description: "Comprehensive risk analysis and security audits for tokens",
       endpoints: [
         {
           method: "GET",
           path: "/isScam",
-          description: "Quick scam check with risk score",
-          params: ["tokenAddress*", "chain?"]
+          description: "Quick scam check with risk score and warnings",
+          params: ["chain", "tokenAddress*"]
         },
         {
           method: "GET",
           path: "/fullAudit",
-          description: "Deep contract audit (taxes, ownership, trading flags)",
-          params: ["tokenAddress*", "chain?"]
+          description: "Deep contract audit - taxes, ownership, trading restrictions",
+          params: ["chain", "tokenAddress*"]
         }
       ]
     },
     {
       category: "Wallet Analysis",
-      description: "Wallet tracking, holder analysis, and smart money movements",
+      description: "Comprehensive wallet tracking and portfolio analysis",
       endpoints: [
         {
           method: "GET",
           path: "/walletReview",
-          description: "Comprehensive wallet analysis - PnL, holdings, protocols",
-          params: ["walletAddress*", "chain?", "days?", "pageCount?"]
+          description: "Comprehensive wallet analysis - PnL, holdings, protocols, activity",
+          params: ["chain", "walletAddress*", "days", "pageCount"]
         },
         {
           method: "GET",
           path: "/holderAnalysis",
-          description: "Holder distribution, concentration, whale tracking",
-          params: ["tokenAddress*", "chain?"]
+          description: "Holder distribution, concentration, top holders, whale tracking",
+          params: ["chain", "tokenAddress*"]
         },
         {
           method: "GET",
           path: "/tokenHolders",
-          description: "Raw token-holder ledger for EVM tokens",
-          params: ["tokenAddress*", "network?", "cursor?", "limit?"]
-        },
-        {
-          method: "GET",
-          path: "/topTraders",
-          description: "Top traders for a specific token (multi-chain)",
-          params: ["tokenAddress*", "chain?", "timeFrame?"]
+          description: "Raw token-holder ledger for EVM tokens via Sim by Dune",
+          params: ["tokenAddress*", "network", "cursor", "limit"]
         }
       ]
     },
     {
       category: "Trading & DEX",
-      description: "Swap execution, quotes, and DEX operations",
+      description: "DEX trading, swaps, approvals, and liquidity management",
       endpoints: [
         {
           method: "GET",
           path: "/swap",
-          description: "Build unsigned swap transaction",
-          params: ["chain*", "dex*", "walletAddress*", "tokenIn*", "tokenOut*", "amountIn*", "slippageBps?"]
+          description: "Build an unsigned swap transaction",
+          params: ["chain*", "dex*", "walletAddress*", "tokenIn*", "tokenOut*", "amountIn*", "slippageBps", "deadline"]
         },
         {
           method: "GET",
           path: "/swapQuote",
-          description: "Get swap quote without building transaction",
-          params: ["chain*", "dex*", "tokenIn*", "tokenOut*", "amountIn*", "slippageBps?"]
+          description: "Get a price quote without building the transaction",
+          params: ["chain*", "dex*", "tokenIn*", "tokenOut*", "amountIn*", "slippageBps"]
         },
         {
           method: "GET",
@@ -117,56 +136,80 @@ const ApiDocs = () => {
         {
           method: "GET",
           path: "/approve",
-          description: "Build unsigned approval transaction for swaps",
-          params: ["chain*", "dex*", "walletAddress*", "tokenIn*", "tokenOut*", "amount?"]
+          description: "Build unsigned approval transaction steps",
+          params: ["chain*", "dex*", "walletAddress*", "tokenIn*", "tokenOut*", "amount", "approvalMode", "spender"]
         },
         {
           method: "GET",
           path: "/unwrap",
-          description: "Build unsigned wrapped-native withdraw transaction",
+          description: "Build an unsigned wrapped-native withdraw transaction",
           params: ["chain*", "walletAddress*", "amount*"]
         }
       ]
     },
     {
       category: "Social & Sentiment",
-      description: "Social sentiment aggregation and market overview",
+      description: "Social media monitoring and sentiment analysis",
       endpoints: [
-        {
-          method: "GET",
-          path: "/marketOverview",
-          description: "Combined sentiment, social signals, pool data, and risk check",
-          params: ["tokenAddress?", "chain?", "asset?", "poolAddress?"]
-        },
         {
           method: "GET",
           path: "/fudSearch",
           description: "Search for FUD mentions across social platforms",
-          params: ["symbol?", "tokenName?", "chain?", "tokenAddress?"]
+          params: ["chain", "tokenAddress", "symbol", "tokenName"]
+        },
+        {
+          method: "GET",
+          path: "/marketOverview",
+          description: "Combined sentiment scoring, social signals, prediction markets",
+          params: ["chain", "tokenAddress", "asset", "poolAddress", "symbol", "tokenName"]
         }
       ]
     },
     {
       category: "Discovery & Monitoring",
-      description: "New pairs, gas feeds, and real-time events",
+      description: "Token discovery, trending analysis, and market monitoring",
       endpoints: [
+        {
+          method: "GET",
+          path: "/trendingTokens",
+          description: "Currently trending tokens across all chains",
+          params: ["None"]
+        },
         {
           method: "GET",
           path: "/newPairs",
           description: "Recently created trading pairs/pools",
-          params: ["source?", "limit?"]
+          params: ["source", "limit"]
         },
         {
           method: "GET",
-          path: "/gasFeed",
-          description: "Current gas prices for EVM chains",
-          params: ["chain?"]
+          path: "/topTraders",
+          description: "Top traders for a specific token (multi-chain via Birdeye)",
+          params: ["chain", "tokenAddress*", "timeFrame"]
         },
+        {
+          method: "GET",
+          path: "/tokenSearch",
+          description: "Search for tokens/pairs by name, symbol, or address",
+          params: ["query*"]
+        },
+        {
+          method: "GET",
+          path: "/filterTokens",
+          description: "Filter and rank tokens by on-chain metrics (Codex.io)",
+          params: ["network", "phrase", "minLiquidity", "minVolume24", "minMarketCap", "maxMarketCap", "sortBy", "limit"]
+        }
+      ]
+    },
+    {
+      category: "WebSockets",
+      description: "Real-time event streaming and live data feeds",
+      endpoints: [
         {
           method: "WS",
           path: "/ws/launchpadEvents",
           description: "Real-time launchpad token event stream",
-          params: ["protocol?", "eventType?", "networkId?"]
+          params: ["protocol", "protocols", "networkId", "launchpadName", "eventType"]
         }
       ]
     }
@@ -219,7 +262,7 @@ const ApiDocs = () => {
             </p>
             <div className="api-base-url">
               <span className="base-url-label">Base URL:</span>
-              <code className="base-url">https://api.claw.click</code>
+              <code className="base-url">http://localhost:3001/api</code>
             </div>
           </div>
         </div>
@@ -234,7 +277,7 @@ const ApiDocs = () => {
               <span className="code-language">curl</span>
             </div>
             <pre className="code-block">
-{`curl -X GET "https://api.claw.click/tokenPoolInfo?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" \\
+{`curl -X GET "http://localhost:3001/api/tokenPoolInfo?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" \\
   -H "Content-Type: application/json"
 
 # Response:
@@ -242,13 +285,21 @@ const ApiDocs = () => {
   "endpoint": "tokenPoolInfo",
   "status": "live",
   "chain": "eth",
+  "tokenAddress": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
   "name": "USD Coin",
   "symbol": "USDC",
   "priceUsd": 1.0001,
   "marketCapUsd": 32000000000,
+  "fdvUsd": 32000000000,
   "liquidityUsd": 150000000,
   "volume24hUsd": 5000000000,
-  "providers": [...]
+  "priceChange24hPct": -0.01,
+  "pairAddress": "0x...",
+  "dex": "uniswap_v3",
+  "providers": [
+    { "provider": "dexScreener", "status": "ok", "detail": "Live data" },
+    { "provider": "birdeye", "status": "ok", "detail": "Price confirmed" }
+  ]
 }`}
             </pre>
           </div>
@@ -290,6 +341,110 @@ const ApiDocs = () => {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Supported Chains */}
+      <section className="chains-section">
+        <div className="api-docs-container">
+          <h2 className="section-title">Supported Chains</h2>
+          <div className="chains-grid">
+            <div className="chain-item">
+              <div className="chain-header">
+                <span className="chain-name">Ethereum</span>
+                <span className="chain-id">ID: 1</span>
+              </div>
+              <span className="chain-status">Full support</span>
+            </div>
+            <div className="chain-item">
+              <div className="chain-header">
+                <span className="chain-name">Base</span>
+                <span className="chain-id">ID: 8453</span>
+              </div>
+              <span className="chain-status">Full support</span>
+            </div>
+            <div className="chain-item">
+              <div className="chain-header">
+                <span className="chain-name">BSC</span>
+                <span className="chain-id">ID: 56</span>
+              </div>
+              <span className="chain-status">Full support</span>
+            </div>
+            <div className="chain-item">
+              <div className="chain-header">
+                <span className="chain-name">Solana</span>
+                <span className="chain-id">Non-EVM</span>
+              </div>
+              <span className="chain-status">Full support</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Response Format */}
+      <section className="response-format-section">
+        <div className="api-docs-container">
+          <h2 className="section-title">Common Response Format</h2>
+          <p className="response-description">
+            Every endpoint returns a consistent JSON structure with provider status tracking:
+          </p>
+          <div className="code-example">
+            <div className="code-header">
+              <span className="code-language">json</span>
+            </div>
+            <pre className="code-block">
+{`{
+  "endpoint": "endpointName",
+  "status": "live" | "partial",
+  "providers": [
+    {
+      "provider": "providerName",
+      "status": "ok" | "skipped" | "error",
+      "detail": "Additional context..."
+    }
+  ],
+  // ... endpoint-specific data
+}`}
+            </pre>
+          </div>
+          <ul className="status-meanings">
+            <li><strong>live:</strong> All providers returned data successfully</li>
+            <li><strong>partial:</strong> Some providers were skipped or errored, but usable data was returned</li>
+            <li><strong>ok:</strong> Provider contributed data successfully</li>
+            <li><strong>skipped:</strong> Provider was not configured or not applicable</li>
+            <li><strong>error:</strong> Provider encountered an error</li>
+          </ul>
+        </div>
+      </section>
+
+      {/* WebSocket Example */}
+      <section className="websocket-section">
+        <div className="api-docs-container">
+          <h2 className="section-title">WebSocket Streaming</h2>
+          <p className="websocket-description">
+            Real-time launchpad events via WebSocket connection:
+          </p>
+          <div className="code-example">
+            <div className="code-header">
+              <span className="code-language">javascript</span>
+            </div>
+            <pre className="code-block">
+{`const WebSocket = require('ws');
+const ws = new WebSocket('ws://localhost:3001/api/ws/launchpadEvents');
+
+ws.on('message', (data) => {
+  const msg = JSON.parse(data);
+  if (msg.type === 'info') {
+    // Send filter for Pump.fun events
+    ws.send(JSON.stringify({ protocol: 'PumpDotFun' }));
+  } else if (msg.type === 'events') {
+    msg.data.forEach(event => {
+      console.log(\`New token: \${event.tokenSymbol} — $\${event.marketCap} mcap\`);
+    });
+  }
+});`}
+            </pre>
+          </div>
         </div>
       </section>
 
