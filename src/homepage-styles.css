@@ -7,14 +7,34 @@ body {
   min-height: 100vh;
 }
 
-/* Hero Section */
+/* FORCE ALL SECTIONS TO HAVE DARK GRADIENT - NO WHITE ANYWHERE */
+html {
+  background: linear-gradient(135deg, #0a0f1c 0%, #1a1d2e 100%) !important;
+}
+
+#root {
+  background: linear-gradient(135deg, #0a0f1c 0%, #1a1d2e 100%) !important;
+  min-height: 100vh;
+}
+
+.App {
+  background: linear-gradient(135deg, #0a0f1c 0%, #1a1d2e 100%) !important;
+  min-height: 100vh;
+}
+
+/* Make sure no section has white background */
+section {
+  background: transparent !important;
+}
+
+/* Hero Section - PURPLE/GREY/NAVY GRADIENT LIKE API DOCS */
 .hero-section {
   position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgb(10, 15, 28), rgb(26, 29, 46));
+  background: linear-gradient(135deg, #0a0f1c 0%, #1a1d2e 100%) !important;
   overflow: hidden;
 }
 
