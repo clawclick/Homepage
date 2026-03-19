@@ -90,16 +90,16 @@ const ValueProp = () => {
               </div>
               <div className="code-content">
                 <pre>
-{`// Multi-source token discovery
-const [newPairs, trending, filtered] = await Promise.all([
-  fetch("https://api.claw.click/newPairs?source=pumpfun"),
-  fetch("https://api.claw.click/trendingTokens"),
-  fetch("https://api.claw.click/filterTokens?network=sol&minLiquidity=10000")
+<span className="comment">// Multi-source token discovery</span>
+<span className="keyword">const</span> [<span className="variable">newPairs</span>, <span className="variable">trending</span>, <span className="variable">filtered</span>] = <span className="keyword">await</span> <span className="function">Promise.all</span>([
+  <span className="function">fetch</span>(<span className="string">"https://api.claw.click/newPairs?source=pumpfun"</span>),
+  <span className="function">fetch</span>(<span className="string">"https://api.claw.click/trendingTokens"</span>),
+  <span className="function">fetch</span>(<span className="string">"https://api.claw.click/filterTokens?network=sol&minLiquidity=10000"</span>)
 ]);
 
-// Enrich with unified data
-const enriched = await processTokens(addresses);
-const signals = applyFilters(enriched);`}
+<span className="comment">// Enrich with unified data</span>
+<span className="keyword">const</span> <span className="variable">enriched</span> = <span className="keyword">await</span> <span className="function">processTokens</span>(<span className="variable">addresses</span>);
+<span className="keyword">const</span> <span className="variable">signals</span> = <span className="function">applyFilters</span>(<span className="variable">enriched</span>);
                 </pre>
               </div>
             </div>
@@ -112,16 +112,16 @@ const signals = applyFilters(enriched);`}
               </div>
               <div className="response-content">
                 <pre>
-{`=== TOP NEW SIGNALS ===
-{
-  ca: "z6eiti618XERFhoB9j5FpbJ7sGf5yTjpw4zp7twpump",
-  name: "tinfoil hat cult", 
-  volume: 45000,
-  liquidity: 85000,
-  momentum: 0.425,
-  score: 87.3,
-  providers: ["dexScreener", "birdeye", "pumpfun"]
-}`}
+=== TOP NEW SIGNALS ===
+{"{"}
+  <span className="json-key">ca</span>: <span className="json-string">"z6eiti618XERFhoB9j5FpbJ7sGf5yTjpw4zp7twpump"</span>,
+  <span className="json-key">name</span>: <span className="json-string">"tinfoil hat cult"</span>, 
+  <span className="json-key">volume</span>: <span className="json-number">45000</span>,
+  <span className="json-key">liquidity</span>: <span className="json-number">85000</span>,
+  <span className="json-key">momentum</span>: <span className="json-number">0.425</span>,
+  <span className="json-key">score</span>: <span className="json-number">87.3</span>,
+  <span className="json-key">providers</span>: [<span className="json-string">"dexScreener"</span>, <span className="json-string">"birdeye"</span>, <span className="json-string">"pumpfun"</span>]
+{"}"}
                 </pre>
               </div>
             </div>
