@@ -16,12 +16,16 @@ const AnimatedNetworkBackground = () => {
     let h = 0
     let reduced = mq.matches
     let particles = []
+<<<<<<< HEAD
 
+=======
+>>>>>>> b604f7a815071b53745cfc8a0cde3325a0346826
     const CONNECTION_DIST = 300
     const PARTICLE_COUNT_BASE = 80
 
     // brand colors from API partner section
     const COLORS = [
+<<<<<<< HEAD
       '#0066FF',
       '#4F46E5',
       '#41D195',
@@ -37,6 +41,11 @@ const AnimatedNetworkBackground = () => {
       '#17A2B8',
       '#9945FF',
       '#FF4500',
+=======
+      '#0066FF', '#4F46E5', '#41D195', '#F0B90B', '#6366F1',
+      '#FF6B35', '#7C3AED', '#8DC647', '#D1884F', '#627EEA',
+      '#363FF9', '#2962FF', '#17A2B8', '#9945FF', '#FF4500',
+>>>>>>> b604f7a815071b53745cfc8a0cde3325a0346826
       '#6123c3',
     ]
 
@@ -60,7 +69,10 @@ const AnimatedNetworkBackground = () => {
         if (!reduced) {
           p.x += p.vx
           p.y += p.vy
+<<<<<<< HEAD
 
+=======
+>>>>>>> b604f7a815071b53745cfc8a0cde3325a0346826
           // wrap around edges with padding
           if (p.x < -50) p.x = w + 50
           if (p.x > w + 50) p.x = -50
@@ -77,13 +89,19 @@ const AnimatedNetworkBackground = () => {
           const dx = a.x - b.x
           const dy = a.y - b.y
           const d = Math.sqrt(dx * dx + dy * dy)
+<<<<<<< HEAD
 
+=======
+>>>>>>> b604f7a815071b53745cfc8a0cde3325a0346826
           if (d < CONNECTION_DIST) {
             const alpha = (1 - d / CONNECTION_DIST) * 0.45
             const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y)
             grad.addColorStop(0, a.color)
             grad.addColorStop(1, b.color)
+<<<<<<< HEAD
 
+=======
+>>>>>>> b604f7a815071b53745cfc8a0cde3325a0346826
             ctx.beginPath()
             ctx.moveTo(a.x, a.y)
             ctx.lineTo(b.x, b.y)
@@ -125,10 +143,14 @@ const AnimatedNetworkBackground = () => {
       raf = requestAnimationFrame(draw)
     }
 
+<<<<<<< HEAD
     const onMotion = (e) => {
       reduced = e.matches
       onResize()
     }
+=======
+    const onMotion = (e) => { reduced = e.matches; onResize() }
+>>>>>>> b604f7a815071b53745cfc8a0cde3325a0346826
 
     setup()
     raf = requestAnimationFrame(draw)

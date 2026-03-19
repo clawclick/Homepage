@@ -861,6 +861,10 @@ body {
     min-height: auto;
     padding: 3rem 1rem 2rem;
   }
+
+  .hero-section::before {
+    display: none;
+  }
   
   .hero-section::before {
     display: none;
