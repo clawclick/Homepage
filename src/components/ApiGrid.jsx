@@ -134,6 +134,21 @@ const ApiGrid = () => {
           </p>
         </header>
         
+        <div className="integration-stats">
+          <div className="integration-stat">
+            <span className="integration-number">24</span>
+            <span className="integration-label">Live Now</span>
+          </div>
+          <div className="integration-stat">
+            <span className="integration-number">28</span>
+            <span className="integration-label">Coming Soon</span>
+          </div>
+          <div className="integration-stat">
+            <span className="integration-number">99.9%</span>
+            <span className="integration-label">Uptime</span>
+          </div>
+        </div>
+        
         <div className="api-carousel">
           <div className="api-row slide-right">
             {apiLogosRow1.map((api, index) => (
@@ -181,21 +196,6 @@ const ApiGrid = () => {
                 />
               </div>
             ))}
-          </div>
-        </div>
-        
-        <div className="integration-stats">
-          <div className="integration-stat">
-            <span className="integration-number">24</span>
-            <span className="integration-label">Live Now</span>
-          </div>
-          <div className="integration-stat">
-            <span className="integration-number">28</span>
-            <span className="integration-label">Coming Soon</span>
-          </div>
-          <div className="integration-stat">
-            <span className="integration-number">99.9%</span>
-            <span className="integration-label">Uptime</span>
           </div>
         </div>
         

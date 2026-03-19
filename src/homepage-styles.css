@@ -412,6 +412,7 @@ section {
   line-height: 1.6;
   color: #e5e7eb;
   text-align: left;
+  white-space: pre-line;
 }
 
 /* JavaScript Syntax Highlighting */
@@ -680,10 +681,12 @@ section {
 /* API CTA */
 .api-cta {
   text-align: center;
-  background: rgba(17, 24, 39, 0.8);
+  background: #1a1d2e;
   border-radius: 12px;
   padding: 3rem;
+  margin: 8rem auto 6rem auto;
   border: 1px solid rgba(75, 85, 99, 0.3);
+  max-width: 1200px;
 }
 
 .api-cta-title {
