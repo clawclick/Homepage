@@ -137,7 +137,7 @@ const ValueProp = () => {
         )}
         
         <div className="api-showcase">
-          <h3 className="showcase-title">Universal Router For Agents</h3>
+          <h3 className="showcase-title">Route Any Strategy, signal and execute via one endpoint</h3>
           <div className="code-showcase">
             <div className="code-block-showcase">
               <div className="code-header">
@@ -147,15 +147,18 @@ const ValueProp = () => {
               <div className="code-content">
                 <pre>
 <span className="comment">// Multi-source token discovery</span>
-<span className="keyword">const</span> [<span className="variable">newPairs</span>, <span className="variable">trending</span>, <span className="variable">filtered</span>] = <span className="keyword">await</span> <span className="function">Promise.all</span>([
-  <span className="function">fetch</span>(<span className="string">"https://api.claw.click/newPairs?source=pumpfun"</span>),
-  <span className="function">fetch</span>(<span className="string">"https://api.claw.click/trendingTokens"</span>),
-  <span className="function">fetch</span>(<span className="string">"https://api.claw.click/filterTokens?network=sol&minLiquidity=10000"</span>)
-]);
+<span className="keyword">const</span> [<span className="variable">newPairs</span>, <span className="variable">trending</span>, <span className="variable">filtered</span>] = 
+  <span className="keyword">await</span> <span className="function">Promise.all</span>([
+    <span className="function">fetch</span>(<span className="string">"https://api.claw.click/newPairs?source=pumpfun"</span>),
+    <span className="function">fetch</span>(<span className="string">"https://api.claw.click/trendingTokens"</span>),
+    <span className="function">fetch</span>(<span className="string">"https://api.claw.click/filterTokens?network=sol&minLiquidity=10000"</span>)
+  ]);
 
 <span className="comment">// Enrich with unified data</span>
-<span className="keyword">const</span> <span className="variable">enriched</span> = <span className="keyword">await</span> <span className="function">processTokens</span>(<span className="variable">addresses</span>);
-<span className="keyword">const</span> <span className="variable">signals</span> = <span className="function">applyFilters</span>(<span className="variable">enriched</span>);
+<span className="keyword">const</span> <span className="variable">enriched</span> = 
+  <span className="keyword">await</span> <span className="function">processTokens</span>(<span className="variable">addresses</span>);
+<span className="keyword">const</span> <span className="variable">signals</span> = 
+  <span className="function">applyFilters</span>(<span className="variable">enriched</span>);
                 </pre>
               </div>
             </div>
