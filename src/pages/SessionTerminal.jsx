@@ -275,7 +275,7 @@ const SessionTerminal = () => {
     setSavingKey(true)
     try {
       const res = await fetch(clawsFunApiUrl(`/api/session/${id}/keys`), { method: 'POST', headers: { 'Content-Type': 'application/json', ...getWalletHeaders(account) }, body: JSON.stringify({ keyName: newKeyName.trim(), keyValue: newKeyValue.trim() }) })
-      if (res.ok) { setNewKeyName(''); setNewKeyValue(''); fetchApiKeys(); setMessages((prev) => [...prev, { type: 'system', content: 'API key saved. Please restart the instance for the new key to be picked up.' }]) }
+      if (res.ok) { setNewKeyName(''); setNewKeyValue(''); fetchApiKeys(); setMessages((prev) => [...prev, { type: 'system', content: 'API key saved. Please restart the gateway for the new key to be picked up.' }]) }
     } catch {}
     finally { setSavingKey(false) }
   }
