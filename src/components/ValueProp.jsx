@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 
 const ValueProp = () => {
   const features = [
@@ -40,6 +40,50 @@ const ValueProp = () => {
     }
   ]
 
+  const [activeCard, setActiveCard] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+  const touchStartX = useRef(0)
+  const timerRef = useRef(null)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setActiveCard(prev => (prev + 1) % features.length)
+    }, 4000)
+  }, [features.length])
+
+  useEffect(() => {
+    if (!isMobile) return
+    resetTimer()
+    return () => clearInterval(timerRef.current)
+  }, [isMobile, resetTimer])
+
+  const goTo = (idx) => {
+    setActiveCard(idx)
+    resetTimer()
+  }
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 50) {
+      const next = diff > 0
+        ? (activeCard + 1) % features.length
+        : (activeCard - 1 + features.length) % features.length
+      goTo(next)
+    }
+  }
+
   return (
     <section className="value-prop-section">
       <div className="value-prop-container">
@@ -53,16 +97,44 @@ const ValueProp = () => {
           </p>
         </header>
         
-        <div className="features-grid">
-          {features.map((feature, index) => (
-            <div key={index} className="feature-card" style={{ '--accent': feature.accentColor }}>
-              <span className="feature-accent-line" />
-              <h3 className="feature-title">{feature.title}</h3>
-              <span className="feature-tag">{feature.highlight}</span>
-              <p className="feature-description">{feature.description}</p>
+        {/* Desktop: grid / Mobile: carousel */}
+        {isMobile ? (
+          <div className="features-carousel" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+            <div className="carousel-track" style={{ transform: `translateX(-${activeCard * 100}%)` }}>
+              {features.map((feature, index) => (
+                <div key={index} className="carousel-slide">
+                  <div className="feature-card" style={{ '--accent': feature.accentColor }}>
+                    <span className="feature-accent-line" />
+                    <h3 className="feature-title">{feature.title}</h3>
+                    <span className="feature-tag">{feature.highlight}</span>
+                    <p className="feature-description">{feature.description}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+            <div className="carousel-dots">
+              {features.map((_, i) => (
+                <button
+                  key={i}
+                  className={`carousel-dot${i === activeCard ? ' active' : ''}`}
+                  onClick={() => goTo(i)}
+                  aria-label={`Go to card ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="features-grid">
+            {features.map((feature, index) => (
+              <div key={index} className="feature-card" style={{ '--accent': feature.accentColor }}>
+                <span className="feature-accent-line" />
+                <h3 className="feature-title">{feature.title}</h3>
+                <span className="feature-tag">{feature.highlight}</span>
+                <p className="feature-description">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
         
         <div className="api-showcase">
           <h3 className="showcase-title">Universal Router For Agents</h3>

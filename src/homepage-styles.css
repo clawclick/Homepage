@@ -279,6 +279,71 @@ section {
   max-width: 300px;
 }
 
+/* Feature Carousel (mobile) */
+.features-carousel {
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 3rem;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-slide {
+  min-width: 100%;
+  padding: 0 0.75rem;
+  box-sizing: border-box;
+}
+
+.carousel-slide .feature-card {
+  padding: 2rem 1.75rem 1.75rem;
+  gap: 1rem;
+}
+
+.carousel-slide .feature-title {
+  font-size: 1.2rem;
+}
+
+.carousel-slide .feature-tag {
+  font-size: 0.65rem;
+  padding: 0.3rem 0.85rem;
+}
+
+.carousel-slide .feature-description {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 340px;
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.carousel-dot.active {
+  background: #3b82f6;
+  transform: scale(1.3);
+}
+
+.carousel-dot:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.4);
+}
+
 /* API Showcase */
 .api-showcase {
   background: rgba(0, 0, 0, 0.4);
@@ -749,35 +814,7 @@ section {
     font-size: 1rem;
   }
 
-  /* Feature Cards - 2 columns on mobile */
-  .features-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 3rem;
-  }
-
-  .feature-card {
-    padding: 1.5rem 1rem 1.25rem;
-  }
-
-  .feature-accent-line {
-    left: 1rem;
-    right: 1rem;
-  }
-
-  .feature-title {
-    font-size: 0.95rem;
-  }
-
-  .feature-tag {
-    font-size: 0.55rem;
-    padding: 0.2rem 0.6rem;
-  }
-
-  .feature-description {
-    font-size: 0.8rem;
-    line-height: 1.5;
-  }
+  /* Feature grid hidden on mobile — carousel used instead */
 
   /* API Showcase */
   .api-showcase {
@@ -905,22 +942,5 @@ section {
 
   .value-prop-title {
     font-size: 1.25rem;
-  }
-
-  .feature-card {
-    padding: 1.25rem 0.85rem 1rem;
-  }
-
-  .feature-title {
-    font-size: 0.85rem;
-  }
-
-  .feature-tag {
-    font-size: 0.5rem;
-    padding: 0.18rem 0.5rem;
-  }
-
-  .feature-description {
-    font-size: 0.75rem;
   }
 }
