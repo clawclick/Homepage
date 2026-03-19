@@ -6,37 +6,37 @@ const ValueProp = () => {
       title: "Unified API Interface",
       description: "One endpoint to rule them all. Instead of managing 50+ integrations, interact with a single standardized interface.",
       highlight: "50+ Data Sources",
-      highlightColor: "#10b981" // green
+      accentColor: "#10b981"
     },
     {
       title: "Enterprise Security",
       description: "Bank-level security with rate limiting, authentication, and risk management built-in.",
       highlight: "Production Ready",
-      highlightColor: "#06b6d4" // cyan
+      accentColor: "#06b6d4"
     },
     {
       title: "Multi-Chain Support",
       description: "Trade across Ethereum, Solana, Base, and BSC with seamless cross-chain functionality.",
       highlight: "4 Blockchains",
-      highlightColor: "#f59e0b" // amber
+      accentColor: "#f59e0b"
     },
     {
       title: "Real-Time Analytics",
       description: "Access live market data, sentiment analysis, and risk scoring with microsecond latency.",
       highlight: "Live Data",
-      highlightColor: "#3b82f6" // blue
+      accentColor: "#3b82f6"
     },
     {
       title: "AI Agent Ready",
       description: "Purpose-built for AI trading agents with structured responses and predictable schemas.",
       highlight: "Agent Optimized",
-      highlightColor: "#8b5cf6" // purple
+      accentColor: "#8b5cf6"
     },
     {
       title: "Strategy Wrappers",
       description: "Package trading strategies as API endpoints. Monetize your alpha without revealing logic.",
       highlight: "Novel Architecture",
-      highlightColor: "#ef4444" // red
+      accentColor: "#ef4444"
     }
   ]
 
@@ -55,27 +55,11 @@ const ValueProp = () => {
         
         <div className="features-grid">
           {features.map((feature, index) => (
-            <div key={index} className="feature-card glassy">
-              <div className="feature-content">
-                <div className="feature-header">
-                  <h3 className="feature-title">{feature.title}</h3>
-                  <span 
-                    className="feature-highlight glassy-badge"
-                    style={{ 
-                      '--badge-color': feature.highlightColor,
-                      '--badge-rgb': feature.highlightColor === '#10b981' ? '16, 185, 129' :
-                                     feature.highlightColor === '#06b6d4' ? '6, 182, 212' :
-                                     feature.highlightColor === '#f59e0b' ? '245, 158, 11' :
-                                     feature.highlightColor === '#3b82f6' ? '59, 130, 246' :
-                                     feature.highlightColor === '#8b5cf6' ? '139, 92, 246' :
-                                     '239, 68, 68'
-                    }}
-                  >
-                    {feature.highlight}
-                  </span>
-                </div>
-                <p className="feature-description">{feature.description}</p>
-              </div>
+            <div key={index} className="feature-card" style={{ '--accent': feature.accentColor }}>
+              <span className="feature-accent-line" />
+              <h3 className="feature-title">{feature.title}</h3>
+              <span className="feature-tag">{feature.highlight}</span>
+              <p className="feature-description">{feature.description}</p>
             </div>
           ))}
         </div>

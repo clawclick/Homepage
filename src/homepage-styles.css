@@ -77,7 +77,8 @@ section {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 1.5rem;
-  line-height: 1.1;
+  line-height: 1.2;
+  padding-bottom: 0.05em;
 }
 
 .hero-subtitle {
@@ -207,172 +208,75 @@ section {
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
-  margin-bottom: 6rem;
-  justify-items: center;
-  align-items: stretch;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 5rem;
 }
 
-.feature-card.glassy {
-  background: rgba(0, 0, 0, 0.95) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 2.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-  width: 100%;
-  max-width: 450px;
-  box-shadow: 
-    /* Main depth shadow */
-    0 12px 40px rgba(0, 0, 0, 0.8),
-    /* Inner glass highlight */
-    inset 0 2px 0 rgba(255, 255, 255, 0.1),
-    /* Subtle outer glow */
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    /* Premium depth */
-    0 4px 20px rgba(0, 0, 0, 0.5);
+.feature-card {
   position: relative;
-  overflow: hidden;
-}
-
-/* Add subtle glass texture */
-.feature-card.glassy::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(180deg, 
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.02) 50%,
-    transparent 100%
-  );
-  pointer-events: none;
-}
-
-.feature-card.glassy:hover {
-  transform: translateY(-12px) scale(1.02);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.95) !important;
-}
-
-.feature-content {
-  flex: 1;
+  background: rgba(10, 14, 30, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 2.25rem 2rem 2rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 0.9rem;
+  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.feature-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-  gap: 1rem;
-  width: 100%;
+.feature-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+
+/* Thin accent line at top of card */
+.feature-accent-line {
+  position: absolute;
+  top: 0;
+  left: 2rem;
+  right: 2rem;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--accent, #3b82f6);
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+
+.feature-card:hover .feature-accent-line {
+  opacity: 1;
 }
 
 .feature-title {
-  font-size: 1.3rem;
-  color: #f9fafb;
+  font-size: 1.2rem;
+  color: #f1f5f9;
   font-weight: 600;
   margin: 0;
-  text-align: center;
-  width: 100%;
+  letter-spacing: -0.01em;
 }
 
-.feature-highlight.glassy-badge {
-  color: #ffffff !important;
-  padding: 0.6rem 1.5rem;
-  border-radius: 25px;
-  font-size: 0.75rem;
-  font-weight: 900;
-  white-space: nowrap;
+.feature-tag {
+  display: inline-block;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  position: relative;
-  overflow: hidden;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  
-  /* VIBRANT GLASS EFFECT - MUCH MORE COLORFUL */
-  background: linear-gradient(145deg, 
-    var(--badge-color, #10b981) 0%, 
-    color-mix(in srgb, var(--badge-color, #10b981) 80%, white 20%) 50%,
-    var(--badge-color, #10b981) 100%
-  );
-  
-  /* MULTIPLE LAYERED SHADOWS FOR DEPTH */
-  box-shadow: 
-    /* Main shadow with badge color */
-    0 8px 32px rgba(0, 0, 0, 0.5),
-    /* Colored glow */
-    0 0 30px var(--badge-color, #10b981),
-    /* Inner glass highlight */
-    inset 0 2px 0 rgba(255, 255, 255, 0.4),
-    /* Inner depth */
-    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
-    /* Vibrant outer glow */
-    0 0 50px rgba(var(--badge-rgb, 16, 185, 129), 0.6);
-    
-  /* GLASS BORDERS */
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid rgba(255, 255, 255, 0.6);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
-  
-  /* BLUR FOR GLASS EFFECT */
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  
-  transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
-}
-
-/* GLASS SHINE EFFECT */
-.feature-highlight.glassy-badge::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.8) 50%, 
-    transparent 100%
-  );
-  transition: left 0.6s cubic-bezier(0.23, 1, 0.320, 1);
-}
-
-.feature-card.glassy:hover .feature-highlight.glassy-badge::before {
-  left: 100%;
-}
-
-.feature-highlight.glassy-badge:hover {
-  transform: scale(1.05) translateY(-2px);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.5),
-    inset 0 3px 0 rgba(255, 255, 255, 1),
-    inset 0 -3px 0 rgba(0, 0, 0, 0.1),
-    0 0 30px rgba(255, 255, 255, 0.4),
-    0 2px 0 rgba(255, 255, 255, 0.9);
+  color: var(--accent, #3b82f6);
+  border: 1px solid currentColor;
+  opacity: 0.85;
 }
 
 .feature-description {
-  color: #d1d5db;
-  line-height: 1.6;
+  color: #94a3b8;
+  font-size: 0.92rem;
+  line-height: 1.65;
   margin: 0;
-  text-align: center;
-  width: 100%;
-  max-width: 320px;
+  max-width: 300px;
 }
 
 /* API Showcase */
@@ -474,16 +378,16 @@ section {
 
 /* JSON Syntax Highlighting for Response */
 .response-content .json-key {
-  color: #82aaff;
+  color: #1e3a5f;
   font-weight: 600;
 }
 
 .response-content .json-string {
-  color: #c3e88d;
+  color: #2d5016;
 }
 
 .response-content .json-number {
-  color: #f78c6c;
+  color: #9a3412;
 }
 
 .response-showcase {
