@@ -243,17 +243,6 @@ const DeploySession = () => {
     setIsSubmitting(true)
 
     try {
-      setStatusText('Checking for an active session...')
-      const listData = await fetchJson(`/api/session/list?agentId=${encodeURIComponent(agentId)}&user=${account}`, {
-        headers: { 'x-wallet-address': account },
-      })
-
-      const reusableSession = findReusableSession(listData?.sessions || [])
-      if (reusableSession) {
-        navigate(`/session/${reusableSession.id}`)
-        return
-      }
-
       let paymentTx = `0x${'f'.repeat(64)}`
       if (treasuryAddress && treasuryAddress !== '0x0000000000000000000000000000000000000000') {
         setStatusText('Confirm the payment in MetaMask...')
