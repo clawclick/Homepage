@@ -3,40 +3,40 @@ import React from 'react'
 const ValueProp = () => {
   const features = [
     {
-      icon: "🔗",
       title: "Unified API Interface",
       description: "One endpoint to rule them all. Instead of managing 50+ integrations, interact with a single standardized interface.",
-      highlight: "50+ Data Sources"
+      highlight: "50+ Data Sources",
+      highlightColor: "#10b981" // green
     },
     {
-      icon: "🔒",
       title: "Enterprise Security",
       description: "Bank-level security with rate limiting, authentication, and risk management built-in.",
-      highlight: "Production Ready"
+      highlight: "Production Ready",
+      highlightColor: "#06b6d4" // cyan
     },
     {
-      icon: "🌐",
       title: "Multi-Chain Support",
       description: "Trade across Ethereum, Solana, Base, and BSC with seamless cross-chain functionality.",
-      highlight: "4 Blockchains"
+      highlight: "4 Blockchains",
+      highlightColor: "#f59e0b" // amber
     },
     {
-      icon: "📊",
       title: "Real-Time Analytics",
       description: "Access live market data, sentiment analysis, and risk scoring with microsecond latency.",
-      highlight: "Live Data"
+      highlight: "Live Data",
+      highlightColor: "#3b82f6" // blue
     },
     {
-      icon: "🤖",
       title: "AI Agent Ready",
       description: "Purpose-built for AI trading agents with structured responses and predictable schemas.",
-      highlight: "Agent Optimized"
+      highlight: "Agent Optimized",
+      highlightColor: "#8b5cf6" // purple
     },
     {
-      icon: "⚙️",
       title: "Strategy Wrappers",
       description: "Package trading strategies as API endpoints. Monetize your alpha without revealing logic.",
-      highlight: "Novel Architecture"
+      highlight: "Novel Architecture",
+      highlightColor: "#ef4444" // red
     }
   ]
 
@@ -55,14 +55,16 @@ const ValueProp = () => {
         
         <div className="features-grid">
           {features.map((feature, index) => (
-            <div key={index} className="feature-card">
-              <div className="feature-icon-wrapper">
-                <div className="temp-icon">{feature.icon}</div>
-              </div>
+            <div key={index} className="feature-card glassy">
               <div className="feature-content">
                 <div className="feature-header">
                   <h3 className="feature-title">{feature.title}</h3>
-                  <span className="feature-highlight">{feature.highlight}</span>
+                  <span 
+                    className="feature-highlight glassy-badge"
+                    style={{ backgroundColor: feature.highlightColor }}
+                  >
+                    {feature.highlight}
+                  </span>
                 </div>
                 <p className="feature-description">{feature.description}</p>
               </div>
