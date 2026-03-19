@@ -452,7 +452,7 @@ const SessionTerminal = () => {
       <header className="st-header">
         <div className="st-header-left">
           <Link to="/" className="st-logo-link">
-            <img src="/logo_black.png" alt="Claw" className="st-logo-img" />
+            <img src="/logo.png" alt="Claw" className="st-logo-img" />
             <span className="st-logo-text">claw.click</span>
           </Link>
           <span className="st-header-divider" />

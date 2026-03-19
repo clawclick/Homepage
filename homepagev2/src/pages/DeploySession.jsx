@@ -243,17 +243,6 @@ const DeploySession = () => {
     setIsSubmitting(true)
 
     try {
-      setStatusText('Checking for an active session...')
-      const listData = await fetchJson(`/api/session/list?agentId=${encodeURIComponent(agentId)}&user=${account}`, {
-        headers: { 'x-wallet-address': account },
-      })
-
-      const reusableSession = findReusableSession(listData?.sessions || [])
-      if (reusableSession) {
-        navigate(`/session/${reusableSession.id}`)
-        return
-      }
-
       let paymentTx = `0x${'f'.repeat(64)}`
       if (treasuryAddress && treasuryAddress !== '0x0000000000000000000000000000000000000000') {
         setStatusText('Confirm the payment in MetaMask...')
@@ -485,19 +474,19 @@ const DeploySession = () => {
               </div>
             </div>
 
-            <button className="deploy-toggle" onClick={() => setShowApiKeys((value) => !value)}>
-              {showApiKeys ? 'Hide model API keys' : 'Attach model API keys'}
+            <button className="deploy-toggle deploy-toggle-prominent" onClick={() => setShowApiKeys((value) => !value)}>
+              {showApiKeys ? 'Hide AI API keys' : '🔑 Add AI API Key'}
             </button>
 
             {showApiKeys && (
               <div className="deploy-form-grid deploy-api-grid deploy-form-grid-stack">
                 <label className="deploy-field deploy-field-full deploy-input-field">
-                  <span>OpenAI key</span>
-                  <input value={openaiKey} onChange={(event) => setOpenaiKey(event.target.value)} placeholder="sk-..." />
+                  <span>Anthropic key <span className="deploy-recommended-badge">RECOMMENDED</span></span>
+                  <input value={anthropicKey} onChange={(event) => setAnthropicKey(event.target.value)} placeholder="sk-ant-..." />
                 </label>
                 <label className="deploy-field deploy-field-full deploy-input-field">
-                  <span>Anthropic key</span>
-                  <input value={anthropicKey} onChange={(event) => setAnthropicKey(event.target.value)} placeholder="sk-ant-..." />
+                  <span>OpenAI key</span>
+                  <input value={openaiKey} onChange={(event) => setOpenaiKey(event.target.value)} placeholder="sk-..." />
                 </label>
               </div>
             )}
