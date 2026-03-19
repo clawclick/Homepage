@@ -137,7 +137,7 @@ const ValueProp = () => {
         )}
         
         <div className="api-showcase">
-          <h3 className="showcase-title">Route Any Strategy, signal and execute via one endpoint</h3>
+          <h3 className="showcase-title">Build any Strategy, Signal or Execution</h3>
           <div className="code-showcase">
             <div className="code-block-showcase">
               <div className="code-header">
@@ -145,21 +145,16 @@ const ValueProp = () => {
                 <span className="status-live">Live Implementation</span>
               </div>
               <div className="code-content">
-                <pre>
-<span className="comment">// Multi-source token discovery</span>
-<span className="keyword">const</span> [<span className="variable">newPairs</span>, <span className="variable">trending</span>, <span className="variable">filtered</span>] = 
-  <span className="keyword">await</span> <span className="function">Promise.all</span>([
-    <span className="function">fetch</span>(<span className="string">"https://api.claw.click/newPairs?source=pumpfun"</span>),
-    <span className="function">fetch</span>(<span className="string">"https://api.claw.click/trendingTokens"</span>),
-    <span className="function">fetch</span>(<span className="string">"https://api.claw.click/filterTokens?network=sol&minLiquidity=10000"</span>)
-  ]);
+                <pre dangerouslySetInnerHTML={{
+                  __html: `<span class="comment">// Multi-source token discovery</span>
+<span class="keyword">const</span> <span class="variable">newPairs</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">"https://api.claw.click/newPairs?source=pumpfun"</span>)
+<span class="keyword">const</span> <span class="variable">trending</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">"https://api.claw.click/trendingTokens"</span>)  
+<span class="keyword">const</span> <span class="variable">filtered</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">"https://api.claw.click/filterTokens?network=sol&minLiquidity=10000"</span>)
 
-<span className="comment">// Enrich with unified data</span>
-<span className="keyword">const</span> <span className="variable">enriched</span> = 
-  <span className="keyword">await</span> <span className="function">processTokens</span>(<span className="variable">addresses</span>);
-<span className="keyword">const</span> <span className="variable">signals</span> = 
-  <span className="function">applyFilters</span>(<span className="variable">enriched</span>);
-                </pre>
+<span class="comment">// Enrich with unified data</span>
+<span class="keyword">const</span> <span class="variable">enriched</span> = <span class="keyword">await</span> <span class="function">processTokens</span>(<span class="variable">addresses</span>)
+<span class="keyword">const</span> <span class="variable">signals</span> = <span class="function">applyFilters</span>(<span class="variable">enriched</span>)`
+                }} />
               </div>
             </div>
             

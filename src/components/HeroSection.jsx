@@ -35,7 +35,7 @@ const HeroSection = () => {
       <div className="hero-container">
         <div className="hero-content">
           <h1 className="hero-title">
-            Universal Router For Agents
+            Build any Strategy, Signal or Execution
           </h1>
 
           <p className="hero-subtitle">
