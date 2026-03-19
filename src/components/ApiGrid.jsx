@@ -35,21 +35,29 @@ const ApiGrid = () => {
     const handleMouseEnter = (event) => {
       const item = event.currentTarget
       
-      // Create hover particles
-      for (let i = 0; i < 8; i++) {
+      // MULTICOLOR BUBBLE PARTICLES - RESTORED TO ORIGINAL!
+      const colors = [
+        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+        '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+        '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7DBDD'
+      ]
+      
+      for (let i = 0; i < 12; i++) {
         const particle = document.createElement('div')
         particle.className = 'hover-particle'
+        const color = colors[Math.floor(Math.random() * colors.length)]
         particle.style.cssText = `
           position: absolute;
-          width: 4px;
-          height: 4px;
-          background: #3b82f6;
+          width: ${Math.random() * 8 + 4}px;
+          height: ${Math.random() * 8 + 4}px;
+          background: ${color};
           border-radius: 50%;
           pointer-events: none;
           animation: particleFloat 2s ease-out forwards;
           left: ${Math.random() * 100}%;
           top: ${Math.random() * 100}%;
           animation-delay: ${Math.random() * 0.5}s;
+          box-shadow: 0 0 10px ${color};
         `
         item.appendChild(particle)
         
@@ -57,9 +65,15 @@ const ApiGrid = () => {
       }
     }
 
+    const handleMouseLeave = (event) => {
+      const item = event.currentTarget
+      item.querySelectorAll('.hover-particle').forEach(p => p.remove())
+    }
+
     const apiItems = document.querySelectorAll('.api-logo-item')
     apiItems.forEach(item => {
       item.addEventListener('mouseenter', handleMouseEnter)
+      item.addEventListener('mouseleave', handleMouseLeave)
     })
 
     // Add particle animation keyframes
@@ -68,13 +82,25 @@ const ApiGrid = () => {
       style.id = 'particleAnimation'
       style.textContent = `
         @keyframes particleFloat {
-          0% {
-            transform: translate(0, 0) scale(1);
+          0%, 100% {
+            transform: translate(0, 0) scale(1) rotate(0deg);
             opacity: 0.8;
           }
-          100% {
-            transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) scale(0);
-            opacity: 0;
+          20% {
+            transform: translate(25px, -30px) scale(1.5) rotate(90deg);
+            opacity: 1;
+          }
+          40% {
+            transform: translate(-20px, -50px) scale(0.7) rotate(180deg);
+            opacity: 0.9;
+          }
+          60% {
+            transform: translate(35px, -25px) scale(1.3) rotate(270deg);
+            opacity: 1;
+          }
+          80% {
+            transform: translate(-15px, -40px) scale(0.9) rotate(360deg);
+            opacity: 0.8;
           }
         }
       `
@@ -84,6 +110,8 @@ const ApiGrid = () => {
     return () => {
       apiItems.forEach(item => {
         item.removeEventListener('mouseenter', handleMouseEnter)
+        item.removeEventListener('mouseleave', handleMouseLeave)
+        item.querySelectorAll('.hover-particle').forEach(p => p.remove())
       })
     }
   }, [])
@@ -100,7 +128,7 @@ const ApiGrid = () => {
         
         <div className="api-static-grid">
           {randomizedApis.map((api, index) => (
-            <div key={index} className={`api-logo-item ${api.size}`}>
+            <div key={index} className="api-logo-item">
               <img 
                 src={api.logo} 
                 alt={api.name} 
@@ -110,9 +138,6 @@ const ApiGrid = () => {
                   e.target.style.display = 'none'
                 }}
               />
-              <div className="api-logo-overlay">
-                <span className="api-logo-name">{api.name}</span>
-              </div>
             </div>
           ))}
         </div>
