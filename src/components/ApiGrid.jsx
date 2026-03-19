@@ -127,17 +127,27 @@ const ApiGrid = () => {
   return (
     <section className="api-grid-section">
       <div className="api-grid-container">
-        <h2 className="api-grid-heading">Integrated APIs</h2>
+        <header className="api-grid-header">
+          <h2 className="api-grid-heading">Trusted by Industry Leaders</h2>
+          <p className="api-grid-subtitle">
+            Integrated with 50+ premium data sources and major blockchain infrastructure providers
+          </p>
+        </header>
         
         <div className="api-carousel">
           <div className="api-row slide-right">
             {apiLogosRow1.map((api, index) => (
               <div key={index} className={`api-logo-item ${api.className}`}>
-                <img 
-                  src={api.logo} 
-                  alt={api.name} 
-                  className="api-logo-image"
-                />
+                <div className="api-logo-wrapper">
+                  <img 
+                    src={api.logo} 
+                    alt={api.name} 
+                    className="api-logo-image"
+                  />
+                  <div className="api-logo-overlay">
+                    <span className="api-logo-name">{api.name}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -145,11 +155,16 @@ const ApiGrid = () => {
           <div className="api-row slide-left">
             {apiLogosRow2.map((api, index) => (
               <div key={index} className={`api-logo-item ${api.className}`}>
-                <img 
-                  src={api.logo} 
-                  alt={api.name} 
-                  className="api-logo-image"
-                />
+                <div className="api-logo-wrapper">
+                  <img 
+                    src={api.logo} 
+                    alt={api.name} 
+                    className="api-logo-image"
+                  />
+                  <div className="api-logo-overlay">
+                    <span className="api-logo-name">{api.name}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -157,24 +172,49 @@ const ApiGrid = () => {
           <div className="api-row slide-right">
             {apiLogosRow3.map((api, index) => (
               <div key={index} className={`api-logo-item ${api.className}`}>
-                <img 
-                  src={api.logo} 
-                  alt={api.name} 
-                  className="api-logo-image"
-                />
+                <div className="api-logo-wrapper">
+                  <img 
+                    src={api.logo} 
+                    alt={api.name} 
+                    className="api-logo-image"
+                  />
+                  <div className="api-logo-overlay">
+                    <span className="api-logo-name">{api.name}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
         
-        <div className="api-loading-animation">
-          <img 
-            src="/animated-logo.gif" 
-            alt="Loading Animation" 
-            className="api-animated-gif"
-            width="100"
-            height="100"
-          />
+        <div className="integration-stats">
+          <div className="integration-stat">
+            <span className="integration-number">24</span>
+            <span className="integration-label">Live Now</span>
+          </div>
+          <div className="integration-stat">
+            <span className="integration-number">28</span>
+            <span className="integration-label">Coming Soon</span>
+          </div>
+          <div className="integration-stat">
+            <span className="integration-number">99.9%</span>
+            <span className="integration-label">Uptime</span>
+          </div>
+        </div>
+        
+        <div className="api-cta">
+          <h3 className="api-cta-title">Ready to Build?</h3>
+          <p className="api-cta-text">
+            Join developers building the future of trading infrastructure
+          </p>
+          <div className="api-cta-buttons">
+            <a href="/api" className="api-cta-button primary">
+              Get API Access
+            </a>
+            <a href="https://github.com/clawclick" target="_blank" rel="noopener noreferrer" className="api-cta-button secondary">
+              View on GitHub
+            </a>
+          </div>
         </div>
       </div>
     </section>

@@ -6,6 +6,7 @@ import HomePage from './components/HomePage'
 import ApiDocs from './pages/ApiDocs'
 import AppMarketplace from './pages/AppMarketplace'
 import './pages.css'
+import './homepage-styles.css'
 
 function AppContent() {
   const location = useLocation()
