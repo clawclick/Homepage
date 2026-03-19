@@ -515,11 +515,13 @@ section {
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
-/* API Grid Section */
+/* API Grid Section - FULL WIDTH WHITE SECTION */
 .api-grid-section {
   padding: 6rem 0;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%);
-  border-top: 1px solid rgba(75, 85, 99, 0.3);
+  background: #ffffff !important;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  position: relative;
 }
 
 .api-grid-container {
@@ -551,79 +553,76 @@ section {
 
 .api-grid-subtitle {
   font-size: 1.1rem;
-  color: #d1d5db;
+  color: #4b5563;
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
 }
 
-.api-carousel {
-  margin-bottom: 4rem;
-  overflow: hidden;
-  mask: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
-  -webkit-mask: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
-}
-
-.api-row {
-  display: flex;
+.api-static-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 2rem;
-  margin-bottom: 2rem;
-  animation-duration: 30s;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  margin-bottom: 4rem;
+  padding: 2rem 0;
+  justify-items: center;
+  align-items: center;
 }
 
-.api-row.slide-right {
-  animation-name: slideRight;
-}
-
-.api-row.slide-left {
-  animation-name: slideLeft;
-}
-
-@keyframes slideRight {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-@keyframes slideLeft {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
+/* Removed carousel animations - now using static grid */
 
 .api-logo-item {
   position: relative;
-  flex-shrink: 0;
   transition: all 0.3s ease;
-}
-
-.api-logo-wrapper {
-  position: relative;
-  width: 120px;
-  height: 80px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
-  border-radius: 8px;
-  border: 1px solid rgba(75, 85, 99, 0.3);
-  overflow: hidden;
+  background: transparent;
 }
 
-.api-logo-wrapper:hover {
-  border-color: rgba(59, 130, 246, 0.5);
-  transform: scale(1.05);
+.api-logo-item:hover {
+  transform: translateY(-8px) scale(1.1);
+}
+
+/* Different sizes for logos - NO BORDERS */
+.api-logo-item.small {
+  width: 80px;
+  height: 60px;
+}
+
+.api-logo-item.small .api-logo-image {
+  max-width: 60px;
+  max-height: 40px;
+}
+
+.api-logo-item.medium {
+  width: 120px;
+  height: 80px;
+}
+
+.api-logo-item.medium .api-logo-image {
+  max-width: 90px;
+  max-height: 60px;
+}
+
+.api-logo-item.large {
+  width: 150px;
+  height: 100px;
+}
+
+.api-logo-item.large .api-logo-image {
+  max-width: 120px;
+  max-height: 80px;
 }
 
 .api-logo-image {
-  max-width: 80px;
-  max-height: 50px;
   object-fit: contain;
-  filter: grayscale(100%) brightness(0.8);
+  filter: grayscale(30%) brightness(0.9);
   transition: all 0.3s ease;
 }
 
-.api-logo-wrapper:hover .api-logo-image {
+.api-logo-item:hover .api-logo-image {
   filter: grayscale(0%) brightness(1);
 }
 
@@ -670,7 +669,7 @@ section {
 }
 
 .integration-label {
-  color: #d1d5db;
+  color: #6b7280;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
