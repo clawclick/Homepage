@@ -82,9 +82,9 @@ const ValueProp = () => {
                 <pre>
 {`// Multi-source token discovery
 const [newPairs, trending, filtered] = await Promise.all([
-  fetch("${BASE_URL}/newPairs?source=pumpfun"),
-  fetch("${BASE_URL}/trendingTokens"),
-  fetch("${BASE_URL}/filterTokens?network=sol&minLiquidity=10000")
+  fetch("https://api.claw.click/newPairs?source=pumpfun"),
+  fetch("https://api.claw.click/trendingTokens"),
+  fetch("https://api.claw.click/filterTokens?network=sol&minLiquidity=10000")
 ]);
 
 // Enrich with unified data
