@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AnimatedCube from './AnimatedCube'
 import { fetchAgents } from '../lib/sessionApi'
@@ -37,6 +37,8 @@ const ValueProp = () => {
   const navigate = useNavigate()
   const [agents, setAgents] = useState([])
   const [telemetryTick, setTelemetryTick] = useState(0)
+  const [loopDistance, setLoopDistance] = useState(0)
+  const trackRef = useRef(null)
 
   useEffect(() => {
     let isMounted = true
@@ -85,6 +87,46 @@ const ValueProp = () => {
 
   const strategyRail = agents.length > 0 ? [...agents, ...agents] : []
 
+  useEffect(() => {
+    const trackEl = trackRef.current
+    if (!trackEl) return undefined
+
+    const updateLoopDistance = () => {
+      const cards = trackEl.querySelectorAll('.strategy-preview-card')
+      const half = Math.floor(cards.length / 2)
+      if (cards.length < 2 || half === 0 || !cards[half]) return
+
+      const firstStart = cards[0].offsetLeft
+      const secondStart = cards[half].offsetLeft
+      const measured = secondStart - firstStart
+      if (measured > 0) {
+        setLoopDistance(measured)
+      }
+    }
+
+    updateLoopDistance()
+
+    const raf = requestAnimationFrame(updateLoopDistance)
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateLoopDistance)
+      : null
+
+    if (resizeObserver) {
+      resizeObserver.observe(trackEl)
+    } else {
+      window.addEventListener('resize', updateLoopDistance)
+    }
+
+    return () => {
+      cancelAnimationFrame(raf)
+      if (resizeObserver) {
+        resizeObserver.disconnect()
+      } else {
+        window.removeEventListener('resize', updateLoopDistance)
+      }
+    }
+  }, [strategyRail.length])
+
   return (
     <section className="valueprop">
       <div className="valueprop-inner">
@@ -99,7 +141,11 @@ const ValueProp = () => {
         </div>
 
         <div className="strategy-preview-carousel">
-          <div className="strategy-preview-track">
+          <div
+            className="strategy-preview-track"
+            ref={trackRef}
+            style={loopDistance > 0 ? { '--sp-loop-distance': `${loopDistance}px` } : undefined}
+          >
             {strategyRail.map((agent, index) => {
               const telemetry = getTelemetry(agent, index)
               const sparklinePoints = getSparklinePoints(agent, index)
