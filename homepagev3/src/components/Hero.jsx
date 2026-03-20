@@ -33,10 +33,26 @@ const useCountUp = (end, duration = 2000, prefix = '', suffix = '') => {
 }
 
 const Hero = () => {
-  const [reqRef, reqVal] = useCountUp(0, 1800)
-  const [usrRef, usrVal] = useCountUp(0, 1800)
-  const [volRef, volVal] = useCountUp(0, 1800, '$')
-  const [apiRef, apiVal] = useCountUp(45, 2200)
+  const [liveRequests, setLiveRequests] = useState(0)
+
+  useEffect(() => {
+    fetch('https://api.claw.click/admin/stats/requests', {
+      headers: { 'x-admin-key': 'ADMIN_API_KEY' },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          const allTimeTotal = data.requests?.total ?? 0
+          setLiveRequests(allTimeTotal)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const [reqRef, reqVal] = useCountUp(liveRequests, 1800)
+  const [chainRef, chainVal] = useCountUp(4, 1200)
+  const [apiRef, apiVal] = useCountUp(30, 1600, '', '+')
+  const [intRef, intVal] = useCountUp(24, 2000, '', '/52')
 
   return (
     <section className="hero">
@@ -81,17 +97,17 @@ const Hero = () => {
             <div className="stat-value">{reqVal}</div>
             <div className="stat-label">Requests</div>
           </div>
-          <div className="stat-item" ref={usrRef}>
-            <div className="stat-value">{usrVal}</div>
-            <div className="stat-label">Users</div>
-          </div>
-          <div className="stat-item" ref={volRef}>
-            <div className="stat-value">{volVal}</div>
-            <div className="stat-label">Volume</div>
+          <div className="stat-item" ref={chainRef}>
+            <div className="stat-value">{chainVal}</div>
+            <div className="stat-label">Blockchains</div>
           </div>
           <div className="stat-item" ref={apiRef}>
             <div className="stat-value">{apiVal}</div>
-            <div className="stat-label">Integrated APIs</div>
+            <div className="stat-label">API Endpoints</div>
+          </div>
+          <div className="stat-item" ref={intRef}>
+            <div className="stat-value">{intVal}</div>
+            <div className="stat-label">Live Integrations</div>
           </div>
         </div>
       </div>
