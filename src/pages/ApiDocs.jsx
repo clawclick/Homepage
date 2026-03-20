@@ -81,6 +81,40 @@ const ApiDocs = () => {
           response: '{"endpoint": "detailedTokenStats", "status": "live", "durations": {"hour1": {"statsUsd": {"volume": {"currentValue": 13839617.47, "change": -0.3094}}}}}'
         },
         {
+          method: 'GET', path: '/priceHistoryIndicators', description: 'Price history with technical indicators (RSI, MACD, Bollinger Bands)',
+          requiresAuth: true,
+          params: [
+            { name: 'chain', required: false, default: 'eth', description: 'Chain' },
+            { name: 'tokenAddress', required: true, default: '—', description: 'Token address' },
+            { name: 'indicatorTimeFrame', required: false, default: '1h', description: 'Time frame: 1m, 5m, 10m, 15m, 30m, 1h, 4h, 1d' }
+          ],
+          example: 'GET https://api.claw.click/priceHistoryIndicators?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&indicatorTimeFrame=1h',
+          response: '{"endpoint": "priceHistoryIndicators", "status": "live", "chain": "eth", "tokenAddress": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "indicators": [{"timestamp": 1710000000, "price": 1.0001, "rsi": 65.2, "macd": 0.00002, "bollingerUpper": 1.0035, "bollingerLower": 0.9967}]}'
+        },
+        {
+          method: 'GET', path: '/marketOverview', description: 'Market overview for majors or token with trend data',
+          requiresAuth: true,
+          params: [
+            { name: 'chain', required: false, default: 'eth', description: 'Chain' },
+            { name: 'asset', required: false, default: '—', description: 'Asset for majors (BTC, ETH, etc)' },
+            { name: 'tokenAddress', required: false, default: '—', description: 'Token address for specific token overview' }
+          ],
+          example: 'GET https://api.claw.click/marketOverview?asset=BTC',
+          response: '{"endpoint": "marketOverview", "status": "live", "asset": "BTC", "price": 45000, "priceChange24h": 2.5, "marketCapUsd": 900000000000, "volume24hUsd": 35000000000, "fearGreedIndex": 65}'
+        },
+        {
+          method: 'GET', path: '/fudSearch', description: 'Search for FUD (Fear, Uncertainty, Doubt) and security concerns',
+          requiresAuth: true,
+          params: [
+            { name: 'chain', required: false, default: 'eth', description: 'Chain' },
+            { name: 'tokenAddress', required: false, default: '—', description: 'Token address' },
+            { name: 'symbol', required: false, default: '—', description: 'Token symbol' },
+            { name: 'tokenName', required: false, default: '—', description: 'Token name (at least one required)' }
+          ],
+          example: 'GET https://api.claw.click/fudSearch?chain=eth&symbol=USDC',
+          response: '{"endpoint": "fudSearch", "status": "live", "chain": "eth", "symbol": "USDC", "concerns": [{"type": "regulatory", "severity": "low", "description": "SEC inquiry"}, {"type": "technical", "severity": "low", "description": "Minor smart contract audit findings"}], "overallRisk": "low"}'
+        },
+        {
           method: 'GET', path: '/trendingTokens', description: 'Currently trending tokens across all chains',
           requiresAuth: true,
           example: 'GET https://api.claw.click/trendingTokens',
@@ -174,6 +208,17 @@ const ApiDocs = () => {
           ],
           example: 'GET https://api.claw.click/approve?chain=eth&dex=uniswapV3&walletAddress=0x...&tokenIn=0x...',
           response: '{"endpoint": "approve", "status": "live", "chain": "eth", "dex": "uniswapV3", "tokenIn": "0x...", "approvalMode": "auto", "resolvedMode": "erc20", "spender": "0xE592427A0AEce92De3Edee1F18E0157C05861564", "steps": [{"kind": "erc20", "label": "Approve Uniswap V3 Router", "spender": "0xE592427A0AEce92De3Edee1F18E0157C05861564", "tx": {"to": "0xTokenAddress", "data": "0x095ea7b3...", "value": "0x0", "chainId": 1, "from": "0xYourWallet"}}]}'
+        },
+        {
+          method: 'GET', path: '/unwrap', description: 'Build unsigned WETH/WBNB unwrap transaction',
+          requiresAuth: true,
+          params: [
+            { name: 'chain', required: true, default: '—', description: 'Chain (eth, base, bsc)' },
+            { name: 'walletAddress', required: true, default: '—', description: 'Wallet address' },
+            { name: 'amount', required: true, default: '—', description: 'Amount in Wei to unwrap' }
+          ],
+          example: 'GET https://api.claw.click/unwrap?chain=eth&walletAddress=0x...&amount=1000000000000000000',
+          response: '{"endpoint": "unwrap", "chain": "eth", "tx": {"to": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "data": "0x2e1a7d4d...", "value": "0x0", "chainId": 1, "from": "0xYourWallet"}}'
         }
       ]
     },
@@ -201,6 +246,28 @@ const ApiDocs = () => {
           ],
           example: 'GET https://api.claw.click/holders?chain=sol&tokenAddress=Dz9mQ...&limit=5',
           response: '{"endpoint": "holders", "status": "live", "cached": false, "chain": "sol", "tokenAddress": "Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk", "limit": 5, "holderCount": 36547, "totalSupplyRaw": "999111158353621", "totalSupplyFormatted": "999111158.353621", "holders": [{"address": "u6PJ8DtQuPFnfmwHbGFULQ4u4EgjDiyYKjVEsynXq2w", "label": null, "entity": null, "balance": "66226101364616", "balanceFormatted": "66226101.364616", "percentOfSupply": 6.6286}]}'
+        },
+        {
+          method: 'GET', path: '/holderAnalysis', description: 'Detailed holder distribution and concentration analysis',
+          requiresAuth: true,
+          params: [
+            { name: 'chain', required: false, default: 'eth', description: 'Chain' },
+            { name: 'tokenAddress', required: true, default: '—', description: 'Token address' }
+          ],
+          example: 'GET https://api.claw.click/holderAnalysis?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+          response: '{"endpoint": "holderAnalysis", "status": "live", "chain": "eth", "tokenAddress": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "holderCount": 5000000, "top10Percent": 45.2, "top100Percent": 72.5, "giniCoefficient": 0.82, "distributionRisk": "medium", "concentration": {"veryHigh": 5, "high": 12, "medium": 45, "low": 200, "veryLow": 4738}}'
+        },
+        {
+          method: 'GET', path: '/tokenHolders', description: 'Paginated token holder list with cursor support (Codex)',
+          requiresAuth: true,
+          params: [
+            { name: 'tokenAddress', required: true, default: '—', description: 'Token address' },
+            { name: 'network', required: false, default: 'eth', description: 'Chain' },
+            { name: 'cursor', required: false, default: '—', description: 'Pagination cursor' },
+            { name: 'limit', required: false, default: '50', description: 'Results per page (1–200)' }
+          ],
+          example: 'GET https://api.claw.click/tokenHolders?tokenAddress=0x...&network=eth&limit=50',
+          response: '{"endpoint": "tokenHolders", "status": "live", "tokenAddress": "0x...", "network": "eth", "holders": [{"address": "0x...", "balance": "1000000000000000000", "percentOfSupply": 12.5, "label": "Binance"}], "nextCursor": "abc123", "hasMore": true}'
         }
       ]
     },
@@ -258,6 +325,40 @@ const ApiDocs = () => {
           ],
           example: 'GET https://api.claw.click/gasFeed?chain=eth',
           response: '{"endpoint": "gasFeed", "status": "live", "chain": "eth", "lastBlock": "23467872", "safeGwei": "0.38", "proposeGwei": "0.38", "fastGwei": "0.42", "baseFeeGwei": "0.38", "providers": [{"provider": "etherscanV2", "status": "ok"}]}'
+        }
+      ]
+    },
+    {
+      category: 'Strategies & Resources',
+      items: [
+        {
+          method: 'GET', path: '/strats', description: 'List all available trading strategy guides',
+          requiresAuth: false,
+          example: 'GET https://api.claw.click/strats',
+          response: '{"endpoint": "strats", "status": "live", "strategies": [{"id": "1", "path": "scalping", "title": "Scalping Strategy", "description": "Short-term trading strategy targeting quick profits"}, {"id": "2", "path": "dca", "title": "Dollar Cost Averaging", "description": "Consistent entry strategy over time"}]}'
+        },
+        {
+          method: 'GET', path: '/strats/:id', description: 'Get detailed strategy guide as markdown',
+          requiresAuth: false,
+          params: [
+            { name: 'id', required: true, default: '—', description: 'Strategy ID (e.g., scalping, dca)' }
+          ],
+          example: 'GET https://api.claw.click/strats/scalping',
+          response: '# Scalping Strategy\n\n## Overview\nScalping is a high-frequency trading strategy...\n\n## Entry Points\n- Support levels\n- RSI divergence\n\n## Exit Points\n- 2-3% profit target\n- Stop loss at -1%'
+        }
+      ]
+    },
+    {
+      category: 'WebSocket Streams',
+      items: [
+        {
+          method: 'WS', path: '/ws/launchpadEvents', description: 'Real-time launchpad event stream (Codex)',
+          requiresAuth: true,
+          params: [
+            { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' }
+          ],
+          example: 'WS https://api.claw.click/ws/launchpadEvents',
+          response: '{"type": "launchpadEvent", "launchpad": "pump.fun", "event": "new_mint", "data": {"tokenAddress": "...", "name": "NewToken", "symbol": "NEW", "description": "A new token", "createdAt": 1710000000, "marketCap": 50000}}'
         }
       ]
     }
