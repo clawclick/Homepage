@@ -70,7 +70,7 @@ const Hero = () => {
       <div className="hero-content">
         {/* Big logo */}
         <div className="hero-logo-wrap">
-          <img src="/logo.png" alt="Claw.Click" className="hero-big-logo" />
+          <img src="/logo8.png" alt="Claw.Click" className="hero-big-logo" />
         </div>
 
         <h1>
