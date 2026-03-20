@@ -216,7 +216,7 @@ const AppMarketplace = () => {
 
               <div className="mp-card-actions">
                 <button className="btn-primary mp-btn" onClick={() => navigate(`/deploy?agent=${agent.id}`)}>Deploy</button>
-                <button className="btn-secondary mp-btn" onClick={() => navigate(`/deploy?agent=${agent.id}`)}>Details</button>
+                <button className="btn-secondary mp-btn" onClick={() => navigate(`/agents/${encodeURIComponent(agent.id)}/analytics`)}>Details</button>
               </div>
             </div>
           ))}

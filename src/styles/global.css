@@ -2409,6 +2409,201 @@ button {
 }
 
 /* ═══════════════════════════════
+   AGENT ANALYTICS PAGE
+   ═══════════════════════════════ */
+
+.agent-analytics-page {
+  padding-top: 72px;
+}
+
+.agent-analytics-hero {
+  padding: 80px 48px 52px;
+  border-bottom: 1px solid var(--accent-border);
+  background:
+    radial-gradient(1200px 380px at 8% -20%, rgba(92, 212, 190, 0.16), transparent 70%),
+    radial-gradient(900px 300px at 100% 0%, rgba(13, 158, 138, 0.13), transparent 70%),
+    var(--black-soft);
+}
+
+.agent-analytics-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.agent-analytics-kicker {
+  margin: 0 0 10px;
+  color: var(--grey-400);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.agent-analytics-title {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.agent-analytics-subtitle {
+  margin: 14px 0 0;
+  max-width: 780px;
+  color: var(--grey-400);
+}
+
+.agent-analytics-actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 10px;
+}
+
+.agent-analytics-section {
+  padding: 36px 48px 72px;
+}
+
+.agent-analytics-message {
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  padding: 18px;
+  color: var(--grey-300);
+  background: var(--grey-900);
+}
+
+.agent-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.agent-summary-card {
+  border: 1px solid var(--accent-border);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--grey-900);
+}
+
+.agent-summary-card strong {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  color: var(--purple);
+}
+
+.agent-summary-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--grey-500);
+}
+
+.agent-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.agent-panel {
+  border: 1px solid var(--accent-border);
+  border-radius: 14px;
+  background: var(--grey-900);
+  padding: 18px;
+  margin-bottom: 12px;
+}
+
+.agent-panel h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+}
+
+.agent-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.agent-metric-grid div {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.agent-metric-grid span {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--grey-500);
+}
+
+.agent-metric-grid strong {
+  margin-top: 6px;
+  display: block;
+  font-family: var(--font-mono);
+  color: var(--white);
+}
+
+.agent-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.agent-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.agent-table th,
+.agent-table td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.83rem;
+}
+
+.agent-table th {
+  color: var(--grey-400);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+}
+
+@media (max-width: 980px) {
+  .agent-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .agent-panels {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .agent-analytics-hero,
+  .agent-analytics-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .agent-summary-grid,
+  .agent-metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-analytics-actions {
+    flex-direction: column;
+  }
+}
+
+/* ═══════════════════════════════
    MY SESSIONS PAGE
    ═══════════════════════════════ */
 

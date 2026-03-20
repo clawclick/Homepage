@@ -1,4 +1,6 @@
 const BACKEND_URL = import.meta.env.VITE_CLAWS_FUN_BACKEND_URL || 'https://claws-fun-backend-764a4f25b49e.herokuapp.com'
+const SUPER_API_URL = import.meta.env.VITE_SUPER_API_URL || 'https://api.claw.click'
+const ADMIN_API_KEY = import.meta.env.VITE_ADMIN_API_KEY || 'ADMIN_API_KEY'
 
 export function clawsFunApiUrl(path) {
   return `${BACKEND_URL}${path}`
@@ -46,6 +48,32 @@ function normalizeAgent(agent) {
 export async function fetchAgents() {
   const data = await fetchJson('/api/agents')
   return Array.isArray(data?.agents) ? data.agents.map(normalizeAgent) : []
+}
+
+export async function fetchAgentStats(agentId, includeKeys = true) {
+  if (!agentId) {
+    throw new Error('Agent ID is required to load stats.')
+  }
+
+  const query = new URLSearchParams({
+    agentId: String(agentId),
+    includeKeys: includeKeys ? 'true' : 'false',
+  })
+
+  const response = await fetch(`${SUPER_API_URL}/admin/stats/agents?${query.toString()}`, {
+    headers: {
+      'x-admin-key': ADMIN_API_KEY,
+    },
+  })
+
+  const isJson = response.headers.get('content-type')?.includes('application/json')
+  const data = isJson ? await response.json() : null
+
+  if (!response.ok) {
+    throw new Error(data?.message || data?.error || `Request failed: ${response.status}`)
+  }
+
+  return data
 }
 
 export async function fetchUserSessions(walletAddress) {

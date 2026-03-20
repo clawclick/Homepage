@@ -37,6 +37,16 @@ const ApiDocs = () => {
           method: 'GET', path: '/stats', description: 'Summary daily stats: requests, users, volume (Admin)',
           requiresAuth: true, example: 'GET https://api.claw.click/stats',
           response: '{"endpoint": "stats", "dayKey": "2026-03-19", "requests": {"total": 1240}, "users": {"totalGenerated": 12, "activeToday": 4}, "volume": {"buyWei": "1000000000000000000", "sellWei": "500000000000000000", "buyEth": "1", "sellEth": "0.5", "buyCount": 3, "sellCount": 2}}'
+        },
+        {
+          method: 'GET', path: '/admin/stats/agents', description: 'Per-agent analytics including successful and failed requests (Admin)',
+          requiresAuth: true,
+          params: [
+            { name: 'agentId', required: false, default: '—', description: 'Filter by a specific agent ID' },
+            { name: 'includeKeys', required: false, default: 'true', description: 'Include per-key daily and all-time rollups' }
+          ],
+          example: 'GET https://api.claw.click/admin/stats/agents?agentId=scanner-alpha&includeKeys=true',
+          response: '{"endpoint": "statsAgents", "dayKey": "2026-03-20", "summary": {"matchedAgents": 1, "totalAgents": 3, "activeAgentsToday": 2, "totalEverUsedAgents": 3}, "agents": [{"agentId": "scanner-alpha", "daily": {"totalRequests": 18200, "requestsToday": 740, "successfulToday": 712, "failedToday": 28, "clientErrorsToday": 21, "serverErrorsToday": 7, "successRatePctToday": 96.22, "failureRatePctToday": 3.78}, "allTime": {"totalRequests": 18200, "successful": 17610, "failed": 590, "clientErrors": 410, "serverErrors": 180, "successRatePct": 96.76, "failureRatePct": 3.24}}]}'
         }
       ]
     },

@@ -10,6 +10,7 @@ import FeatureDetail from './pages/FeatureDetail'
 import DeploySession from './pages/DeploySession'
 import MySessions from './pages/MySessions'
 import SessionTerminal from './pages/SessionTerminal'
+import AgentAnalytics from './pages/AgentAnalytics'
 
 function AppShell() {
   const location = useLocation()
@@ -26,6 +27,7 @@ function AppShell() {
           <Route path="/features/:slug" element={<FeatureDetail />} />
           <Route path="/sessions" element={<MySessions />} />
           <Route path="/deploy" element={<DeploySession />} />
+          <Route path="/agents/:id/analytics" element={<AgentAnalytics />} />
           <Route path="/session/:id" element={<SessionTerminal />} />
         </Routes>
       </main>

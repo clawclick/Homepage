@@ -215,7 +215,7 @@ const ValueProp = () => {
 
               <div className="spc-actions">
                 <button className="btn-primary spc-btn" onClick={() => navigate(`/deploy?agent=${agent.id}`)}>Deploy</button>
-                <button className="btn-secondary spc-btn" onClick={() => navigate(`/deploy?agent=${agent.id}`)}>Details</button>
+                <button className="btn-secondary spc-btn" onClick={() => navigate(`/agents/${encodeURIComponent(agent.id)}/analytics`)}>Details</button>
               </div>
             </div>
               )
