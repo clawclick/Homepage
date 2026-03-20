@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEthereumWallet } from '../hooks/useEthereumWallet'
-import { clawsFunApiUrl, fetchAgents, fetchJson, findReusableSession } from '../lib/sessionApi'
+import { clawsFunApiUrl, fetchAgents, fetchJson } from '../lib/sessionApi'
 
 const ANY_GPU = {
   id: 'any',
@@ -243,17 +243,6 @@ const DeploySession = () => {
     setIsSubmitting(true)
 
     try {
-      setStatusText('Checking for an active session...')
-      const listData = await fetchJson(`/api/session/list?agentId=${encodeURIComponent(agentId)}&user=${account}`, {
-        headers: { 'x-wallet-address': account },
-      })
-
-      const reusableSession = findReusableSession(listData?.sessions || [])
-      if (reusableSession) {
-        navigate(`/session/${reusableSession.id}`)
-        return
-      }
-
       let paymentTx = `0x${'f'.repeat(64)}`
       if (treasuryAddress && treasuryAddress !== '0x0000000000000000000000000000000000000000') {
         setStatusText('Confirm the payment in MetaMask...')
@@ -298,6 +287,23 @@ const DeploySession = () => {
 
   return (
     <div className="deploy-session-page">
+      {/* Loading overlay after payment */}
+      {isSubmitting && (
+        <div className="deploy-loading-overlay">
+          <div className="deploy-loading-content">
+            <div className="st-spinner st-spinner-lg" />
+            <h2>{statusText || 'Provisioning session...'}</h2>
+            <p className="deploy-loading-subtitle">
+              {statusText === 'Confirm the payment in MetaMask...'
+                ? 'Please approve the transaction in your MetaMask wallet.'
+                : statusText === 'Provisioning GPU and loading agent bundle...'
+                ? 'Setting up your GPU instance and loading the agent. This may take 2-5 minutes.'
+                : 'Setting up your session...'}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="deploy-session-shell">
         <div className="deploy-session-topbar">
           <Link to="/app" className="deploy-link-back">Back to marketplace</Link>
