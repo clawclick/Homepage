@@ -1,0 +1,10 @@
+{
+  "name": "claw-click-homepagev2",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "../node_modules/.bin/vite",
+    "build": "../node_modules/.bin/vite build",
+    "preview": "../node_modules/.bin/vite preview"
+  }
+}
