@@ -1,191 +1,142 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import AnimatedCube from './AnimatedCube'
+import { fetchAgents } from '../lib/sessionApi'
+
+function formatCreator(creator) {
+  if (!creator) {
+    return 'System'
+  }
+
+  if (creator.startsWith('0x') && creator.length > 10) {
+    return `${creator.slice(0, 6)}...${creator.slice(-4)}`
+  }
+
+  return creator
+}
+
+function getChainLabel(chain) {
+  if (!chain) {
+    return 'multi-chain'
+  }
+
+  return String(chain).replace(/_/g, ' ')
+}
+
+function getChainBadgeClass(chain) {
+  const normalized = String(chain || 'multi-chain').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+  return `badge-chain badge-chain-${normalized}`
+}
+
+function getRiskBadgeClass(risk) {
+  const normalized = String(risk || 'unrated').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+  return `badge-risk badge-risk-${normalized}`
+}
 
 const ValueProp = () => {
-  const features = [
-    {
-      title: "Unified API Interface",
-      description: "One endpoint to rule them all. Instead of managing 50+ integrations, interact with a single standardized interface.",
-      highlight: "50+ Data Sources",
-      accentColor: "#10b981"
-    },
-    {
-      title: "Enterprise Security",
-      description: "Bank-level security with rate limiting, authentication, and risk management built-in.",
-      highlight: "Production Ready",
-      accentColor: "#06b6d4"
-    },
-    {
-      title: "Multi-Chain Support",
-      description: "Trade across Ethereum, Solana, Base, and BSC with seamless cross-chain functionality.",
-      highlight: "4 Blockchains",
-      accentColor: "#f59e0b"
-    },
-    {
-      title: "Real-Time Analytics",
-      description: "Access live market data, sentiment analysis, and risk scoring with microsecond latency.",
-      highlight: "Live Data",
-      accentColor: "#3b82f6"
-    },
-    {
-      title: "AI Agent Ready",
-      description: "Purpose-built for AI trading agents with structured responses and predictable schemas.",
-      highlight: "Agent Optimized",
-      accentColor: "#8b5cf6"
-    },
-    {
-      title: "Strategy Wrappers",
-      description: "Package trading strategies as API endpoints. Monetize your alpha without revealing logic.",
-      highlight: "Novel Architecture",
-      accentColor: "#ef4444"
-    }
-  ]
-
-  const [activeCard, setActiveCard] = useState(0)
-  const [isMobile, setIsMobile] = useState(false)
-  const touchStartX = useRef(0)
-  const timerRef = useRef(null)
+  const navigate = useNavigate()
+  const [agents, setAgents] = useState([])
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
+    let isMounted = true
+
+    fetchAgents()
+      .then((data) => {
+        if (isMounted) {
+          setAgents(data.slice(0, 10))
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
-  const resetTimer = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current)
-    timerRef.current = setInterval(() => {
-      setActiveCard(prev => (prev + 1) % features.length)
-    }, 4000)
-  }, [features.length])
-
-  useEffect(() => {
-    if (!isMobile) return
-    resetTimer()
-    return () => clearInterval(timerRef.current)
-  }, [isMobile, resetTimer])
-
-  const goTo = (idx) => {
-    setActiveCard(idx)
-    resetTimer()
-  }
-
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX
-  }
-
-  const handleTouchEnd = (e) => {
-    const diff = touchStartX.current - e.changedTouches[0].clientX
-    if (Math.abs(diff) > 50) {
-      const next = diff > 0
-        ? (activeCard + 1) % features.length
-        : (activeCard - 1 + features.length) % features.length
-      goTo(next)
-    }
-  }
+  const strategyRail = agents.length > 0 ? [...agents, ...agents] : []
 
   return (
-    <section className="value-prop-section">
-      <div className="value-prop-container">
-        <header className="value-prop-header">
-          <h2 className="value-prop-title">
-            Why Developers Choose Claw.Click
-          </h2>
-          <p className="value-prop-subtitle">
-            Stop managing multiple APIs, rate limits, and inconsistent data formats. 
-            Focus on building great products with our unified trading infrastructure.
+    <section className="valueprop">
+      <div className="valueprop-inner">
+        <div className="valueprop-description">
+          <div className="section-header">
+            <span className="section-label">What We Do</span>
+            <h2 className="section-title">One API. Every data source.</h2>
+          </div>
+          <p className="valueprop-text">
+            Our solution is a unified Trading API that aggregates over 100+ trading, analytics, social and risk data sources into a single programmable interface. Instead of managing multiple integrations, Developers and Agents interact with one standardized endpoint, removing friction of juggling API's, hitting rate limits and keeping on top of manual avenues.
           </p>
-        </header>
-        
-        {/* Desktop: grid / Mobile: carousel */}
-        {isMobile ? (
-          <div className="features-carousel" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-            <div className="carousel-track" style={{ transform: `translateX(-${activeCard * 100}%)` }}>
-              {features.map((feature, index) => (
-                <div key={index} className="carousel-slide">
-                  <div className="feature-card" style={{ '--accent': feature.accentColor }}>
-                    <span className="feature-accent-line" />
-                    <h3 className="feature-title">{feature.title}</h3>
-                    <span className="feature-tag">{feature.highlight}</span>
-                    <p className="feature-description">{feature.description}</p>
+        </div>
+
+        <div className="strategy-preview-carousel">
+          <div className="strategy-preview-track">
+            {strategyRail.map((agent, index) => (
+            <div key={`${agent.id}-${index}`} className="strategy-preview-card">
+              <div className="spc-header">
+                <h3 className="spc-name">{agent.name}</h3>
+                <p className="spc-type" title={agent.description || 'No backend description provided for this agent yet.'}>
+                  {agent.description || 'No backend description provided for this agent yet.'}
+                </p>
+              </div>
+
+              <div className="spc-card-section">
+                <div className="spc-metrics">
+                  <div className="spc-metric">
+                    <span className="spc-metric-label">Agent ID</span>
+                    <span className="spc-metric-value">#{agent.id}</span>
+                  </div>
+                  <div className="spc-metric">
+                    <span className="spc-metric-label">Type</span>
+                    <span className="spc-metric-value spc-blue" title={agent.type || 'Unknown'}>{agent.type || 'Unknown'}</span>
+                  </div>
+                  <div className="spc-metric">
+                    <span className="spc-metric-label">Status</span>
+                    <span className="spc-metric-value">{agent.is_active ? 'Active' : 'Inactive'}</span>
+                  </div>
+                  <div className="spc-metric">
+                    <span className="spc-metric-label">Creator</span>
+                    <span className="spc-metric-value" title={formatCreator(agent.created_by)}>{formatCreator(agent.created_by)}</span>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="carousel-dots">
-              {features.map((_, i) => (
-                <button
-                  key={i}
-                  className={`carousel-dot${i === activeCard ? ' active' : ''}`}
-                  onClick={() => goTo(i)}
-                  aria-label={`Go to card ${i + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="features-grid">
-            {features.map((feature, index) => (
-              <div key={index} className="feature-card" style={{ '--accent': feature.accentColor }}>
-                <span className="feature-accent-line" />
-                <h3 className="feature-title">{feature.title}</h3>
-                <span className="feature-tag">{feature.highlight}</span>
-                <p className="feature-description">{feature.description}</p>
               </div>
+
+              <div className="spc-card-section spc-card-section-footer">
+                <div className="spc-badges">
+                  <span className={`spc-badge ${getChainBadgeClass(agent.chains?.[0])}`}>
+                    {getChainLabel(agent.chains?.[0])}
+                  </span>
+                  <span className={`spc-badge ${getRiskBadgeClass(agent.risk)}`}>
+                    {agent.risk || 'unrated'}
+                  </span>
+                </div>
+
+                <div className="spc-tags">
+                  {(agent.chains || []).slice(1, 3).map((chain) => (
+                    <span key={chain} className="spc-tag" title={getChainLabel(chain)}>{getChainLabel(chain)}</span>
+                  ))}
+                  {agent.skill_source_type && <span className="spc-tag" title={agent.skill_source_type}>{agent.skill_source_type}</span>}
+                </div>
+              </div>
+
+              <div className="spc-actions">
+                <button className="btn-primary spc-btn" onClick={() => navigate(`/deploy?agent=${agent.id}`)}>Deploy</button>
+                <button className="btn-secondary spc-btn" onClick={() => navigate(`/deploy?agent=${agent.id}`)}>Details</button>
+              </div>
+            </div>
             ))}
           </div>
-        )}
-        
-        <div className="api-showcase">
-          <h3 className="showcase-title">Build any Strategy, Signal or Execution</h3>
-          <div className="code-showcase">
-            <div className="code-block-showcase">
-              <div className="code-header">
-                <span className="code-language">Strategy: newPump.js</span>
-                <span className="status-live">Live Implementation</span>
-              </div>
-              <div className="code-content">
-                <pre dangerouslySetInnerHTML={{
-                  __html: `<span class="comment">// Multi-source token discovery</span>
-<span class="keyword">const</span> <span class="variable">newPairs</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">"https://api.claw.click/newPairs?source=pumpfun"</span>)
-<span class="keyword">const</span> <span class="variable">trending</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">"https://api.claw.click/trendingTokens"</span>)  
-<span class="keyword">const</span> <span class="variable">filtered</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">"https://api.claw.click/filterTokens?network=sol&minLiquidity=10000"</span>)
+        </div>
 
-<span class="comment">// Enrich with unified data</span>
-<span class="keyword">const</span> <span class="variable">enriched</span> = <span class="keyword">await</span> <span class="function">processTokens</span>(<span class="variable">addresses</span>)
-<span class="keyword">const</span> <span class="variable">signals</span> = <span class="function">applyFilters</span>(<span class="variable">enriched</span>)`
-                }} />
-              </div>
-            </div>
-            
-            <div className="arrow-showcase">→</div>
-            
-            <div className="response-showcase">
-              <div className="response-header">
-                <span>Aggregated Intelligence</span>
-              </div>
-              <div className="response-content">
-                <pre>
-=== TOP NEW SIGNALS ===
-{"{"}
-  <span className="json-key">ca</span>: <span className="json-string">"z6eiti618XERFhoB9j5FpbJ7sGf5yTjpw4zp7twpump"</span>,
-  <span className="json-key">name</span>: <span className="json-string">"tinfoil hat cult"</span>, 
-  <span className="json-key">volume</span>: <span className="json-number">45000</span>,
-  <span className="json-key">liquidity</span>: <span className="json-number">85000</span>,
-  <span className="json-key">momentum</span>: <span className="json-number">0.425</span>,
-  <span className="json-key">score</span>: <span className="json-number">87.3</span>,
-  <span className="json-key">providers</span>: [<span className="json-string">"dexScreener"</span>, <span className="json-string">"birdeye"</span>, <span className="json-string">"pumpfun"</span>]
-{"}"}
-                </pre>
-              </div>
-            </div>
+        <div className="strategy-wrappers-block">
+          <div className="section-header">
+            <span className="section-label">Strategy Wrappers</span>
+            <h2 className="section-title">Package. Share. Earn.</h2>
           </div>
-          
-          <div className="showcase-cta">
-            <a href="/api" className="showcase-button">
-              Explore Full API Documentation →
-            </a>
-          </div>
+          <AnimatedCube />
+          <p className="valueprop-text">
+            Strategies can be packaged as parameterized API endpoints, allowing bots or applications to call trading logic directly while the underlying strategy remains private, allowing for a novel architecture for copy trading capital and allowing strategy creators to earn revenue while not risking capital — all verified by the Click Oracle for data validation in real time.
+          </p>
+          <button className="btn-primary">Create Wrapper</button>
         </div>
       </div>
     </section>

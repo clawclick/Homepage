@@ -67,7 +67,12 @@ const MySessions = () => {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!hasProvider || !account) {
+    if (!hasProvider) {
+      setLoading(false)
+      return
+    }
+
+    if (!account) {
       setLoading(false)
       return
     }

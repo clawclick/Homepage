@@ -1,59 +1,41 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import './styles/api-docs.css'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import HomePage from './components/HomePage'
-import ApiDocs from './pages/ApiDocs'
+import HomePage from './pages/HomePage'
 import AppMarketplace from './pages/AppMarketplace'
+import ApiDocs from './pages/ApiDocs'
+import FeatureDetail from './pages/FeatureDetail'
 import DeploySession from './pages/DeploySession'
 import MySessions from './pages/MySessions'
 import SessionTerminal from './pages/SessionTerminal'
-import './pages.css'
-import './homepage-styles.css'
-
-function AppContent() {
-  const location = useLocation()
-  const shouldShowFooter = location.pathname !== '/api'
-
-  return (
-    <div className="App">
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/api" element={<ApiDocs />} />
-        <Route path="/app" element={<AppMarketplace />} />
-      </Routes>
-      {shouldShowFooter && <Footer />}
-    </div>
-  )
-}
 
 function AppShell() {
   const location = useLocation()
   const hideChrome = location.pathname.startsWith('/deploy') || location.pathname.startsWith('/session/')
 
   return (
-    <div className="App">
+    <div className="app">
       {!hideChrome && <Header />}
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/api" element={<ApiDocs />} />
-        <Route path="/app" element={<AppMarketplace />} />
-        <Route path="/deploy" element={<DeploySession />} />
-        <Route path="/sessions" element={<MySessions />} />
-        <Route path="/session/:id" element={<SessionTerminal />} />
-      </Routes>
+      <main>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/app" element={<AppMarketplace />} />
+          <Route path="/api" element={<ApiDocs />} />
+          <Route path="/features/:slug" element={<FeatureDetail />} />
+          <Route path="/sessions" element={<MySessions />} />
+          <Route path="/deploy" element={<DeploySession />} />
+          <Route path="/session/:id" element={<SessionTerminal />} />
+        </Routes>
+      </main>
       {!hideChrome && <Footer />}
     </div>
   )
 }
 
 function App() {
-  return (
-    <Router>
-      <AppShell />
-    </Router>
-  )
+  return <AppShell />
 }
 
 export default App

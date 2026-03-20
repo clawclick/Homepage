@@ -460,27 +460,13 @@ const ApiDocs = () => {
         {/* Overview */}
         <header className="api-docs-header" id="overview">
           <div className="api-docs-container">
-            <div className="api-docs-hero">
-              <h1 className="api-docs-title">Claw.Click Trading API</h1>
+            <div className="api-docs-hero api-docs-hero--left">
+              <h1 className="api-docs-title">Super API Documentation</h1>
               <p className="api-docs-subtitle">
                 Unified Crypto Intelligence API — 50+ data providers behind clean REST endpoints
               </p>
-              <div className="api-stats">
-                <div className="stat-item">
-                  <span className="stat-number">50+</span>
-                  <span className="stat-label">Data Sources</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">4</span>
-                  <span className="stat-label">Blockchains</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">30+</span>
-                  <span className="stat-label">Endpoints</span>
-                </div>
-              </div>
-              <div className="api-base-url">
-                <span className="base-url-label">Base URL:</span>
+              <div className="api-base-url api-base-url--inline">
+                <span className="base-url-label">Base URL</span>
                 <code className="base-url">https://api.claw.click</code>
               </div>
             </div>
@@ -491,24 +477,18 @@ const ApiDocs = () => {
         <section className="quick-start-section" id="quickstart">
           <div className="api-docs-container">
             <h2 className="section-title">Quick Start</h2>
-            <div className="quick-start-cards">
-              <div className="quick-start-card">
+            <div className="quick-start-stack">
+              <div className="quick-start-step">
                 <h3>1. Get Token Info</h3>
-                <CodeBlock language="bash">
-                  curl "https://api.claw.click/tokenPoolInfo?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-                </CodeBlock>
+                <CodeBlock language="bash">{`curl "https://api.claw.click/tokenPoolInfo?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"`}</CodeBlock>
               </div>
-              <div className="quick-start-card">
+              <div className="quick-start-step">
                 <h3>2. Check Risk</h3>
-                <CodeBlock language="bash">
-                  curl "https://api.claw.click/isScam?chain=eth&tokenAddress=0x..."
-                </CodeBlock>
+                <CodeBlock language="bash">{`curl "https://api.claw.click/isScam?chain=eth&tokenAddress=0x..."`}</CodeBlock>
               </div>
-              <div className="quick-start-card">
+              <div className="quick-start-step">
                 <h3>3. Build Swap</h3>
-                <CodeBlock language="bash">
-                  curl "https://api.claw.click/swap?chain=eth&dex=uniswapV3&walletAddress=0x...&tokenIn=0x...&tokenOut=0x...&amountIn=1000000000000000000"
-                </CodeBlock>
+                <CodeBlock language="bash">{`curl "https://api.claw.click/swap?chain=eth&dex=uniswapV3&walletAddress=0x...&tokenIn=0x...&tokenOut=0x...&amountIn=1000000000000000000"`}</CodeBlock>
               </div>
             </div>
           </div>
@@ -727,29 +707,17 @@ ws.on('message', (data) => {
         <section className="error-section" id="error-handling">
           <div className="api-docs-container">
             <h2 className="section-title">Error Handling</h2>
-            <div className="error-examples">
-              <div className="error-example">
-                <h3>400 - Validation Error</h3>
-                <JsonBlock>
-{`{
-  "error": "Validation error",
-  "message": "Invalid query parameters: tokenAddress — Required",
-  "fields": [
-    { "field": "tokenAddress", "message": "Required", "code": "invalid_type" }
-  ]
-}`}
-                </JsonBlock>
+            {[
+              { type: 'Validation Error (400)', response: '{ "error": "Validation error", "message": "Invalid query parameters: tokenAddress — Required" }' },
+              { type: 'Invalid Chain (400)', response: '{ "error": "Invalid chain", "message": "Unsupported chain. Valid: eth, base, bsc, sol" }' },
+              { type: 'Not Found (404)', response: '{ "error": "Not found", "message": "Route does not exist." }' },
+              { type: 'Server Error (500)', response: '{ "error": "Internal server error", "message": "Something went wrong." }' },
+            ].map((e, i) => (
+              <div key={i} className="api-error-block">
+                <h4 className="api-error-type">{e.type}</h4>
+                <JsonBlock>{e.response}</JsonBlock>
               </div>
-              <div className="error-example">
-                <h3>500 - Server Error</h3>
-                <JsonBlock>
-{`{
-  "error": "Internal server error",
-  "message": "Something went wrong processing GET /tokenPoolInfo. Check server logs for details."
-}`}
-                </JsonBlock>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 
@@ -757,20 +725,53 @@ ws.on('message', (data) => {
         <section className="integrations-section" id="integrations">
           <div className="api-docs-container">
             <h2 className="section-title">Data Sources & Integrations</h2>
-            <p className="integrations-description">
-              Our API integrates with 24/52 premium data sources. Additional providers require API keys for full activation.
-            </p>
-            
-            <div className="integrations-grid">
-              {integrations.map((integration, index) => (
-                <div key={index} className="integration-item">
-                  <div className="integration-header">
-                    <span className="integration-name">{integration.name}</span>
-                    <span className={`integration-status status-${integration.status}`}>
-                      {integration.status === 'live' ? 'Live' : 'API Key Required'}
-                    </span>
+            <p className="section-description">32+ premium data sources powering comprehensive crypto intelligence.</p>
+            <div className="api-integrations-grid">
+              {[
+                { name: "Moralis", category: "Infrastructure", live: true },
+                { name: "Birdeye", category: "Market Data", live: true },
+                { name: "DexScreener", category: "Market Data", live: true },
+                { name: "Codex.io", category: "Analytics", live: true },
+                { name: "Etherscan", category: "Infrastructure", live: true },
+                { name: "GoPlus", category: "Risk", live: true },
+                { name: "CoinGecko", category: "Market Data", live: true },
+                { name: "CoinMarketCap", category: "Market Data", live: true },
+                { name: "GeckoTerminal", category: "Market Data", live: true },
+                { name: "Zerion", category: "Portfolio", live: false },
+                { name: "DeBank", category: "Portfolio", live: false },
+                { name: "Arkham", category: "Analytics", live: false },
+                { name: "Dune Analytics", category: "Analytics", live: true },
+                { name: "LunarCrush", category: "Sentiment", live: true },
+                { name: "Reddit API", category: "Sentiment", live: true },
+                { name: "X (Twitter)", category: "Sentiment", live: true },
+                { name: "Bubblemaps", category: "Risk", live: true },
+                { name: "QuickIntel", category: "Risk", live: true },
+                { name: "Honeypot.is", category: "Risk", live: true },
+                { name: "Nansen", category: "Analytics", live: false },
+                { name: "Uniswap V2/V3/V4", category: "DEX", live: true },
+                { name: "PancakeSwap V2/V3", category: "DEX", live: true },
+                { name: "Aerodrome V2/V3", category: "DEX", live: true },
+                { name: "Raydium", category: "DEX", live: true },
+                { name: "Meteora", category: "DEX", live: true },
+                { name: "Pump.fun", category: "Launchpad", live: true },
+                { name: "Clanker", category: "Launchpad", live: true },
+                { name: "Virtuals Protocol", category: "Launchpad", live: false },
+                { name: "Santiment", category: "Analytics", live: false },
+                { name: "DexTools", category: "Market Data", live: false },
+                { name: "Sim by Dune", category: "Analytics", live: false },
+                { name: "Telegram", category: "Sentiment", live: false },
+              ].map((item, i) => (
+                <div key={i} className={`api-integration-chip${item.live ? ' chip-live' : ''}`}>
+                  <div className="api-integration-top">
+                    <span className="api-integration-name">{item.name}</span>
+                    {item.live && (
+                      <span className="api-live-badge">
+                        <span className="api-live-dot" />
+                        LIVE
+                      </span>
+                    )}
                   </div>
-                  <span className="integration-category">{integration.category}</span>
+                  <span className="api-integration-cat">{item.category}</span>
                 </div>
               ))}
             </div>

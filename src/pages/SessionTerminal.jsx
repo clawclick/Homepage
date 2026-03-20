@@ -275,7 +275,7 @@ const SessionTerminal = () => {
     setSavingKey(true)
     try {
       const res = await fetch(clawsFunApiUrl(`/api/session/${id}/keys`), { method: 'POST', headers: { 'Content-Type': 'application/json', ...getWalletHeaders(account) }, body: JSON.stringify({ keyName: newKeyName.trim(), keyValue: newKeyValue.trim() }) })
-      if (res.ok) { setNewKeyName(''); setNewKeyValue(''); fetchApiKeys(); setMessages((prev) => [...prev, { type: 'system', content: 'API key saved. Please restart the gateway for the new key to be picked up.' }]) }
+      if (res.ok) { setNewKeyName(''); setNewKeyValue(''); fetchApiKeys(); setMessages((prev) => [...prev, { type: 'system', content: 'API key saved. Please restart the instance for the new key to be picked up.' }]) }
     } catch {}
     finally { setSavingKey(false) }
   }
@@ -336,10 +336,10 @@ const SessionTerminal = () => {
   }
 
   const statusColor = session?.status === 'running' ? '#22c55e'
-    : (session?.status === 'provisioning' || session?.status === 'bootstrapping') ? '#eab308'
-    : session?.status === 'retrying' ? '#f97316'
+    : (session?.status === 'provisioning' || session?.status === 'bootstrapping') ? '#14b8a6'
+    : session?.status === 'retrying' ? '#06b6d4'
     : (session?.status === 'error' || session?.status === 'failed') ? '#ef4444'
-    : '#6b7280'
+    : '#0d9e8a'
 
   const statusText = session?.status === 'running' ? 'Running'
     : session?.status === 'provisioning' ? 'Provisioning GPU...'

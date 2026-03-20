@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEthereumWallet } from '../hooks/useEthereumWallet'
-import { clawsFunApiUrl, fetchAgents, fetchJson, findReusableSession } from '../lib/sessionApi'
+import { clawsFunApiUrl, fetchAgents, fetchJson } from '../lib/sessionApi'
 
 const ANY_GPU = {
   id: 'any',
@@ -287,6 +287,23 @@ const DeploySession = () => {
 
   return (
     <div className="deploy-session-page">
+      {/* Loading overlay after payment */}
+      {isSubmitting && (
+        <div className="deploy-loading-overlay">
+          <div className="deploy-loading-content">
+            <div className="st-spinner st-spinner-lg" />
+            <h2>{statusText || 'Provisioning session...'}</h2>
+            <p className="deploy-loading-subtitle">
+              {statusText === 'Confirm the payment in MetaMask...'
+                ? 'Please approve the transaction in your MetaMask wallet.'
+                : statusText === 'Provisioning GPU and loading agent bundle...'
+                ? 'Setting up your GPU instance and loading the agent. This may take 2-5 minutes.'
+                : 'Setting up your session...'}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="deploy-session-shell">
         <div className="deploy-session-topbar">
           <Link to="/app" className="deploy-link-back">Back to marketplace</Link>
@@ -474,19 +491,19 @@ const DeploySession = () => {
               </div>
             </div>
 
-            <button className="deploy-toggle deploy-toggle-prominent" onClick={() => setShowApiKeys((value) => !value)}>
-              {showApiKeys ? 'Hide AI API keys' : '🔑 Add AI API Key'}
+            <button className="deploy-toggle" onClick={() => setShowApiKeys((value) => !value)}>
+              {showApiKeys ? 'Hide model API keys' : 'Attach model API keys'}
             </button>
 
             {showApiKeys && (
               <div className="deploy-form-grid deploy-api-grid deploy-form-grid-stack">
                 <label className="deploy-field deploy-field-full deploy-input-field">
-                  <span>Anthropic key <span className="deploy-recommended-badge">RECOMMENDED</span></span>
-                  <input value={anthropicKey} onChange={(event) => setAnthropicKey(event.target.value)} placeholder="sk-ant-..." />
-                </label>
-                <label className="deploy-field deploy-field-full deploy-input-field">
                   <span>OpenAI key</span>
                   <input value={openaiKey} onChange={(event) => setOpenaiKey(event.target.value)} placeholder="sk-..." />
+                </label>
+                <label className="deploy-field deploy-field-full deploy-input-field">
+                  <span>Anthropic key</span>
+                  <input value={anthropicKey} onChange={(event) => setAnthropicKey(event.target.value)} placeholder="sk-ant-..." />
                 </label>
               </div>
             )}
