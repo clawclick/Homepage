@@ -150,7 +150,7 @@ const signalStrength = calculateMomentum({
               <span className="code-panel-filename">Signal Visualization</span>
               <span className="code-panel-badge">Interactive</span>
             </div>
-            <div className="code-panel-body">
+            <div className="code-panel-body chart-panel-body">
               <InteractiveChart />
             </div>
           </div>

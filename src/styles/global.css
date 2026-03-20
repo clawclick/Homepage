@@ -4498,6 +4498,33 @@ button {
 
   .chart-container {
     min-height: auto;
+    width: min(100%, 320px);
+    margin: 0 auto;
+  }
+
+  .chart-panel-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .chart-time {
+    font-size: 0.82rem;
+  }
+
+  .chart-status {
+    font-size: 0.68rem;
+  }
+
+  .chart-legend {
+    justify-content: center;
   }
 
   .chart-legend {
@@ -4529,6 +4556,14 @@ button {
   .code-showcase-subtitle {
     font-size: 0.9rem;
     max-width: 30ch;
+  }
+
+  .chart-container {
+    width: min(100%, 286px);
+  }
+
+  .legend-item {
+    font-size: 0.72rem;
   }
 }
 
