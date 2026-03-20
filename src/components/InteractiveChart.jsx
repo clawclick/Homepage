@@ -1,10 +1,27 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 const InteractiveChart = () => {
   const [tooltip, setTooltip] = useState(null)
   const [animationProgress, setAnimationProgress] = useState(0)
+  const [started, setStarted] = useState(false)
+  const containerRef = useRef(null)
 
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started) {
+          setStarted(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+    if (containerRef.current) observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [started])
+
+  useEffect(() => {
+    if (!started) return
     const duration = 4000
     const startTime = Date.now()
 
@@ -20,10 +37,10 @@ const InteractiveChart = () => {
 
     const timer = setTimeout(() => {
       animate()
-    }, 500)
+    }, 300)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [started])
 
   const chartData = [
     { x: 20, liquidity: 25, volume: 30, buyRatio: 28, holderGrowth: 20 },
@@ -57,7 +74,7 @@ const InteractiveChart = () => {
   }
 
   return (
-    <div className="chart-container">
+    <div className="chart-container" ref={containerRef}>
       <div className="chart-header">
         <span className="chart-time">24h Momentum Analysis</span>
         <span className="chart-status">● LIVE</span>

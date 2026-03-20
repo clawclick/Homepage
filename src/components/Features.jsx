@@ -141,7 +141,7 @@ const Features = () => {
             key={i}
             to={`/features/${f.slug}`}
             className="feature-card"
-            style={{ '--feature-gradient': f.gradient, transitionDelay: `${i * 80}ms` }}
+            style={{ '--feature-gradient': f.gradient, '--card-index': i }}
           >
             <div className="feature-card-top">
               <div className="feature-icon-wrap">
