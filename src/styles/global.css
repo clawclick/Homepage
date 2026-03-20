@@ -2968,35 +2968,41 @@ button {
   }
 
   .strategy-preview-carousel {
+    --sp-card-width: min(84vw, 292px);
     padding: 8px 0 20px;
-    width: calc(100% + 48px);
-    margin-left: -24px;
+    width: 100%;
+    margin-left: 0;
   }
 
   .strategy-preview-carousel::before,
   .strategy-preview-carousel::after {
-    width: 28px;
+    width: 22px;
   }
 
   .strategy-preview-track {
     gap: 12px;
-    padding: 0 16px;
+    padding: 0 clamp(12px, calc((100% - var(--sp-card-width)) / 2), 28px);
   }
 
   .strategy-preview-card {
-    width: min(84vw, 292px);
+    width: var(--sp-card-width);
     padding: 24px 18px;
     min-height: 408px;
   }
 }
 
 @media (max-width: 480px) {
+  .strategy-preview-carousel {
+    --sp-card-width: min(86vw, 276px);
+  }
+
   .strategy-preview-track {
-    padding: 0 14px;
+    gap: 10px;
+    padding: 0 clamp(10px, calc((100% - var(--sp-card-width)) / 2), 20px);
   }
 
   .strategy-preview-card {
-    width: min(86vw, 276px);
+    width: var(--sp-card-width);
     padding: 22px 16px;
     min-height: 392px;
   }
@@ -4498,14 +4504,15 @@ button {
 
   .chart-container {
     min-height: auto;
-    width: min(100%, 320px);
-    margin: 0 auto;
+    width: min(100%, 300px);
+    margin: 0;
   }
 
   .chart-panel-body {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    overflow-x: hidden;
   }
 
   .chart-header {
@@ -4559,7 +4566,8 @@ button {
   }
 
   .chart-container {
-    width: min(100%, 286px);
+    width: min(100%, 276px);
+    margin-right: auto;
   }
 
   .legend-item {
