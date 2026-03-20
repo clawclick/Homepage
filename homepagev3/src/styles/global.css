@@ -1099,6 +1099,76 @@ button {
   gap: 16px;
 }
 
+.holographic-card {
+  overflow: hidden;
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+
+.holographic-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    0deg,
+    transparent,
+    transparent 30%,
+    rgba(0, 255, 255, 0.3)
+  );
+  transform: rotate(-45deg);
+  transition: all 0.5s ease;
+  opacity: 0;
+  z-index: 1;
+}
+
+.holographic-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(13, 158, 138, 0.3);
+}
+
+.holographic-card:hover::before {
+  opacity: 1;
+  transform: rotate(-45deg) translateY(100%);
+}
+
+.holographic-card .cta-card-inner {
+  position: relative;
+  z-index: 2;
+}
+
+.holographic-card .text-gradient {
+  background: linear-gradient(135deg, #00ffff 0%, #0d9e8a 50%, #5cd4be 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.holographic-card:hover .text-gradient {
+  animation: holographic-text 2s ease-in-out infinite;
+}
+
+@keyframes holographic-text {
+  0%, 100% {
+    filter: hue-rotate(0deg);
+    text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  }
+  25% {
+    filter: hue-rotate(90deg);
+    text-shadow: 0 0 25px rgba(13, 158, 138, 0.7);
+  }
+  50% {
+    filter: hue-rotate(180deg);
+    text-shadow: 0 0 30px rgba(92, 212, 190, 0.8);
+  }
+  75% {
+    filter: hue-rotate(270deg);
+    text-shadow: 0 0 25px rgba(13, 138, 120, 0.7);
+  }
+}
+
 /* ═══════════════════════════════
    FOOTER
    ═══════════════════════════════ */
@@ -4043,6 +4113,136 @@ button {
   margin-top: 48px;
 }
 
+.code-showcase-grid-secondary {
+  margin-top: 48px;
+}
+
+.animated-cube-container {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 18px;
+}
+
+.animated-cube {
+  filter: drop-shadow(0 8px 16px rgba(13, 158, 138, 0.3));
+  animation: cube-rotate 8s linear infinite;
+}
+
+.cube-group {
+  transform-origin: center;
+  animation: cube-float 4s ease-in-out infinite;
+}
+
+@keyframes cube-rotate {
+  0% { transform: rotateX(0deg) rotateY(0deg); }
+  25% { transform: rotateX(15deg) rotateY(90deg); }
+  50% { transform: rotateX(0deg) rotateY(180deg); }
+  75% { transform: rotateX(-15deg) rotateY(270deg); }
+  100% { transform: rotateX(0deg) rotateY(360deg); }
+}
+
+@keyframes cube-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animated-cube polygon {
+  transition: fill 0.3s ease, opacity 0.3s ease;
+}
+
+.animated-cube:hover .cube-group {
+  animation-duration: 2s;
+}
+
+.animated-cube:hover polygon {
+  filter: url(#glow);
+}
+
+.chart-container {
+  position: relative;
+  min-height: 260px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.chart-time {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.chart-status {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--purple);
+}
+
+.signal-chart {
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(13, 158, 138, 0.03), rgba(8, 8, 8, 0.45));
+}
+
+.chart-line {
+  filter: drop-shadow(0 0 6px rgba(13, 158, 138, 0.18));
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--grey-300);
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.03);
+}
+
+.chart-tooltip {
+  position: absolute;
+  z-index: 2;
+  min-width: 170px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(9, 9, 9, 0.96);
+  border: 1px solid rgba(13, 158, 138, 0.2);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.tooltip-header {
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.tooltip-metrics {
+  display: grid;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--grey-300);
+}
+
 /* ---------------------------------------
    INTEGRATION CAROUSEL SECTION
 --------------------------------------- */
@@ -4184,6 +4384,14 @@ button {
 
   .code-panel-body pre {
     font-size: 0.72rem;
+  }
+
+  .chart-container {
+    min-height: auto;
+  }
+
+  .chart-legend {
+    gap: 10px;
   }
 
   .integration-stats-row {

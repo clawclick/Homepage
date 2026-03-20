@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 const CTA = () => {
   return (
     <section className="cta">
-      <div className="cta-card cta-card--glow">
+      <div className="cta-card cta-card--glow holographic-card">
         <div className="cta-card-inner">
           <h2>Ready to ship <span className="text-gradient">autonomous</span>?</h2>
           <p>

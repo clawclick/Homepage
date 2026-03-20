@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import InteractiveChart from './InteractiveChart'
 
 const RESPONSE_TEXT = `=== TOP NEW SIGNALS ===
 {
@@ -56,7 +57,7 @@ const CodeShowcase = () => {
     <section className="code-showcase-section">
       <div className="code-showcase-container">
         <div className="code-showcase-header">
-          <span className="code-showcase-tag">Live Example</span>
+          <span className="code-showcase-tag">Live Examples</span>
           <h2 className="code-showcase-title">Build any Strategy, Signal or Execution</h2>
           <p className="code-showcase-subtitle">
             One unified interface. Every chain, every data source, every execution venue.
@@ -104,6 +105,53 @@ const signals = applyFilters(enriched)`}</pre>
             </div>
             <div className="code-panel-body">
               <pre className="typewriter-pre">{typedText}<span className="typewriter-cursor" /></pre>
+            </div>
+          </div>
+        </div>
+
+        <div className="code-showcase-grid code-showcase-grid-secondary">
+          <div className="code-panel">
+            <div className="code-panel-header">
+              <span className="code-panel-dot red" />
+              <span className="code-panel-dot yellow" />
+              <span className="code-panel-dot green" />
+              <span className="code-panel-filename">SIGNAL/chartHealth.js</span>
+              <span className="code-panel-badge">Signal Analysis</span>
+            </div>
+            <div className="code-panel-body">
+              <pre>{`// Token momentum analysis
+const liquidityData = await fetch(
+  "https://api.claw.click/liquidityHealth?token=SOL123&window=24h"
+)
+const volumeMetrics = await fetch(
+  "https://api.claw.click/volumeAnalysis?includeRatio=true"
+)
+const holderMetrics = await fetch(
+  "https://api.claw.click/holderDistribution?growth=true"
+)
+
+// Calculate composite signal strength
+const signalStrength = calculateMomentum({
+  liquidity: liquidityData.stability,
+  volume: volumeMetrics.mcRatio,
+  buyRatio: volumeMetrics.buySellRatio,
+  holderGrowth: holderMetrics.growth24h
+})`}</pre>
+            </div>
+          </div>
+
+          <div className="code-showcase-arrow">→</div>
+
+          <div className="code-panel response-panel">
+            <div className="code-panel-header">
+              <span className="code-panel-dot red" />
+              <span className="code-panel-dot yellow" />
+              <span className="code-panel-dot green" />
+              <span className="code-panel-filename">Signal Visualization</span>
+              <span className="code-panel-badge">Interactive</span>
+            </div>
+            <div className="code-panel-body">
+              <InteractiveChart />
             </div>
           </div>
         </div>
