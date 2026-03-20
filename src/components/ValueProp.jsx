@@ -167,7 +167,7 @@ const ValueProp = () => {
               <div className="spc-live-strip" aria-label="Live telemetry">
                 <div className="spc-throughput">
                   <span className="spc-live-dot" />
-                  <span className="spc-live-label">req/s</span>
+                  <span className="spc-live-label">req/m</span>
                   <strong>{telemetry.throughput.toLocaleString()}</strong>
                 </div>
                 <span className={`spc-latency spc-latency-${latencyClass}`}>
