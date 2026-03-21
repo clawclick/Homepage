@@ -39,6 +39,10 @@ const SessionTerminal = () => {
   const abortControllerRef = useRef(null)
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
+  const historySyncingRef = useRef(false)
+  const activeStreamIdRef = useRef(null)
+
+  const transcriptStorageKey = id && account ? `session-terminal:${id}:${account.toLowerCase()}` : ''
 
   const toggleSection = (key) => setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }))
 
@@ -70,7 +74,7 @@ const SessionTerminal = () => {
       })
       return data
     } catch (err) {
-      if (messages.length === 0) setMessages([{ type: 'error', content: `Failed to load session: ${err.message}` }])
+      setMessages((current) => (current.length === 0 ? [{ type: 'error', content: `Failed to load session: ${err.message}` }] : current))
       return null
     } finally {
       setLoading(false)
@@ -98,8 +102,9 @@ const SessionTerminal = () => {
     } catch {}
   }, [id, account])
 
-  const loadHistory = useCallback(async () => {
-    if (historyLoaded) return
+  const loadHistory = useCallback(async (force = false) => {
+    if ((!force && historyLoaded) || historySyncingRef.current) return
+    historySyncingRef.current = true
     try {
       const res = await fetch(clawsFunApiUrl(`/api/session/${id}/terminal/history`), { headers: getWalletHeaders(account) })
       if (res.ok) {
@@ -118,13 +123,61 @@ const SessionTerminal = () => {
         setHistoryLoaded(true)
       }
     } catch {}
+    finally { historySyncingRef.current = false }
   }, [id, account, historyLoaded])
+
+  const updateStreamingAssistant = useCallback((updater) => {
+    setMessages((prev) => {
+      const next = [...prev]
+      for (let index = next.length - 1; index >= 0; index -= 1) {
+        if (next[index].isStreaming && (!activeStreamIdRef.current || next[index].streamId === activeStreamIdRef.current)) {
+          next[index] = updater(next[index])
+          break
+        }
+      }
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!transcriptStorageKey || typeof window === 'undefined') {
+      return
+    }
+
+    try {
+      const sanitizedMessages = messages.map((message) => ({
+        ...message,
+        isStreaming: false,
+      }))
+      window.localStorage.setItem(transcriptStorageKey, JSON.stringify(sanitizedMessages))
+    } catch {}
+  }, [messages, transcriptStorageKey])
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   useEffect(() => {
     if (!account) { setLoading(false); return }
-    fetchSession().then((data) => { if (data && (data.status === 'running' || data.status === 'starting')) loadHistory() })
+
+    let hasCachedTranscript = false
+    if (transcriptStorageKey && typeof window !== 'undefined') {
+      try {
+        const stored = window.localStorage.getItem(transcriptStorageKey)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            hasCachedTranscript = true
+            setMessages(parsed)
+            setHistoryLoaded(true)
+          }
+        }
+      } catch {}
+    }
+
+    fetchSession().then((data) => {
+      if (!hasCachedTranscript && data && (data.status === 'running' || data.status === 'starting')) {
+        loadHistory()
+      }
+    })
     fetchFiles()
     fetchApiKeys()
     const interval = setInterval(() => {
@@ -141,9 +194,11 @@ const SessionTerminal = () => {
   const handleSend = async () => {
     if (!input.trim() || sending || !account || !id) return
     const userMsg = input.trim()
+    const streamId = `stream-${Date.now()}`
+    activeStreamIdRef.current = streamId
     setInput('')
     setSending(true)
-    setMessages((prev) => [...prev, { type: 'user', content: userMsg, timestamp: Date.now() / 1000 }, { type: 'assistant', content: '', isStreaming: true }])
+    setMessages((prev) => [...prev, { type: 'user', content: userMsg, timestamp: Date.now() / 1000 }, { type: 'assistant', content: '', isStreaming: true, streamId }])
     const controller = new AbortController()
     abortControllerRef.current = controller
     try {
@@ -156,33 +211,52 @@ const SessionTerminal = () => {
       const decoder = new TextDecoder()
       let buffer = ''
       if (!reader) throw new Error('No response body')
+      const processLine = (line) => {
+        if (!line.startsWith('data: ')) return
+        try {
+          const event = JSON.parse(line.slice(6))
+          if (event.type === 'delta') {
+            updateStreamingAssistant((message) => {
+              const nextContent = typeof event.content === 'string' ? event.content : ''
+              const mergedContent = nextContent.startsWith(message.content || '')
+                ? nextContent
+                : `${message.content || ''}${nextContent}`
+              return { ...message, content: mergedContent }
+            })
+          } else if (event.type === 'tool_start') setMessages((prev) => [...prev, { type: 'tool', content: `Using ${event.name}...`, toolName: event.name, toolPhase: 'start' }])
+          else if (event.type === 'tool_result') setMessages((prev) => [...prev, { type: 'tool', content: typeof event.result === 'string' ? event.result.slice(0, 500) : JSON.stringify(event.result).slice(0, 500), toolName: event.name, toolPhase: 'result' }])
+          else if (event.type === 'final' || event.type === 'aborted') updateStreamingAssistant((message) => ({ ...message, isStreaming: false }))
+          else if (event.type === 'error') updateStreamingAssistant((message) => ({ ...message, type: 'error', content: event.message || 'Generation failed', isStreaming: false }))
+        } catch {}
+      }
+
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
         buffer += decoder.decode(value, { stream: true })
         const lines = buffer.split('\n')
         buffer = lines.pop() || ''
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          try {
-            const event = JSON.parse(line.slice(6))
-            if (event.type === 'delta') setMessages((prev) => prev.map((m) => m.isStreaming ? { ...m, content: event.content } : m))
-            else if (event.type === 'tool_start') setMessages((prev) => [...prev, { type: 'tool', content: `Using ${event.name}...`, toolName: event.name, toolPhase: 'start' }])
-            else if (event.type === 'tool_result') setMessages((prev) => [...prev, { type: 'tool', content: typeof event.result === 'string' ? event.result.slice(0, 500) : JSON.stringify(event.result).slice(0, 500), toolName: event.name, toolPhase: 'result' }])
-            else if (event.type === 'final' || event.type === 'aborted') setMessages((prev) => prev.map((m) => m.isStreaming ? { ...m, isStreaming: false } : m))
-            else if (event.type === 'error') setMessages((prev) => prev.map((m) => m.isStreaming ? { ...m, type: 'error', content: event.message || 'Generation failed', isStreaming: false } : m))
-          } catch {}
-        }
+        lines.forEach(processLine)
+      }
+
+      if (buffer.trim()) {
+        processLine(buffer.trim())
       }
     } catch (err) {
-      if (err.name !== 'AbortError') setMessages((prev) => prev.map((m) => m.isStreaming ? { ...m, type: 'error', content: err.message || 'Network error', isStreaming: false } : m))
-    } finally { setSending(false); abortControllerRef.current = null; inputRef.current?.focus() }
+      if (err.name !== 'AbortError') updateStreamingAssistant((message) => ({ ...message, type: 'error', content: err.message || 'Network error', isStreaming: false }))
+    } finally {
+      setSending(false)
+      abortControllerRef.current = null
+      activeStreamIdRef.current = null
+      inputRef.current?.focus()
+    }
   }
 
   const handleAbort = async () => {
     abortControllerRef.current?.abort(); abortControllerRef.current = null; setSending(false)
     try { await fetch(clawsFunApiUrl(`/api/session/${id}/terminal/abort`), { method: 'POST', headers: getWalletHeaders(account) }) } catch {}
-    setMessages((prev) => prev.map((m) => m.isStreaming ? { ...m, isStreaming: false, content: m.content || '(aborted)' } : m))
+    updateStreamingAssistant((message) => ({ ...message, isStreaming: false, content: message.content || '(aborted)' }))
+    activeStreamIdRef.current = null
   }
 
   const handleRestartGateway = async () => {
@@ -202,7 +276,14 @@ const SessionTerminal = () => {
     try {
       const res = await fetch(clawsFunApiUrl(`/api/session/${id}/terminal/new-session`), { method: 'POST', headers: getWalletHeaders(account) })
       const data = await res.json()
-      if (res.ok) { setMessages([{ type: 'system', content: 'New chat session started. Previous context cleared.' }]); setHistoryLoaded(false) }
+      if (res.ok) {
+        activeStreamIdRef.current = null
+        setMessages([{ type: 'system', content: 'New chat session started. Previous context cleared.' }])
+        setHistoryLoaded(true)
+        if (transcriptStorageKey && typeof window !== 'undefined') {
+          try { window.localStorage.removeItem(transcriptStorageKey) } catch {}
+        }
+      }
       else setMessages((prev) => [...prev, { type: 'error', content: `New session failed: ${data.error}` }])
     } catch (err) { setMessages((prev) => [...prev, { type: 'error', content: `New session error: ${err.message}` }]) }
     finally { setCreatingNewChat(false) }
