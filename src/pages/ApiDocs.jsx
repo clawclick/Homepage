@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const ApiDocs = () => {
+  const navigate = useNavigate()
   const [activeSection, setActiveSection] = useState('overview')
   const [expandedEndpoint, setExpandedEndpoint] = useState(null)
   const [responses, setResponses] = useState({})
   const [loading, setLoading] = useState({})
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  const navigationSections = [
+  const navigationSections = useMemo(() => [
     { id: 'overview', label: 'Overview' },
     { id: 'quickstart', label: 'Quick Start' },
     { id: 'endpoints', label: 'API Endpoints' },
@@ -15,8 +17,10 @@ const ApiDocs = () => {
     { id: 'chains', label: 'Supported Chains' },
     { id: 'websockets', label: 'WebSockets' },
     { id: 'error-handling', label: 'Error Handling' },
-    { id: 'integrations', label: 'Data Providers' }
-  ]
+    { id: 'integrations', label: 'Data Providers' },
+    { id: 'my-api', label: 'My Api', path: '/api/my-api', tone: 'muted' }
+  ], [])
+  const scrollSections = useMemo(() => navigationSections.filter((section) => !section.path), [navigationSections])
 
   // Comprehensive endpoints data from GitHub README
   const endpoints = [
@@ -406,7 +410,7 @@ const ApiDocs = () => {
   // Scroll tracking
   useEffect(() => {
     const handleScroll = () => {
-      const sections = navigationSections.map(section => document.getElementById(section.id))
+      const sections = scrollSections.map((section) => document.getElementById(section.id))
       let activeId = 'overview'
       
       for (let i = sections.length - 1; i >= 0; i--) {
@@ -421,7 +425,7 @@ const ApiDocs = () => {
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [scrollSections])
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId)
@@ -539,9 +543,13 @@ const ApiDocs = () => {
             {navigationSections.map((section) => (
               <button
                 key={section.id}
-                className={`nav-item ${activeSection === section.id ? 'active' : ''}`}
+                className={`nav-item ${activeSection === section.id ? 'active' : ''} ${section.tone === 'muted' ? 'nav-item-muted' : ''} ${section.nested ? 'nav-item-nested' : ''}`.trim()}
                 onClick={() => {
-                  scrollToSection(section.id)
+                  if (section.path) {
+                    navigate(section.path)
+                  } else {
+                    scrollToSection(section.id)
+                  }
                   setSidebarOpen(false)
                 }}
               >
@@ -898,7 +906,7 @@ ws.on('message', (data) => {
                 Get your API key and start building with unified trading infrastructure.
               </p>
               <div className="cta-buttons">
-                <button className="cta-button primary">Get API Key</button>
+                <button className="cta-button primary" type="button" onClick={() => navigate('/api/my-api')}>Get API Key</button>
                 <a href="https://github.com/clawclick" target="_blank" rel="noopener noreferrer" className="cta-button secondary">
                   View GitHub
                 </a>

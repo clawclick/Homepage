@@ -6,6 +6,7 @@ import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
 import AppMarketplace from './pages/AppMarketplace'
 import ApiDocs from './pages/ApiDocs'
+import ApiUsage from './pages/ApiUsage'
 import FeatureDetail from './pages/FeatureDetail'
 import DeploySession from './pages/DeploySession'
 import MySessions from './pages/MySessions'
@@ -24,6 +25,9 @@ function AppShell() {
           <Route path="/" element={<HomePage />} />
           <Route path="/app" element={<AppMarketplace />} />
           <Route path="/api" element={<ApiDocs />} />
+          <Route path="/api/my-api" element={<ApiUsage />} />
+          <Route path="/api/keys" element={<ApiUsage />} />
+          <Route path="/api/usage" element={<ApiUsage />} />
           <Route path="/features/:slug" element={<FeatureDetail />} />
           <Route path="/sessions" element={<MySessions />} />
           <Route path="/deploy" element={<DeploySession />} />

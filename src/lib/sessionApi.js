@@ -1,6 +1,169 @@
 const BACKEND_URL = import.meta.env.VITE_CLAWS_FUN_BACKEND_URL || 'https://claws-fun-backend-764a4f25b49e.herokuapp.com'
 const SUPER_API_URL = import.meta.env.VITE_SUPER_API_URL || 'https://api.claw.click'
-const ADMIN_API_KEY = import.meta.env.VITE_ADMIN_API_KEY || 'ADMIN_API_KEY'
+const ADMIN_API_KEY = 'ADMIN_API_KEY'
+const USER_KEYS_PATH = import.meta.env.VITE_SUPER_API_USER_KEYS_PATH || '/user/keys'
+const USER_KEY_CREATE_PATH = import.meta.env.VITE_SUPER_API_GENERATE_KEY_PATH || '/admin/apiKeys/generate'
+const USER_USAGE_PATH = import.meta.env.VITE_SUPER_API_USER_USAGE_PATH || '/admin/stats/user'
+
+function superApiUrl(path) {
+  return `${SUPER_API_URL}${path}`
+}
+
+function buildQueryString(params = {}) {
+  const query = new URLSearchParams()
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') {
+      return
+    }
+
+    query.set(key, String(value))
+  })
+
+  return query.toString()
+}
+
+function isObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+async function fetchSuperApiJson(path, { method = 'GET', walletAddress, query, headers = {}, body } = {}) {
+  const requestQuery = buildQueryString({ ...query, walletAddress })
+  const requestUrl = `${superApiUrl(path)}${requestQuery ? `?${requestQuery}` : ''}`
+  const response = await fetch(requestUrl, {
+    method,
+    headers: {
+      ...(walletAddress ? getWalletHeaders(walletAddress) : {}),
+      ...headers,
+    },
+    body,
+  })
+
+  const isJson = response.headers.get('content-type')?.includes('application/json')
+  const data = isJson ? await response.json() : null
+
+  if (!response.ok) {
+    throw new Error(data?.message || data?.details || data?.error || `Request failed: ${response.status}`)
+  }
+
+  return data
+}
+
+function normalizeApiKey(item, index = 0) {
+  const maskedKey = item.maskedKey || item.masked_key || item.preview || item.keyPrefix || item.key_prefix || item.prefix || item.key || ''
+
+  return {
+    id: item.id || item.keyId || item.key_id || item.name || item.keyName || item.key_name || `key-${index}`,
+    name: item.name || item.keyName || item.key_name || `API Key ${index + 1}`,
+    prefix: item.prefix || item.keyPrefix || item.key_prefix || maskedKey,
+    maskedKey,
+    createdAt: item.createdAt || item.created_at || null,
+    lastUsedAt: item.lastUsedAt || item.last_used_at || item.lastRequestAt || item.last_request_at || null,
+    status: item.status || (item.revoked ? 'revoked' : 'active'),
+    requestsToday: item.requestsToday ?? item.requests_today ?? item.dailyRequests ?? item.daily_requests ?? 0,
+    totalRequests: item.totalRequests ?? item.total_requests ?? item.allTimeRequests ?? item.all_time_requests ?? 0,
+  }
+}
+
+function normalizeUsagePayload(data) {
+  const normalizeLatency = (latency) => ({
+    avgMs: latency?.avgMs ?? 0,
+    p50Ms: latency?.p50Ms ?? 0,
+    p95Ms: latency?.p95Ms ?? 0,
+    p99Ms: latency?.p99Ms ?? 0,
+  })
+
+  const normalizeUsageKeyRow = (item, scope) => {
+    const isDailyScope = scope === 'daily'
+
+    return {
+      id: item?.id || item?.keyId || item?.key_id || item?.prefix || null,
+      prefix: item?.prefix || item?.keyPrefix || item?.key_prefix || '',
+      label: item?.label || item?.name || item?.keyName || item?.key_name || 'Unlabeled key',
+      agentId: item?.agentId || item?.agent_id || null,
+      agentWalletEvm: item?.agentWalletEvm || item?.agent_wallet_evm || null,
+      agentWalletSol: item?.agentWalletSol || item?.agent_wallet_sol || null,
+      createdAt: item?.createdAt || item?.created_at || null,
+      lastUsedAt: item?.lastUsedAt || item?.last_used_at || null,
+      totalRequests: item?.totalRequests ?? item?.total_requests ?? 0,
+      successful: isDailyScope ? (item?.successfulToday ?? 0) : (item?.successful ?? 0),
+      failed: isDailyScope ? (item?.failedToday ?? 0) : (item?.failed ?? 0),
+      clientErrors: isDailyScope ? (item?.clientErrorsToday ?? 0) : (item?.clientErrors ?? 0),
+      serverErrors: isDailyScope ? (item?.serverErrorsToday ?? 0) : (item?.serverErrors ?? 0),
+      successRatePct: isDailyScope ? (item?.successRatePctToday ?? 0) : (item?.successRatePct ?? 0),
+      failureRatePct: isDailyScope ? (item?.failureRatePctToday ?? 0) : (item?.failureRatePct ?? 0),
+      requestsToday: item?.requestsToday ?? 0,
+      activeToday: Boolean(item?.activeToday),
+      latency: normalizeLatency(isDailyScope ? item?.latencyToday : item?.latency),
+    }
+  }
+
+  const normalizeUsageSummary = (summary) => ({
+    matchedKeys: summary?.matchedKeys ?? 0,
+    totalRequests: summary?.totalRequests ?? 0,
+    successful: summary?.successful ?? 0,
+    failed: summary?.failed ?? 0,
+    clientErrors: summary?.clientErrors ?? 0,
+    serverErrors: summary?.serverErrors ?? 0,
+    successRatePct: summary?.successRatePct ?? 0,
+    failureRatePct: summary?.failureRatePct ?? 0,
+    latency: normalizeLatency(summary?.latency),
+  })
+
+  const dailyKeysSource = Array.isArray(data?.daily?.keys)
+    ? data.daily.keys
+    : isObject(data?.daily?.apiKeys)
+      ? Object.values(data.daily.apiKeys)
+      : []
+  const allTimeKeysSource = Array.isArray(data?.allTime?.keys)
+    ? data.allTime.keys
+    : isObject(data?.allTime?.apiKeys)
+      ? Object.values(data.allTime.apiKeys)
+      : []
+  const dailySummary = normalizeUsageSummary(data?.daily?.summary)
+  const allTimeSummary = normalizeUsageSummary(data?.allTime?.summary)
+  const dailyKeys = dailyKeysSource.map((item) => normalizeUsageKeyRow(item, 'daily'))
+  const allTimeKeys = allTimeKeysSource.map((item) => normalizeUsageKeyRow(item, 'allTime'))
+
+  return {
+    endpoint: data?.endpoint || null,
+    dayKey: data?.dayKey || null,
+    startedAt: data?.startedAt || null,
+    resetsAt: data?.resetsAt || null,
+    filter: isObject(data?.filter) ? data.filter : {},
+    daily: {
+      summary: dailySummary,
+      keys: dailyKeys,
+    },
+    allTime: {
+      summary: allTimeSummary,
+      keys: allTimeKeys,
+    },
+    requestsToday: dailySummary.totalRequests,
+    successfulToday: dailySummary.successful,
+    failedToday: dailySummary.failed,
+    successRatePctToday: dailySummary.successRatePct,
+    activeKeysToday: dailyKeys.filter((item) => item.activeToday).length || dailySummary.matchedKeys,
+    totalRequests: allTimeSummary.totalRequests,
+    successful: allTimeSummary.successful,
+    failed: allTimeSummary.failed,
+    keyCount: allTimeSummary.matchedKeys || dailySummary.matchedKeys,
+    keyRows: dailyKeys,
+    allTimeKeyRows: allTimeKeys,
+    endpointRows: [],
+    raw: data,
+  }
+}
+
+function normalizeGeneratedKey(data) {
+  return {
+    id: data?.id || data?.keyId || data?.key_id || null,
+    name: data?.name || data?.keyName || data?.key_name || data?.label || 'New API Key',
+    key: data?.key || data?.apiKey || data?.generatedKey || data?.token || data?.api_key || '',
+    maskedKey: data?.maskedKey || data?.masked_key || data?.preview || '',
+    createdAt: data?.createdAt || data?.created_at || null,
+  }
+}
 
 export function clawsFunApiUrl(path) {
   return `${BACKEND_URL}${path}`
@@ -74,6 +237,70 @@ export async function fetchAgentStats(agentId, includeKeys = true) {
   }
 
   return data
+}
+
+
+export async function generateUserApiKey(walletAddressOrOptions, name) {
+  const options = isObject(walletAddressOrOptions)
+    ? walletAddressOrOptions
+    : {
+        agentWalletEvm: walletAddressOrOptions,
+        label: name,
+      }
+  const walletAddress = options.agentWalletEvm || options.walletAddress || ''
+
+  if (!walletAddress) {
+    throw new Error('Wallet address is required to generate an API key.')
+  }
+
+  if (!ADMIN_API_KEY) {
+    throw new Error('VITE_ADMIN_API_KEY or ADMIN_API_KEY must be set.')
+  }
+
+  const payload = {
+    label: options.label?.trim() || name?.trim() || 'user-website',
+    agentWalletEvm: walletAddress,
+  }
+
+  if (options.agentId) {
+    payload.agentId = String(options.agentId)
+  }
+
+  if (options.agentWalletSol) {
+    payload.agentWalletSol = options.agentWalletSol
+  }
+
+  const data = await fetchSuperApiJson(USER_KEY_CREATE_PATH, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-admin-key': ADMIN_API_KEY,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  return normalizeGeneratedKey(data)
+}
+
+export async function fetchUserUsageStats(walletAddress) {
+  if (!walletAddress) {
+    throw new Error('Wallet address is required to load usage stats.')
+  }
+
+  if (!ADMIN_API_KEY) {
+    throw new Error('VITE_ADMIN_API_KEY or ADMIN_API_KEY must be set.')
+  }
+
+  const data = await fetchSuperApiJson(USER_USAGE_PATH, {
+    query: {
+      agentWalletEvm: walletAddress,
+    },
+    headers: {
+      'x-admin-key': ADMIN_API_KEY,
+    },
+  })
+
+  return normalizeUsagePayload(data)
 }
 
 export async function fetchUserSessions(walletAddress) {
