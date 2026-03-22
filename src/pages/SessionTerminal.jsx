@@ -71,6 +71,12 @@ function getMessageContentIdentity(message) {
   ].join('::')
 }
 
+function logTerminalStream(event, details = {}) {
+  try {
+    console.log(`[SessionTerminal] ${event}`, details)
+  } catch {}
+}
+
 const SessionTerminal = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -110,15 +116,13 @@ const SessionTerminal = () => {
   const [editFileContent, setEditFileContent] = useState('')
   const [editFileLoading, setEditFileLoading] = useState(false)
   const [editFileSaving, setEditFileSaving] = useState(false)
+  const [manualRefreshingHistory, setManualRefreshingHistory] = useState(false)
   const messagesEndRef = useRef(null)
   const abortControllerRef = useRef(null)
   const inputRef = useRef(null)
   const fileInputRef = useRef(null)
   const historySyncingRef = useRef(false)
   const activeStreamIdRef = useRef(null)
-  const realtimeIdleTimeoutRef = useRef(null)
-  const historyPollIntervalRef = useRef(null)
-  const lastRealtimeActivityRef = useRef(Date.now())
 
   const transcriptStorageKey = id && account ? `session-terminal:${id}:${account.toLowerCase()}` : ''
 
@@ -205,17 +209,6 @@ const SessionTerminal = () => {
     finally { historySyncingRef.current = false }
   }, [fetchTerminalHistory, historyLoaded])
 
-  const stopHistoryPolling = useCallback(() => {
-    if (realtimeIdleTimeoutRef.current) {
-      clearTimeout(realtimeIdleTimeoutRef.current)
-      realtimeIdleTimeoutRef.current = null
-    }
-    if (historyPollIntervalRef.current) {
-      clearInterval(historyPollIntervalRef.current)
-      historyPollIntervalRef.current = null
-    }
-  }, [])
-
   const appendNewHistoryMessages = useCallback((historyMessages) => {
     if (!Array.isArray(historyMessages) || historyMessages.length === 0) return
 
@@ -239,47 +232,23 @@ const SessionTerminal = () => {
     })
   }, [])
 
-  const pollHistoryUpdates = useCallback(async () => {
-    if (!account || !id || activeStreamIdRef.current || historySyncingRef.current) return
+  const handleManualHistoryRefresh = useCallback(async () => {
+    if (!account || !id || activeStreamIdRef.current || historySyncingRef.current || manualRefreshingHistory) return
 
     historySyncingRef.current = true
+    setManualRefreshingHistory(true)
     try {
+      logTerminalStream('history:manual-refresh', { sessionId: id })
       const historyMessages = await fetchTerminalHistory()
       appendNewHistoryMessages(historyMessages)
       setHistoryLoaded(true)
-    } catch {}
-    finally {
+    } catch (err) {
+      logTerminalStream('history:manual-refresh-error', { sessionId: id, message: err.message })
+    } finally {
       historySyncingRef.current = false
+      setManualRefreshingHistory(false)
     }
-  }, [account, appendNewHistoryMessages, fetchTerminalHistory, id])
-
-  const startHistoryPolling = useCallback(() => {
-    if (!account || !id || activeStreamIdRef.current || historyPollIntervalRef.current) return
-
-    pollHistoryUpdates()
-    historyPollIntervalRef.current = setInterval(() => {
-      pollHistoryUpdates()
-    }, 10000)
-  }, [account, id, pollHistoryUpdates])
-
-  const scheduleRealtimeFallback = useCallback(() => {
-    if (!account || !id || activeStreamIdRef.current) return
-
-    if (realtimeIdleTimeoutRef.current) {
-      clearTimeout(realtimeIdleTimeoutRef.current)
-    }
-
-    realtimeIdleTimeoutRef.current = setTimeout(() => {
-      if (!activeStreamIdRef.current && Date.now() - lastRealtimeActivityRef.current >= 30000) {
-        startHistoryPolling()
-      }
-    }, 30000)
-  }, [account, id, startHistoryPolling])
-
-  const markRealtimeActivity = useCallback(() => {
-    lastRealtimeActivityRef.current = Date.now()
-    stopHistoryPolling()
-  }, [stopHistoryPolling])
+  }, [account, appendNewHistoryMessages, fetchTerminalHistory, id, manualRefreshingHistory])
 
   const updateStreamingAssistant = useCallback((updater) => {
     setMessages((prev) => {
@@ -310,7 +279,11 @@ const SessionTerminal = () => {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
-  useEffect(() => () => stopHistoryPolling(), [stopHistoryPolling])
+  useEffect(() => {
+    if (!inputRef.current) return
+    inputRef.current.style.height = '0px'
+    inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 220)}px`
+  }, [input])
 
   useEffect(() => {
     if (!account) { setLoading(false); return }
@@ -349,12 +322,10 @@ const SessionTerminal = () => {
         if (data && data.status === 'running') fetchFiles()
       })
     }, 10000)
-    scheduleRealtimeFallback()
     return () => {
       clearInterval(interval)
-      stopHistoryPolling()
     }
-  }, [account, fetchSession, fetchFiles, fetchApiKeys, loadHistory, scheduleRealtimeFallback, stopHistoryPolling])
+  }, [account, fetchSession, fetchFiles, fetchApiKeys, loadHistory])
 
   const handleConnect = async () => { setError(''); try { await connect() } catch (e) { setError(e.message) } }
 
@@ -362,8 +333,7 @@ const SessionTerminal = () => {
     if (!input.trim() || sending || !account || !id) return
     const userMsg = input.trim()
     const streamId = `stream-${Date.now()}`
-    stopHistoryPolling()
-    markRealtimeActivity()
+    logTerminalStream('sse:open', { sessionId: id, streamId, messageLength: userMsg.length })
     activeStreamIdRef.current = streamId
     setInput('')
     setSending(true)
@@ -379,6 +349,13 @@ const SessionTerminal = () => {
         method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream, application/json', ...getWalletHeaders(account) },
         body: JSON.stringify({ message: userMsg }), signal: controller.signal,
       })
+      logTerminalStream('sse:response', {
+        sessionId: id,
+        streamId,
+        ok: res.ok,
+        status: res.status,
+        contentType: res.headers.get('content-type') || '',
+      })
       if (!res.ok) { const d = await res.json().catch(() => ({})); setMessages((prev) => prev.map((m) => m.isStreaming ? { ...m, type: 'error', content: d.error || 'Failed to get response', isStreaming: false } : m)); return }
 
       const contentType = res.headers.get('content-type') || ''
@@ -387,7 +364,11 @@ const SessionTerminal = () => {
         let parsed = null
         try { parsed = JSON.parse(text) } catch {}
         const directText = parsed?.content || parsed?.message || parsed?.response || parsed?.reply || text
-        markRealtimeActivity()
+        logTerminalStream('sse:non-stream-response', {
+          sessionId: id,
+          streamId,
+          textLength: typeof directText === 'string' ? directText.length : JSON.stringify(directText).length,
+        })
         updateStreamingAssistant((message) => ({ ...message, content: typeof directText === 'string' ? directText : JSON.stringify(directText), isStreaming: false }))
         return
       }
@@ -405,16 +386,27 @@ const SessionTerminal = () => {
       const processLine = (line) => {
         const normalized = line.trimEnd()
         if (!normalized.startsWith('data:')) return
-        markRealtimeActivity()
         streamReceivedAnyData = true
         const payload = normalized.slice(5).trimStart()
         if (!payload || payload === '[DONE]') {
+          logTerminalStream('sse:done-sentinel', { sessionId: id, streamId })
           updateStreamingAssistant((message) => ({ ...message, isStreaming: false }))
           return
         }
         try {
           const event = JSON.parse(payload)
           if (event.type === 'delta') {
+            logTerminalStream('sse:delta', {
+              sessionId: id,
+              streamId,
+              chunkLength: typeof event.content === 'string'
+                ? event.content.length
+                : typeof event.delta === 'string'
+                  ? event.delta.length
+                  : typeof event.text === 'string'
+                    ? event.text.length
+                    : 0,
+            })
             updateStreamingAssistant((message) => {
               const nextContent = typeof event.content === 'string'
                 ? event.content
@@ -426,12 +418,24 @@ const SessionTerminal = () => {
               const mergedContent = mergeStreamChunk(message.content, nextContent)
               return { ...message, content: mergedContent }
             })
-          } else if (event.type === 'tool_start') setMessages((prev) => [...prev, { type: 'tool', content: `Using ${event.name}...`, toolName: event.name, toolPhase: 'start' }])
-          else if (event.type === 'tool_result') setMessages((prev) => [...prev, { type: 'tool', content: typeof event.result === 'string' ? event.result.slice(0, 500) : JSON.stringify(event.result).slice(0, 500), toolName: event.name, toolPhase: 'result' }])
-          else if (event.type === 'final' || event.type === 'aborted') updateStreamingAssistant((message) => ({ ...message, isStreaming: false }))
-          else if (event.type === 'error') updateStreamingAssistant((message) => ({ ...message, type: 'error', content: event.message || 'Generation failed', isStreaming: false }))
+          } else if (event.type === 'tool_start') {
+            logTerminalStream('sse:tool_start', { sessionId: id, streamId, name: event.name, args: event.args })
+            setMessages((prev) => [...prev, { type: 'tool', content: `Using ${event.name}...`, toolName: event.name, toolPhase: 'start' }])
+          } else if (event.type === 'tool_result') {
+            logTerminalStream('sse:tool_result', { sessionId: id, streamId, name: event.name, result: event.result })
+            setMessages((prev) => [...prev, { type: 'tool', content: typeof event.result === 'string' ? event.result.slice(0, 500) : JSON.stringify(event.result).slice(0, 500), toolName: event.name, toolPhase: 'result' }])
+          } else if (event.type === 'final' || event.type === 'aborted') {
+            logTerminalStream(`sse:${event.type}`, { sessionId: id, streamId, payload: event })
+            updateStreamingAssistant((message) => ({ ...message, isStreaming: false }))
+          } else if (event.type === 'error') {
+            logTerminalStream('sse:error', { sessionId: id, streamId, payload: event })
+            updateStreamingAssistant((message) => ({ ...message, type: 'error', content: event.message || 'Generation failed', isStreaming: false }))
+          } else {
+            logTerminalStream('sse:unknown-event', { sessionId: id, streamId, payload: event })
+          }
         } catch {
           // If backend sends plain text chunks, still render them.
+          logTerminalStream('sse:plain-text-chunk', { sessionId: id, streamId, chunkLength: payload.length })
           updateStreamingAssistant((message) => ({ ...message, content: mergeStreamChunk(message.content, payload) }))
         }
       }
@@ -449,28 +453,36 @@ const SessionTerminal = () => {
         processLine(buffer.trim())
       }
 
+      logTerminalStream('sse:reader-closed', { sessionId: id, streamId, hadData: streamReceivedAnyData })
       // Ensure streaming is always finalized when the reader closes cleanly.
       updateStreamingAssistant((message) => message.isStreaming ? { ...message, isStreaming: false } : message)
     } catch (err) {
-      if (err.name !== 'AbortError') updateStreamingAssistant((message) => ({ ...message, type: 'error', content: err.message || 'Network error', isStreaming: false }))
-      else if (wasWatchdogAbort) updateStreamingAssistant((message) => ({ ...message, type: 'error', content: 'Request timed out before stream started. Please retry.', isStreaming: false }))
-      else updateStreamingAssistant((message) => ({ ...message, isStreaming: false, content: message.content || '(aborted)' }))
+      if (err.name !== 'AbortError') {
+        logTerminalStream('sse:catch-error', { sessionId: id, streamId, name: err.name, message: err.message })
+        updateStreamingAssistant((message) => ({ ...message, type: 'error', content: err.message || 'Network error', isStreaming: false }))
+      } else if (wasWatchdogAbort) {
+        logTerminalStream('sse:watchdog-timeout', { sessionId: id, streamId })
+        updateStreamingAssistant((message) => ({ ...message, type: 'error', content: 'Request timed out before stream started. Please retry.', isStreaming: false }))
+      } else {
+        logTerminalStream('sse:abort', { sessionId: id, streamId })
+        updateStreamingAssistant((message) => ({ ...message, isStreaming: false, content: message.content || '(aborted)' }))
+      }
     } finally {
       if (streamWatchdog) clearTimeout(streamWatchdog)
       setSending(false)
       abortControllerRef.current = null
       activeStreamIdRef.current = null
-      scheduleRealtimeFallback()
+      logTerminalStream('sse:closed', { sessionId: id, streamId })
       inputRef.current?.focus()
     }
   }
 
   const handleAbort = async () => {
+    logTerminalStream('sse:manual-abort', { sessionId: id, streamId: activeStreamIdRef.current })
     abortControllerRef.current?.abort(); abortControllerRef.current = null; setSending(false)
     try { await fetch(clawsFunApiUrl(`/api/session/${id}/terminal/abort`), { method: 'POST', headers: getWalletHeaders(account) }) } catch {}
     updateStreamingAssistant((message) => ({ ...message, isStreaming: false, content: message.content || '(aborted)' }))
     activeStreamIdRef.current = null
-    scheduleRealtimeFallback()
   }
 
   const handleRestartGateway = async () => {
@@ -1075,15 +1087,20 @@ const SessionTerminal = () => {
             {/* Input */}
             <div className="st-input-area">
               <div className="st-input-row">
-                <input
+                <textarea
                   ref={inputRef}
-                  type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSend()
+                    }
+                  }}
                   placeholder={isReady ? 'Type a message to the agent...' : 'Agent is not ready yet...'}
                   disabled={!isReady || sending}
                   className="st-input"
+                  rows={1}
                 />
                 {sending ? (
                   <button onClick={handleAbort} className="st-btn st-btn-danger">Stop</button>
@@ -1116,6 +1133,15 @@ const SessionTerminal = () => {
                   </button>
                 </div>
               )}
+              <button
+                type="button"
+                className="st-history-refresh"
+                onClick={handleManualHistoryRefresh}
+                disabled={manualRefreshingHistory || Boolean(activeStreamIdRef.current) || historySyncingRef.current}
+                title={activeStreamIdRef.current ? 'Refresh disabled while live stream is active' : 'Refresh chat history'}
+              >
+                {manualRefreshingHistory ? 'Refreshing...' : 'Refresh'}
+              </button>
             </div>
           </main>
 

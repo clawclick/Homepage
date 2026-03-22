@@ -6388,6 +6388,15 @@ button:focus-visible {
   margin: 0 0 0.7rem;
 }
 
+.st-page .st-markdown h1,
+.st-page .st-markdown h2,
+.st-page .st-markdown h3,
+.st-page .st-markdown h4,
+.st-page .st-markdown h5,
+.st-page .st-markdown h6 {
+  color: var(--white);
+}
+
 .st-markdown code {
   background: rgba(6, 14, 14, 0.92);
   border: 1px solid rgba(13, 158, 138, 0.14);
@@ -6402,6 +6411,15 @@ button:focus-visible {
   display: block;
   padding: 0.9rem;
   overflow-x: auto;
+}
+
+.st-page .st-markdown blockquote {
+  margin: 0.85rem 0;
+  padding: 0.75rem 0.95rem;
+  border-left: 3px solid rgba(243, 155, 131, 0.55);
+  border-radius: 0 14px 14px 0;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--grey-200);
 }
 
 .st-page .st-markdown table {
@@ -6879,6 +6897,7 @@ button:focus-visible {
     radial-gradient(circle at top, rgba(13, 158, 138, 0.08), transparent 30%),
     radial-gradient(circle at left top, rgba(243, 155, 131, 0.05), transparent 26%),
     rgba(11, 14, 18, 0.95);
+  position: relative;
 }
 
 .st-page.st-ide .st-sidebar-header {
@@ -6981,6 +7000,7 @@ button:focus-visible {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.03)),
     rgba(10, 13, 17, 0.94);
+  position: relative;
 }
 
 .st-page.st-ide .st-input-row {
@@ -6996,6 +7016,11 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--white);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  resize: none;
+  overflow-y: auto;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  line-height: 1.5;
 }
 
 .st-page.st-ide .st-input:focus {
@@ -7051,6 +7076,35 @@ button:focus-visible {
 .st-page.st-ide .st-controls {
   gap: 10px;
   margin-top: 14px;
+  padding-right: 120px;
+}
+
+.st-history-refresh {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(243, 155, 131, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--grey-100);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  transition: all 0.2s ease;
+}
+
+.st-history-refresh:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(243, 155, 131, 0.18), rgba(13, 158, 138, 0.18));
+  border-color: rgba(243, 155, 131, 0.34);
+  transform: translateY(-1px);
+}
+
+.st-history-refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .st-page.st-ide .st-ctrl-btn {
@@ -7146,5 +7200,17 @@ button:focus-visible {
 
   .st-page.st-ide .st-sidebar-right {
     width: 300px;
+  }
+}
+
+@media (max-width: 720px) {
+  .st-page.st-ide .st-controls {
+    padding-right: 0;
+    padding-bottom: 58px;
+  }
+
+  .st-history-refresh {
+    right: 16px;
+    bottom: 16px;
   }
 }
