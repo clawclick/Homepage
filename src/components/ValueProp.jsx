@@ -107,10 +107,10 @@ const ValueProp = () => {
         streamUrl.searchParams.set('adminKey', SUPER_API_ADMIN_KEY)
       }
 
-      // console.log('[agentStats] connecting', {
-      //   url: streamUrl.toString(),
-      //   agentIds: displayedAgentIds,
-      // })
+      console.log('[agentStats] connecting', {
+        url: streamUrl.toString(),
+        agentIds: displayedAgentIds,
+      })
 
       socket = new WebSocket(streamUrl.toString())
 
@@ -121,7 +121,7 @@ const ValueProp = () => {
 
         try {
           const subscriptionPayload = { agentIds: displayedAgentIds }
-          // console.log('[agentStats] subscribing', subscriptionPayload)
+          console.log('[agentStats] subscribing', subscriptionPayload)
           socket.send(JSON.stringify(subscriptionPayload))
         } catch {}
       }
@@ -132,15 +132,15 @@ const ValueProp = () => {
         }
 
         try {
-          // console.log('[agentStats] raw response', event.data)
+          console.log('[agentStats] raw response', event.data)
           const payload = JSON.parse(event.data)
-          // console.log('[agentStats] parsed response', payload)
+          console.log('[agentStats] parsed response', payload)
           const rows = payload?.type === 'agentStats'
             ? (Array.isArray(payload.data) ? payload.data : [payload.data])
             : []
 
           if (rows.length === 0) {
-            // console.log('[agentStats] ignoring non-agentStats payload', payload)
+            console.log('[agentStats] ignoring non-agentStats payload', payload)
             return
           }
 
@@ -177,7 +177,7 @@ const ValueProp = () => {
           return
         }
 
-        // console.log('[agentStats] socket closed, scheduling reconnect')
+        console.log('[agentStats] socket closed, scheduling reconnect')
         reconnectTimeoutRef.current = window.setTimeout(connect, 3000)
       }
 

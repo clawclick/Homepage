@@ -416,9 +416,9 @@ const SessionTerminal = () => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
-  const statusColor = session?.status === 'running' ? '#22c55e'
-    : (session?.status === 'provisioning' || session?.status === 'bootstrapping') ? '#14b8a6'
-    : session?.status === 'retrying' ? '#06b6d4'
+  const statusColor = session?.status === 'running' ? '#0d9e8a'
+    : (session?.status === 'provisioning' || session?.status === 'bootstrapping') ? '#0d9e8a'
+    : session?.status === 'retrying' ? '#0d9e8a'
     : (session?.status === 'error' || session?.status === 'failed') ? '#ef4444'
     : '#0d9e8a'
 
@@ -725,13 +725,12 @@ const SessionTerminal = () => {
                         <div className="st-info-divider" />
                         <div className="st-info-label">Agent Identity</div>
                         <div className="st-info-row"><span>Name</span><strong>{session.agent?.name}</strong></div>
-                        <div className="st-info-row"><span>Wallet</span><strong className="st-mono">{session.agent?.wallet?.slice(0, 6)}...{session.agent?.wallet?.slice(-4)}</strong></div>
 
                         {session.health && (
                           <>
                             <div className="st-info-divider" />
                             <div className="st-info-label">GPU Health</div>
-                            <div className="st-info-row"><span>GPU</span><strong style={{ color: session.health.gpu_available ? '#22c55e' : '#ef4444' }}>{session.health.gpu_available ? (session.health.gpu_name || 'Available') : 'Not detected'}</strong></div>
+                            <div className="st-info-row"><span>GPU</span><strong style={{ color: session.health.gpu_available ? '#0d9e8a' : '#ef4444' }}>{session.health.gpu_available ? (session.health.gpu_name || 'Available') : 'Not detected'}</strong></div>
                             {session.health.gpu_available && (
                               <>
                                 <div className="st-info-row"><span>Utilization</span><strong>{session.health.gpu_utilization ?? session.health.gpuUsed ?? 0}%</strong></div>
@@ -739,7 +738,7 @@ const SessionTerminal = () => {
                                 <div className="st-vram-bar"><div className="st-vram-fill" style={{ width: `${session.health.gpu_memory_total ? Math.round((session.health.gpu_memory_used || 0) / session.health.gpu_memory_total * 100) : 0}%` }} /></div>
                               </>
                             )}
-                            <div className="st-info-row"><span>Gateway</span><strong style={{ color: session.health.gateway_pid ? '#22c55e' : '#ef4444' }}>{session.health.gateway_pid ? `Running (PID ${session.health.gateway_pid})` : 'Stopped'}</strong></div>
+                            <div className="st-info-row"><span>Gateway</span><strong style={{ color: session.health.gateway_pid ? '#0d9e8a' : '#ef4444' }}>{session.health.gateway_pid ? `Running (PID ${session.health.gateway_pid})` : 'Stopped'}</strong></div>
                             <div className="st-info-row"><span>Uptime</span><strong>{session.health.uptime >= 3600 ? `${Math.floor(session.health.uptime / 3600)}h ${Math.floor((session.health.uptime % 3600) / 60)}m` : `${Math.floor((session.health.uptime || 0) / 60)} min`}</strong></div>
                           </>
                         )}
@@ -757,8 +756,8 @@ const SessionTerminal = () => {
                   </div>
 
                   {/* API Keys */}
-                  <div className="st-info-section">
-                    <div className="st-info-label" style={{ padding: '12px 16px 8px' }}>API Integrations</div>
+                  <div className="st-integrations-section">
+                    <div className="st-integrations-title">API Integrations</div>
                     <div className="st-api-list">
                       {[
                         { key: 'ANTHROPIC_API_KEY', name: 'Anthropic (recommended)', desc: 'Claude models' },
