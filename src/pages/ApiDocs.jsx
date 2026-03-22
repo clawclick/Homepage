@@ -289,6 +289,22 @@ const ApiDocs = () => {
       category: 'Discovery & Analytics',
       items: [
         {
+          method: 'GET', path: '/getTopEthTokens', description: 'Top Ethereum tokens from Ethplorer (Ethereum mainnet, cached 10 min)',
+          requiresAuth: true,
+          params: [
+            { name: 'criteria', required: false, default: 'trade', description: 'Sort by trade, cap, or count' },
+            { name: 'limit', required: false, default: '50', description: 'Max results (1-50)' }
+          ],
+          example: 'GET https://api.claw.click/getTopEthTokens?criteria=cap&limit=25',
+          response: '{"endpoint":"getTopEthTokens","status":"live","criteria":"cap","limit":25,"cached":false,"tokens":[{"address":"0xdAC17F958D2ee523a2206206994597C13D831ec7","totalSupply":"1000000000000000","name":"Tether USD","symbol":"USDT","decimals":"6","price":{"rate":1,"currency":"USD","diff":0.01,"diff7d":0.03,"diff30d":0.02,"marketCapUsd":100000000000,"availableSupply":100000000000,"volume24h":50000000000,"ts":1763000000},"countOps":12345678,"holdersCount":1000000,"lastUpdated":1763000000,"extraFieldsPreserved":true}],"providers":[{"provider":"ethplorer","status":"ok"}]}'
+        },
+        {
+          method: 'GET', path: '/getNewEthTradableTokens', description: 'Newest tradable Ethereum tokens from Ethplorer (Ethereum mainnet, cached 10 min)',
+          requiresAuth: true,
+          example: 'GET https://api.claw.click/getNewEthTradableTokens',
+          response: '{"endpoint":"getNewEthTradableTokens","status":"live","cached":false,"tokens":[{"address":"0x1234...","totalSupply":"1000000000000000000","name":"New Token","symbol":"NEW","decimals":"18","price":{"rate":0.00012,"currency":"USD","diff":4.2,"diff7d":4.2,"diff30d":4.2,"marketCapUsd":120000,"availableSupply":1000000000,"volume24h":25000,"ts":1763000000},"holdersCount":145,"lastUpdated":1763000000,"added":1762999500,"extraFieldsPreserved":true}],"providers":[{"provider":"ethplorer","status":"ok"}]}'
+        },
+        {
           method: 'GET', path: '/tokenSearch', description: 'Search tokens by name, symbol, or address',
           requiresAuth: true,
           params: [
