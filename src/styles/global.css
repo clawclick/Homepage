@@ -6787,3 +6787,364 @@ button:focus-visible {
 .st-page .st-chat {
   background-color: #040505;
 }
+
+/* Premium session terminal refresh */
+.st-page.st-ide {
+  padding: 18px;
+  gap: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(243, 155, 131, 0.12), transparent 22%),
+    radial-gradient(circle at bottom right, rgba(13, 158, 138, 0.12), transparent 24%),
+    linear-gradient(180deg, #080a0d 0%, #0b0f12 100%);
+}
+
+.st-page.st-ide .st-header {
+  min-height: 76px;
+  padding: 0 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(243, 155, 131, 0.08), transparent 34%),
+    rgba(12, 14, 18, 0.88);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.st-page.st-ide .st-logo-text {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.st-page.st-ide .st-header-divider {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.st-page.st-ide .st-header-agent {
+  color: var(--grey-200);
+  font-size: 0.9rem;
+}
+
+.st-page.st-ide .st-time-chip,
+.st-page.st-ide .st-wallet-chip,
+.st-page.st-ide .st-cost-label {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--grey-100);
+  padding: 0.45rem 0.8rem;
+}
+
+.st-page.st-ide .st-cost-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.st-page.st-ide .st-body {
+  gap: 16px;
+  min-height: 0;
+}
+
+.st-page.st-ide .st-sidebar-left,
+.st-page.st-ide .st-sidebar-right,
+.st-page.st-ide .st-chat {
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.24);
+  overflow: hidden;
+}
+
+.st-page.st-ide .st-sidebar-left,
+.st-page.st-ide .st-sidebar-right {
+  background:
+    radial-gradient(circle at top, rgba(13, 158, 138, 0.08), transparent 34%),
+    rgba(13, 16, 20, 0.92);
+}
+
+.st-page.st-ide .st-sidebar-left {
+  width: 296px;
+  padding: 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-page.st-ide .st-sidebar-right {
+  width: 328px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 0;
+}
+
+.st-page.st-ide .st-chat {
+  background:
+    radial-gradient(circle at top, rgba(13, 158, 138, 0.08), transparent 30%),
+    radial-gradient(circle at left top, rgba(243, 155, 131, 0.05), transparent 26%),
+    rgba(11, 14, 18, 0.95);
+}
+
+.st-page.st-ide .st-sidebar-header {
+  margin-bottom: 14px;
+  padding: 0;
+  border-bottom: none;
+  gap: 10px;
+}
+
+.st-page.st-ide .st-sidebar-title,
+.st-page.st-ide .st-integrations-title {
+  color: #f39b83;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.st-page.st-ide .st-breadcrumb {
+  padding: 0.7rem 0.8rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-page.st-ide .st-file-list,
+.st-page.st-ide .st-sidebar-scroll {
+  scrollbar-width: thin;
+}
+
+.st-page.st-ide .st-sidebar-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 18px;
+}
+
+.st-page.st-ide .st-file-item,
+.st-page.st-ide .st-api-item,
+.st-page.st-ide .st-info-section,
+.st-page.st-ide .st-sidebar-agent-info {
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.st-page.st-ide .st-file-item {
+  padding: 0.72rem 0.8rem;
+  margin-bottom: 8px;
+}
+
+.st-page.st-ide .st-file-item:hover,
+.st-page.st-ide .st-api-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(243, 155, 131, 0.22);
+}
+
+.st-page.st-ide .st-sidebar-agent-info {
+  margin-top: 16px;
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-page.st-ide .st-messages {
+  padding: 22px;
+  gap: 14px;
+}
+
+.st-page.st-ide .st-msg {
+  max-width: min(760px, 82%);
+  padding: 16px 18px;
+  border-radius: 24px;
+  line-height: 1.65;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+}
+
+.st-page.st-ide .st-msg-user {
+  border-radius: 26px 26px 10px 26px;
+  background: linear-gradient(135deg, rgba(243, 155, 131, 0.16), rgba(13, 158, 138, 0.22));
+  border: 1px solid rgba(243, 155, 131, 0.28);
+}
+
+.st-page.st-ide .st-msg-assistant {
+  border-radius: 26px 26px 26px 10px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 40%),
+    rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-page.st-ide .st-msg-system,
+.st-page.st-ide .st-msg-error,
+.st-page.st-ide .st-msg-tool {
+  max-width: min(760px, 88%);
+  border-radius: 20px;
+}
+
+.st-page.st-ide .st-input-area {
+  padding: 18px 20px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.03)),
+    rgba(10, 13, 17, 0.94);
+}
+
+.st-page.st-ide .st-input-row {
+  align-items: stretch;
+  gap: 12px;
+}
+
+.st-page.st-ide .st-input {
+  min-height: 58px;
+  padding: 0 18px;
+  border-radius: 18px;
+  background: rgba(22, 27, 34, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.st-page.st-ide .st-input:focus {
+  border-color: rgba(243, 155, 131, 0.4);
+  box-shadow: 0 0 0 1px rgba(243, 155, 131, 0.14), 0 0 0 8px rgba(243, 155, 131, 0.04);
+}
+
+.st-page.st-ide .st-btn {
+  min-height: 50px;
+  border-radius: 18px;
+  font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--white);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.14);
+}
+
+.st-page.st-ide .st-btn-primary {
+  background: linear-gradient(135deg, #f39b83, #0d9e8a);
+  border-color: rgba(243, 155, 131, 0.6);
+  color: #07141d;
+}
+
+.st-page.st-ide .st-btn-primary:hover:not(:disabled),
+.st-page.st-ide .st-btn-upload:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ffb39d, #24c2ad);
+  color: #07141d;
+}
+
+.st-page.st-ide .st-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--grey-100);
+}
+
+.st-page.st-ide .st-btn-danger {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.88), rgba(220, 38, 38, 0.88));
+  border-color: rgba(248, 113, 113, 0.38);
+}
+
+.st-page.st-ide .st-btn-upload {
+  min-height: 44px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f39b83, #0d9e8a);
+  border-color: rgba(243, 155, 131, 0.58);
+  color: #07141d;
+}
+
+.st-page.st-ide .st-input-meta {
+  margin-top: 12px;
+  color: var(--grey-300);
+}
+
+.st-page.st-ide .st-controls {
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.st-page.st-ide .st-ctrl-btn {
+  min-height: 42px;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--grey-100);
+}
+
+.st-page.st-ide .st-ctrl-btn:hover:not(:disabled) {
+  border-color: rgba(243, 155, 131, 0.2);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.st-page.st-ide .st-ctrl-new,
+.st-page.st-ide .st-ctrl-extend {
+  background: linear-gradient(135deg, rgba(243, 155, 131, 0.12), rgba(13, 158, 138, 0.16));
+  border-color: rgba(243, 155, 131, 0.22);
+}
+
+.st-page.st-ide .st-ctrl-terminate {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.24), rgba(220, 38, 38, 0.3));
+  border-color: rgba(248, 113, 113, 0.34);
+  color: #fecaca;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.st-page.st-ide .st-ctrl-terminate:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.34), rgba(220, 38, 38, 0.42));
+  border-color: rgba(252, 165, 165, 0.46);
+  color: #fee2e2;
+}
+
+.st-page.st-ide .st-info-toggle,
+.st-page.st-ide .st-api-toggle {
+  padding: 16px 18px;
+}
+
+.st-page.st-ide .st-info-body,
+.st-page.st-ide .st-api-list {
+  padding: 0 18px 18px;
+}
+
+.st-page.st-ide .st-info-row {
+  padding: 0.35rem 0;
+}
+
+.st-page.st-ide .st-api-input-row {
+  padding: 0 18px 18px;
+  gap: 10px;
+}
+
+.st-page.st-ide .st-api-input {
+  min-height: 46px;
+  border-radius: 14px;
+  padding: 0 14px;
+  background: rgba(22, 27, 34, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-page.st-ide .st-api-input:focus {
+  border-color: rgba(243, 155, 131, 0.3);
+}
+
+.st-page.st-ide .st-ssh-cmd {
+  border-radius: 14px;
+  background: rgba(22, 27, 34, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-page.st-ide .st-provision-detail {
+  background:
+    radial-gradient(circle at top left, rgba(243, 155, 131, 0.08), transparent 36%),
+    rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+
+@media (max-width: 1180px) {
+  .st-page.st-ide {
+    padding: 12px;
+  }
+
+  .st-page.st-ide .st-body {
+    gap: 12px;
+  }
+
+  .st-page.st-ide .st-sidebar-left {
+    width: 260px;
+  }
+
+  .st-page.st-ide .st-sidebar-right {
+    width: 300px;
+  }
+}
