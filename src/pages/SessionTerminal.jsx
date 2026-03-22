@@ -5,6 +5,72 @@ import remarkGfm from 'remark-gfm'
 import { useEthereumWallet } from '../hooks/useEthereumWallet'
 import { clawsFunApiUrl, fetchJson, getWalletHeaders } from '../lib/sessionApi'
 
+function normalizeStreamText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim()
+}
+
+function mergeStreamChunk(currentContent, incomingContent) {
+  const current = typeof currentContent === 'string' ? currentContent : ''
+  const incoming = typeof incomingContent === 'string' ? incomingContent : ''
+  if (!incoming) return current
+  if (!current) return incoming
+  if (incoming === current) return current
+  if (incoming.startsWith(current)) return incoming
+  if (current.startsWith(incoming)) return current
+  if (incoming.includes(current)) return incoming
+  if (current.includes(incoming)) return current
+
+  const normalizedCurrent = normalizeStreamText(current)
+  const normalizedIncoming = normalizeStreamText(incoming)
+  if (!normalizedIncoming) return current
+  if (normalizedIncoming === normalizedCurrent) {
+    return incoming.length >= current.length ? incoming : current
+  }
+  if (normalizedIncoming.includes(normalizedCurrent)) return incoming
+  if (normalizedCurrent.includes(normalizedIncoming)) return current
+
+  // Handle providers that resend a full snapshot with small prefix jitter.
+  const snapshotIndex = incoming.indexOf(current)
+  if (snapshotIndex !== -1) return incoming
+
+  // Find the largest overlap between current suffix and incoming prefix.
+  const maxOverlap = Math.min(current.length, incoming.length)
+  for (let overlap = maxOverlap; overlap > 0; overlap -= 1) {
+    if (current.slice(-overlap) === incoming.slice(0, overlap)) {
+      return `${current}${incoming.slice(overlap)}`
+    }
+  }
+
+  return `${current}${incoming}`
+}
+
+function normalizeHistoryMessage(message) {
+  return {
+    type: message.role === 'user' ? 'user' : 'assistant',
+    content: typeof message.content === 'string'
+      ? message.content
+      : Array.isArray(message.content)
+        ? message.content.filter((block) => block.type === 'text').map((block) => block.text).join('')
+        : '',
+    timestamp: message.timestamp,
+  }
+}
+
+function getMessageIdentity(message) {
+  return [
+    message.type || '',
+    message.timestamp ?? '',
+    typeof message.content === 'string' ? message.content : '',
+  ].join('::')
+}
+
+function getMessageContentIdentity(message) {
+  return [
+    message.type || '',
+    normalizeStreamText(typeof message.content === 'string' ? message.content : ''),
+  ].join('::')
+}
+
 const SessionTerminal = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -50,6 +116,9 @@ const SessionTerminal = () => {
   const fileInputRef = useRef(null)
   const historySyncingRef = useRef(false)
   const activeStreamIdRef = useRef(null)
+  const realtimeIdleTimeoutRef = useRef(null)
+  const historyPollIntervalRef = useRef(null)
+  const lastRealtimeActivityRef = useRef(Date.now())
 
   const transcriptStorageKey = id && account ? `session-terminal:${id}:${account.toLowerCase()}` : ''
 
@@ -111,29 +180,106 @@ const SessionTerminal = () => {
     } catch {}
   }, [id, account])
 
+  const fetchTerminalHistory = useCallback(async () => {
+    const res = await fetch(clawsFunApiUrl(`/api/session/${id}/terminal/history`), { headers: getWalletHeaders(account) })
+    if (!res.ok) {
+      throw new Error('Failed to load terminal history')
+    }
+    const data = await res.json()
+    return Array.isArray(data.messages) ? data.messages.map(normalizeHistoryMessage) : []
+  }, [id, account])
+
   const loadHistory = useCallback(async (force = false) => {
     if ((!force && historyLoaded) || historySyncingRef.current) return
     historySyncingRef.current = true
     try {
-      const res = await fetch(clawsFunApiUrl(`/api/session/${id}/terminal/history`), { headers: getWalletHeaders(account) })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.messages?.length) {
-          const hist = data.messages.map((m) => ({
-            type: m.role === 'user' ? 'user' : 'assistant',
-            content: typeof m.content === 'string' ? m.content : Array.isArray(m.content) ? m.content.filter((b) => b.type === 'text').map((b) => b.text).join('') : '',
-            timestamp: m.timestamp,
-          }))
-          setMessages((prev) => {
-            const sys = prev.filter((m) => m.type === 'system' || m.type === 'error')
-            return [...sys, ...hist]
-          })
-        }
-        setHistoryLoaded(true)
+      const hist = await fetchTerminalHistory()
+      if (hist.length) {
+        setMessages((prev) => {
+          const sys = prev.filter((m) => m.type === 'system' || m.type === 'error')
+          return [...sys, ...hist]
+        })
       }
+      setHistoryLoaded(true)
     } catch {}
     finally { historySyncingRef.current = false }
-  }, [id, account, historyLoaded])
+  }, [fetchTerminalHistory, historyLoaded])
+
+  const stopHistoryPolling = useCallback(() => {
+    if (realtimeIdleTimeoutRef.current) {
+      clearTimeout(realtimeIdleTimeoutRef.current)
+      realtimeIdleTimeoutRef.current = null
+    }
+    if (historyPollIntervalRef.current) {
+      clearInterval(historyPollIntervalRef.current)
+      historyPollIntervalRef.current = null
+    }
+  }, [])
+
+  const appendNewHistoryMessages = useCallback((historyMessages) => {
+    if (!Array.isArray(historyMessages) || historyMessages.length === 0) return
+
+    setMessages((prev) => {
+      const existingChatMessages = prev.filter((message) => message.type === 'user' || message.type === 'assistant')
+      const existingIds = new Set(existingChatMessages.map(getMessageIdentity))
+      const lastExistingMessage = existingChatMessages[existingChatMessages.length - 1]
+      const lastExistingContentId = lastExistingMessage ? getMessageContentIdentity(lastExistingMessage) : ''
+      const newMessages = historyMessages.filter((message) => {
+        const identity = getMessageIdentity(message)
+        if (existingIds.has(identity)) return false
+        if (lastExistingContentId && getMessageContentIdentity(message) === lastExistingContentId) return false
+        return true
+      })
+
+      if (newMessages.length === 0) {
+        return prev
+      }
+
+      return [...prev, ...newMessages]
+    })
+  }, [])
+
+  const pollHistoryUpdates = useCallback(async () => {
+    if (!account || !id || activeStreamIdRef.current || historySyncingRef.current) return
+
+    historySyncingRef.current = true
+    try {
+      const historyMessages = await fetchTerminalHistory()
+      appendNewHistoryMessages(historyMessages)
+      setHistoryLoaded(true)
+    } catch {}
+    finally {
+      historySyncingRef.current = false
+    }
+  }, [account, appendNewHistoryMessages, fetchTerminalHistory, id])
+
+  const startHistoryPolling = useCallback(() => {
+    if (!account || !id || activeStreamIdRef.current || historyPollIntervalRef.current) return
+
+    pollHistoryUpdates()
+    historyPollIntervalRef.current = setInterval(() => {
+      pollHistoryUpdates()
+    }, 10000)
+  }, [account, id, pollHistoryUpdates])
+
+  const scheduleRealtimeFallback = useCallback(() => {
+    if (!account || !id || activeStreamIdRef.current) return
+
+    if (realtimeIdleTimeoutRef.current) {
+      clearTimeout(realtimeIdleTimeoutRef.current)
+    }
+
+    realtimeIdleTimeoutRef.current = setTimeout(() => {
+      if (!activeStreamIdRef.current && Date.now() - lastRealtimeActivityRef.current >= 30000) {
+        startHistoryPolling()
+      }
+    }, 30000)
+  }, [account, id, startHistoryPolling])
+
+  const markRealtimeActivity = useCallback(() => {
+    lastRealtimeActivityRef.current = Date.now()
+    stopHistoryPolling()
+  }, [stopHistoryPolling])
 
   const updateStreamingAssistant = useCallback((updater) => {
     setMessages((prev) => {
@@ -163,6 +309,8 @@ const SessionTerminal = () => {
   }, [messages, transcriptStorageKey])
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+
+  useEffect(() => () => stopHistoryPolling(), [stopHistoryPolling])
 
   useEffect(() => {
     if (!account) { setLoading(false); return }
@@ -201,8 +349,12 @@ const SessionTerminal = () => {
         if (data && data.status === 'running') fetchFiles()
       })
     }, 10000)
-    return () => clearInterval(interval)
-  }, [account, fetchSession, fetchFiles, fetchApiKeys, loadHistory])
+    scheduleRealtimeFallback()
+    return () => {
+      clearInterval(interval)
+      stopHistoryPolling()
+    }
+  }, [account, fetchSession, fetchFiles, fetchApiKeys, loadHistory, scheduleRealtimeFallback, stopHistoryPolling])
 
   const handleConnect = async () => { setError(''); try { await connect() } catch (e) { setError(e.message) } }
 
@@ -210,6 +362,8 @@ const SessionTerminal = () => {
     if (!input.trim() || sending || !account || !id) return
     const userMsg = input.trim()
     const streamId = `stream-${Date.now()}`
+    stopHistoryPolling()
+    markRealtimeActivity()
     activeStreamIdRef.current = streamId
     setInput('')
     setSending(true)
@@ -219,30 +373,6 @@ const SessionTerminal = () => {
     let streamWatchdog = null
     let streamReceivedAnyData = false
     let wasWatchdogAbort = false
-
-    const mergeStreamChunk = (currentContent, incomingContent) => {
-      const current = typeof currentContent === 'string' ? currentContent : ''
-      const incoming = typeof incomingContent === 'string' ? incomingContent : ''
-      if (!incoming) return current
-      if (!current) return incoming
-      if (incoming === current) return current
-      if (incoming.startsWith(current)) return incoming
-      if (current.startsWith(incoming)) return current
-
-      // Handle providers that resend a full snapshot with small prefix jitter.
-      const snapshotIndex = incoming.indexOf(current)
-      if (snapshotIndex !== -1) return incoming
-
-      // Find the largest overlap between current suffix and incoming prefix.
-      const maxOverlap = Math.min(current.length, incoming.length)
-      for (let overlap = maxOverlap; overlap > 0; overlap -= 1) {
-        if (current.slice(-overlap) === incoming.slice(0, overlap)) {
-          return `${current}${incoming.slice(overlap)}`
-        }
-      }
-
-      return `${current}${incoming}`
-    }
 
     try {
       const res = await fetch(clawsFunApiUrl(`/api/session/${id}/terminal`), {
@@ -257,6 +387,7 @@ const SessionTerminal = () => {
         let parsed = null
         try { parsed = JSON.parse(text) } catch {}
         const directText = parsed?.content || parsed?.message || parsed?.response || parsed?.reply || text
+        markRealtimeActivity()
         updateStreamingAssistant((message) => ({ ...message, content: typeof directText === 'string' ? directText : JSON.stringify(directText), isStreaming: false }))
         return
       }
@@ -274,6 +405,7 @@ const SessionTerminal = () => {
       const processLine = (line) => {
         const normalized = line.trimEnd()
         if (!normalized.startsWith('data:')) return
+        markRealtimeActivity()
         streamReceivedAnyData = true
         const payload = normalized.slice(5).trimStart()
         if (!payload || payload === '[DONE]') {
@@ -300,7 +432,7 @@ const SessionTerminal = () => {
           else if (event.type === 'error') updateStreamingAssistant((message) => ({ ...message, type: 'error', content: event.message || 'Generation failed', isStreaming: false }))
         } catch {
           // If backend sends plain text chunks, still render them.
-          updateStreamingAssistant((message) => ({ ...message, content: `${message.content || ''}${payload}` }))
+          updateStreamingAssistant((message) => ({ ...message, content: mergeStreamChunk(message.content, payload) }))
         }
       }
 
@@ -328,6 +460,7 @@ const SessionTerminal = () => {
       setSending(false)
       abortControllerRef.current = null
       activeStreamIdRef.current = null
+      scheduleRealtimeFallback()
       inputRef.current?.focus()
     }
   }
@@ -337,6 +470,7 @@ const SessionTerminal = () => {
     try { await fetch(clawsFunApiUrl(`/api/session/${id}/terminal/abort`), { method: 'POST', headers: getWalletHeaders(account) }) } catch {}
     updateStreamingAssistant((message) => ({ ...message, isStreaming: false, content: message.content || '(aborted)' }))
     activeStreamIdRef.current = null
+    scheduleRealtimeFallback()
   }
 
   const handleRestartGateway = async () => {
@@ -398,7 +532,7 @@ const SessionTerminal = () => {
     finally { setTerminating(false) }
   }
 
-  const handleEstimateExtend = async (hours) => {
+  const handleEstimateExtend = useCallback(async (hours) => {
     if (!session) return
     const normalizedHours = Math.max(1, Number(hours) || 1)
     setEstimatingExtend(true)
@@ -453,7 +587,7 @@ const SessionTerminal = () => {
     } finally {
       setEstimatingExtend(false)
     }
-  }
+  }, [session, ethPriceUsd])
 
   const handleExtendSession = async () => {
     if (!id || !account || extending) return
@@ -462,7 +596,9 @@ const SessionTerminal = () => {
     setExtendError('')
     setExtendStatus('Preparing payment...')
     try {
-      if (!extendEstimate) throw new Error('Estimate extension cost before continuing.')
+      if (!extendEstimate || extendEstimate.hours !== normalizedHours) {
+        throw new Error('Estimate extension cost before continuing.')
+      }
 
       let nextTreasuryAddress = String(treasuryAddress || '').trim()
       let nextEthPriceUsd = ethPriceUsd
@@ -511,13 +647,25 @@ const SessionTerminal = () => {
     }
   }
 
-  const handleOpenExtend = async () => {
+  const handleOpenExtend = () => {
     setShowExtend(true)
     setExtendError('')
     setExtendStatus('')
     setExtendEstimate(null)
-    await handleEstimateExtend(extendHours)
   }
+
+  useEffect(() => {
+    if (!showExtend || !session) return
+
+    const normalizedHours = Math.max(1, Number(extendHours) || 1)
+    if (extendEstimate?.hours === normalizedHours || estimatingExtend) return
+
+    const timer = setTimeout(() => {
+      handleEstimateExtend(normalizedHours)
+    }, 250)
+
+    return () => clearTimeout(timer)
+  }, [showExtend, session, extendHours, extendEstimate?.hours, estimatingExtend, handleEstimateExtend])
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0]
@@ -636,6 +784,8 @@ const SessionTerminal = () => {
 
   const isReady = session?.status === 'running' || session?.status === 'starting'
   const isActive = session?.isActive && !session?.isExpired
+  const normalizedExtendHours = Math.max(1, Number(extendHours) || 1)
+  const hasCurrentExtendEstimate = Boolean(extendEstimate && extendEstimate.hours === normalizedExtendHours)
 
   /* ── Loading state ── */
   if (loading) {
@@ -708,7 +858,7 @@ const SessionTerminal = () => {
                   key={hours}
                   type="button"
                   className={`st-extend-pill${extendHours === hours ? ' is-active' : ''}`}
-                  onClick={() => { setExtendHours(hours); handleEstimateExtend(hours) }}
+                  onClick={() => setExtendHours(hours)}
                   disabled={estimatingExtend || extending}
                 >
                   {hours}h
@@ -739,7 +889,7 @@ const SessionTerminal = () => {
             {extendError && <div className="st-error-banner">{extendError}</div>}
 
             <div className="st-modal-actions">
-              <button className="st-btn st-btn-success" onClick={handleExtendSession} disabled={extending || estimatingExtend}>
+              <button className="st-btn st-btn-success" onClick={handleExtendSession} disabled={extending || estimatingExtend || !hasCurrentExtendEstimate}>
                 {extending ? 'Processing...' : `Pay & Extend ${Math.max(1, Number(extendHours) || 1)}h`}
               </button>
               <button className="st-btn st-btn-secondary" onClick={() => setShowExtend(false)} disabled={extending}>Cancel</button>

@@ -1,5 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+const BASE_CHAIN_ID_HEX = '0x2105'
+const BASE_NETWORK_CONFIG = {
+  chainId: BASE_CHAIN_ID_HEX,
+  chainName: 'Base',
+  nativeCurrency: {
+    name: 'Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  rpcUrls: ['https://mainnet.base.org'],
+  blockExplorerUrls: ['https://basescan.org'],
+}
+
 function getEthereum() {
   if (typeof window === 'undefined') {
     return null
@@ -91,6 +104,54 @@ export function useEthereumWallet() {
     }
   }, [])
 
+  const ensureBaseNetwork = useCallback(async () => {
+    const ethereum = getEthereum()
+    if (!ethereum) {
+      throw new Error('MetaMask is required to continue.')
+    }
+
+    let currentChainId = ''
+    try {
+      currentChainId = await ethereum.request({ method: 'eth_chainId' })
+    } catch {
+      currentChainId = ''
+    }
+
+    if (String(currentChainId || '').toLowerCase() === BASE_CHAIN_ID_HEX) {
+      return
+    }
+
+    try {
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: BASE_CHAIN_ID_HEX }],
+      })
+      setChainId(BASE_CHAIN_ID_HEX)
+    } catch (switchError) {
+      if (switchError?.code === 4902) {
+        try {
+          await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [BASE_NETWORK_CONFIG],
+          })
+          setChainId(BASE_CHAIN_ID_HEX)
+          return
+        } catch (addError) {
+          if (addError?.code === 4001) {
+            throw new Error('Please approve switching to Base in MetaMask.')
+          }
+          throw new Error(addError?.message || 'Failed to add Base network in MetaMask.')
+        }
+      }
+
+      if (switchError?.code === 4001) {
+        throw new Error('Please approve switching to Base in MetaMask.')
+      }
+
+      throw new Error(switchError?.message || 'Failed to switch to Base network in MetaMask.')
+    }
+  }, [])
+
   const sendTransaction = useCallback(async ({ to, valueEth }) => {
     const ethereum = getEthereum()
     if (!ethereum) {
@@ -118,6 +179,7 @@ export function useEthereumWallet() {
     }
 
     try {
+      await ensureBaseNetwork()
       return await ethereum.request({
         method: 'eth_sendTransaction',
         params: [
@@ -135,7 +197,7 @@ export function useEthereumWallet() {
 
       throw new Error(walletError?.message || 'MetaMask payment failed.')
     }
-  }, [account])
+  }, [account, ensureBaseNetwork])
 
   return useMemo(() => ({
     account,
