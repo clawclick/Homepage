@@ -1,5 +1,6 @@
 const BACKEND_URL = import.meta.env.VITE_CLAWS_FUN_BACKEND_URL || 'https://claws-fun-backend-764a4f25b49e.herokuapp.com'
 const SUPER_API_URL = import.meta.env.VITE_SUPER_API_URL || 'https://api.claw.click'
+const SUPER_API_WS_URL = import.meta.env.VITE_SUPER_API_WS_URL || SUPER_API_URL.replace(/^http/i, 'ws')
 const ADMIN_API_KEY = 'ADMIN_API_KEY'
 const USER_KEYS_PATH = import.meta.env.VITE_SUPER_API_USER_KEYS_PATH || '/user/keys'
 const USER_KEY_CREATE_PATH = import.meta.env.VITE_SUPER_API_GENERATE_KEY_PATH || '/admin/apiKeys/generate'
@@ -167,6 +168,10 @@ function normalizeGeneratedKey(data) {
 
 export function clawsFunApiUrl(path) {
   return `${BACKEND_URL}${path}`
+}
+
+export function superApiWsUrl(path) {
+  return `${SUPER_API_WS_URL}${path}`
 }
 
 export function getWalletHeaders(address) {

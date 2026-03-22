@@ -382,6 +382,15 @@ const ApiDocs = () => {
       category: 'WebSocket Streams',
       items: [
         {
+          method: 'WS', path: '/ws/agentStats', description: 'Real-time rolling agent performance stats stream',
+          requiresAuth: false,
+          params: [
+            { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' }
+          ],
+          example: 'WS wss://api.claw.click/ws/agentStats',
+          response: '{"type":"agentStats","data":{"agentId":"scanner-alpha","window":"rolling_60m","requestsLastHour":124,"avgResponseMsLastHour":188.4,"currentMinuteRequests":3,"updatedAt":"2026-03-21T20:15:00.000Z"}}'
+        },
+        {
           method: 'WS', path: '/ws/launchpadEvents', description: 'Real-time launchpad event stream (Codex)',
           requiresAuth: true,
           params: [

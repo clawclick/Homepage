@@ -41,8 +41,9 @@ const Hero = () => {
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        console.log('Fetched request stats:', data)
         if (data) {
-          const allTimeTotal = data.requests?.total ?? 0
+          const allTimeTotal = data.allTime?.total ?? 0
           setLiveRequests(allTimeTotal)
         }
       })

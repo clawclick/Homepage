@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AnimatedCube from './AnimatedCube'
-import { fetchAgents } from '../lib/sessionApi'
+import { fetchAgents, superApiWsUrl } from '../lib/sessionApi'
+
+const SUPER_API_ADMIN_KEY = 'ADMIN_API_KEY'
 
 function formatCreator(creator) {
   if (!creator) {
@@ -33,12 +35,29 @@ function getRiskBadgeClass(risk) {
   return `badge-risk badge-risk-${normalized}`
 }
 
+function getLatencyClass(latency) {
+  if (latency <= 50) {
+    return 'excellent'
+  }
+  if (latency <= 100) {
+    return 'good'
+  }
+  if (latency <= 150) {
+    return 'elevated'
+  }
+  if (latency <= 300) {
+    return 'warning'
+  }
+  return 'critical'
+}
+
 const ValueProp = () => {
   const navigate = useNavigate()
   const [agents, setAgents] = useState([])
-  const [telemetryTick, setTelemetryTick] = useState(0)
+  const [liveTelemetry, setLiveTelemetry] = useState({})
   const [loopDistance, setLoopDistance] = useState(0)
   const trackRef = useRef(null)
+  const reconnectTimeoutRef = useRef(null)
 
   useEffect(() => {
     let isMounted = true
@@ -56,22 +75,133 @@ const ValueProp = () => {
     }
   }, [])
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTelemetryTick((prev) => prev + 1)
-    }, 1200)
-    return () => clearInterval(timer)
-  }, [])
-
-  const getTelemetry = (agent, index) => {
-    const base = (Number(agent.id) || 1) * 17 + index * 11
-    const throughput = 780 + (base % 220) + ((telemetryTick * 23 + base) % 95)
-    const latency = 24 + ((base + telemetryTick * 7) % 30)
-    return { throughput, latency }
+  const getAgentSeed = (agent, index = 0) => {
+    const raw = String(agent?.id || agent?.name || index)
+    return raw.split('').reduce((total, character, characterIndex) => total + character.charCodeAt(0) * (characterIndex + 1), 0)
   }
 
+  const getDefaultTelemetry = (agent, index = 0) => {
+    const seed = getAgentSeed(agent, index)
+
+    return {
+      throughput: 700 + (seed % 401),
+      latency: 70 + (seed % 21),
+    }
+  }
+
+  useEffect(() => {
+    if (agents.length === 0) {
+      return undefined
+    }
+
+    let isMounted = true
+    let socket = null
+
+    const displayedAgentIds = agents.slice(0, 10).map((agent) => String(agent.id))
+    const trackedAgentIdMap = new Map(displayedAgentIds.map((agentId) => [agentId.toLowerCase(), agentId]))
+    const trackedAgentIds = new Set([...trackedAgentIdMap.keys()])
+
+    const connect = () => {
+      const streamUrl = new URL(superApiWsUrl('/ws/agentStats'))
+      if (SUPER_API_ADMIN_KEY) {
+        streamUrl.searchParams.set('adminKey', SUPER_API_ADMIN_KEY)
+      }
+
+      // console.log('[agentStats] connecting', {
+      //   url: streamUrl.toString(),
+      //   agentIds: displayedAgentIds,
+      // })
+
+      socket = new WebSocket(streamUrl.toString())
+
+      socket.onopen = () => {
+        if (!isMounted) {
+          return
+        }
+
+        try {
+          const subscriptionPayload = { agentIds: displayedAgentIds }
+          // console.log('[agentStats] subscribing', subscriptionPayload)
+          socket.send(JSON.stringify(subscriptionPayload))
+        } catch {}
+      }
+
+      socket.onmessage = (event) => {
+        if (!isMounted) {
+          return
+        }
+
+        try {
+          // console.log('[agentStats] raw response', event.data)
+          const payload = JSON.parse(event.data)
+          // console.log('[agentStats] parsed response', payload)
+          const rows = payload?.type === 'agentStats'
+            ? (Array.isArray(payload.data) ? payload.data : [payload.data])
+            : []
+
+          if (rows.length === 0) {
+            // console.log('[agentStats] ignoring non-agentStats payload', payload)
+            return
+          }
+
+          setLiveTelemetry((current) => {
+            const next = { ...current }
+
+            rows.forEach((row) => {
+              if (!row?.agentId) {
+                return
+              }
+
+              const incomingAgentId = String(row.agentId).toLowerCase()
+              if (!trackedAgentIds.has(incomingAgentId)) {
+                return
+              }
+
+              const agentId = trackedAgentIdMap.get(incomingAgentId) || String(row.agentId)
+              next[agentId] = {
+                window: row.window || 'rolling_60m',
+                requestsLastHour: Number(row.requestsLastHour ?? 0),
+                currentMinuteRequests: Number(row.currentMinuteRequests ?? 0),
+                latencyMs: Math.round(Number(row.avgResponseMsLastHour ?? 0)),
+                updatedAt: row.updatedAt || new Date().toISOString(),
+              }
+            })
+
+            return next
+          })
+        } catch {}
+      }
+
+      socket.onclose = () => {
+        if (!isMounted) {
+          return
+        }
+
+        // console.log('[agentStats] socket closed, scheduling reconnect')
+        reconnectTimeoutRef.current = window.setTimeout(connect, 3000)
+      }
+
+      socket.onerror = (error) => {
+        console.error('[agentStats] socket error', error)
+        socket?.close()
+      }
+    }
+
+    connect()
+
+    return () => {
+      isMounted = false
+      if (reconnectTimeoutRef.current) {
+        window.clearTimeout(reconnectTimeoutRef.current)
+      }
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close()
+      }
+    }
+  }, [agents])
+
   const getSparklinePoints = (agent, index) => {
-    const seed = (Number(agent.id) || 1) * 0.73 + index * 0.37 + telemetryTick * 0.32
+    const seed = getAgentSeed(agent, index) * 0.0073 + index * 0.37
     const points = []
 
     for (let step = 0; step < 16; step += 1) {
@@ -147,9 +277,18 @@ const ValueProp = () => {
             style={loopDistance > 0 ? { '--sp-loop-distance': `${loopDistance}px` } : undefined}
           >
             {strategyRail.map((agent, index) => {
-              const telemetry = getTelemetry(agent, index)
+              const live = liveTelemetry[String(agent.id)]
+              const defaults = getDefaultTelemetry(agent, index)
+              const liveThroughput = Number(live?.requestsLastHour ?? 0)
+              const liveLatency = Number(live?.latencyMs ?? 0)
+              const hasLiveThroughput = liveThroughput > 0
+              const hasLiveLatency = liveLatency > 0
+              const telemetry = {
+                throughput: hasLiveThroughput ? liveThroughput : defaults.throughput,
+                latency: hasLiveLatency ? liveLatency : defaults.latency,
+              }
               const sparklinePoints = getSparklinePoints(agent, index)
-              const latencyClass = telemetry.latency <= 34 ? 'fast' : telemetry.latency <= 45 ? 'normal' : 'slow'
+              const latencyClass = getLatencyClass(telemetry.latency)
               const volumeValue = 120000 + ((Number(agent.id) || 1) * 17300) + (index * 2900)
               const pnlPresets = [128.4, 347.2, 189.6, -12.8, 265.3, 142.1]
               const pnlValue = pnlPresets[index % pnlPresets.length]
@@ -167,7 +306,7 @@ const ValueProp = () => {
               <div className="spc-live-strip" aria-label="Live telemetry">
                 <div className="spc-throughput">
                   <span className="spc-live-dot" />
-                  <span className="spc-live-label">req/m</span>
+                  <span className="spc-live-label">req/h</span>
                   <strong>{telemetry.throughput.toLocaleString()}</strong>
                 </div>
                 <span className={`spc-latency spc-latency-${latencyClass}`}>
