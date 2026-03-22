@@ -848,48 +848,57 @@ const SessionTerminal = () => {
       {/* Extend session modal */}
       {showExtend && (
         <div className="st-modal-overlay" onClick={() => !extending && setShowExtend(false)}>
-          <div className="st-modal st-extend-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Extend Session</h2>
-            <p>Add more runtime without redeploying.</p>
+          <div className="st-modal stx-extend-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="stx-extend-hero">
+              <span className="stx-extend-kicker">Runtime top-up</span>
+              <h2>Extend Session</h2>
+              <p>Add more runtime without redeploying.</p>
+            </div>
 
-            <div className="st-extend-pills">
+            <div className="stx-extend-section-label">Quick presets</div>
+            <div className="stx-extend-pills">
               {[1, 2, 4, 8].map((hours) => (
                 <button
                   key={hours}
                   type="button"
-                  className={`st-extend-pill${extendHours === hours ? ' is-active' : ''}`}
+                  className={`stx-extend-pill${extendHours === hours ? ' is-active' : ''}`}
                   onClick={() => setExtendHours(hours)}
                   disabled={estimatingExtend || extending}
                 >
                   {hours}h
                 </button>
               ))}
-              <div className="st-extend-custom">
+            </div>
+
+            <label className="stx-extend-custom-card">
+              <span className="stx-extend-custom-label">Custom hours</span>
+              <div className="stx-extend-custom">
                 <input
                   type="number"
                   min="1"
                   step="1"
+                  inputMode="numeric"
                   value={extendHours}
                   onChange={(e) => setExtendHours(Math.max(1, Number(e.target.value) || 1))}
                   disabled={estimatingExtend || extending}
                 />
-                <span>hr</span>
+                <span>hours</span>
               </div>
-            </div>
+            </label>
 
             {extendEstimate && (
-              <div className="st-extend-summary">
-                <div className="st-extend-line"><span>{extendEstimate.gpuName}</span><span>${extendEstimate.hourlyPrice.toFixed(3)}/hr</span></div>
-                <div className="st-extend-line"><span>{extendEstimate.hours}h extension</span><span>${extendEstimate.totalPrice.toFixed(3)}</span></div>
-                <div className="st-extend-line st-extend-total"><span>Total (ETH)</span><span>{extendEstimate.totalEth || 'N/A'} ETH</span></div>
+              <div className="stx-extend-summary">
+                <div className="stx-extend-line"><span>{extendEstimate.gpuName}</span><span>${extendEstimate.hourlyPrice.toFixed(3)}/hr</span></div>
+                <div className="stx-extend-line"><span>{extendEstimate.hours}h extension</span><span>${extendEstimate.totalPrice.toFixed(3)}</span></div>
+                <div className="stx-extend-line stx-extend-total"><span>Total (ETH)</span><span>{extendEstimate.totalEth || 'N/A'} ETH</span></div>
               </div>
             )}
 
-            {extendStatus && <div className="st-extend-info">{extendStatus}</div>}
+            {extendStatus && <div className="stx-extend-info">{extendStatus}</div>}
             {extendError && <div className="st-error-banner">{extendError}</div>}
 
-            <div className="st-modal-actions">
-              <button className="st-btn st-btn-success" onClick={handleExtendSession} disabled={extending || estimatingExtend || !hasCurrentExtendEstimate}>
+            <div className="stx-extend-actions">
+              <button className="st-btn stx-extend-primary" onClick={handleExtendSession} disabled={extending || estimatingExtend || !hasCurrentExtendEstimate}>
                 {extending ? 'Processing...' : `Pay & Extend ${Math.max(1, Number(extendHours) || 1)}h`}
               </button>
               <button className="st-btn st-btn-secondary" onClick={() => setShowExtend(false)} disabled={extending}>Cancel</button>

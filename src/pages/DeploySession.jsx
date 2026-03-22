@@ -491,19 +491,29 @@ const DeploySession = () => {
               </div>
             </div>
 
-            <button className="deploy-toggle" onClick={() => setShowApiKeys((value) => !value)}>
-              {showApiKeys ? 'Hide model API keys' : 'Attach model API keys'}
-            </button>
+            <div className={`deploy-api-spotlight ${showApiKeys ? 'is-open' : ''}`}>
+              <div className="deploy-api-spotlight-copy">
+                <span className="deploy-api-spotlight-kicker">Important setup</span>
+                <strong>Attach your model API keys before launch</strong>
+                <p>Sessions work best when a model provider key is attached. Anthropic is the top recommendation for strong agentic task handling.</p>
+              </div>
+              <button className="deploy-toggle deploy-toggle-prominent deploy-toggle-flashy" onClick={() => setShowApiKeys((value) => !value)}>
+                {showApiKeys ? 'Hide model API keys' : 'Attach model API keys'}
+              </button>
+            </div>
 
             {showApiKeys && (
-              <div className="deploy-form-grid deploy-api-grid deploy-form-grid-stack">
+              <div className="deploy-form-grid deploy-api-grid deploy-form-grid-stack deploy-api-fields">
+                <label className="deploy-field deploy-field-full deploy-input-field deploy-input-field-featured">
+                  <span>
+                    Anthropic key
+                    <em className="deploy-recommended-note">Highly recommended for best agentic task handling experience</em>
+                  </span>
+                  <input value={anthropicKey} onChange={(event) => setAnthropicKey(event.target.value)} placeholder="sk-ant-..." />
+                </label>
                 <label className="deploy-field deploy-field-full deploy-input-field">
                   <span>OpenAI key</span>
                   <input value={openaiKey} onChange={(event) => setOpenaiKey(event.target.value)} placeholder="sk-..." />
-                </label>
-                <label className="deploy-field deploy-field-full deploy-input-field">
-                  <span>Anthropic key</span>
-                  <input value={anthropicKey} onChange={(event) => setAnthropicKey(event.target.value)} placeholder="sk-ant-..." />
                 </label>
               </div>
             )}
