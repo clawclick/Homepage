@@ -201,40 +201,99 @@ const SessionTerminal = () => {
     setMessages((prev) => [...prev, { type: 'user', content: userMsg, timestamp: Date.now() / 1000 }, { type: 'assistant', content: '', isStreaming: true, streamId }])
     const controller = new AbortController()
     abortControllerRef.current = controller
+    let streamWatchdog = null
+    let streamReceivedAnyData = false
+    let wasWatchdogAbort = false
+
+    const mergeStreamChunk = (currentContent, incomingContent) => {
+      const current = typeof currentContent === 'string' ? currentContent : ''
+      const incoming = typeof incomingContent === 'string' ? incomingContent : ''
+      if (!incoming) return current
+      if (!current) return incoming
+      if (incoming === current) return current
+      if (incoming.startsWith(current)) return incoming
+      if (current.startsWith(incoming)) return current
+
+      // Handle providers that resend a full snapshot with small prefix jitter.
+      const snapshotIndex = incoming.indexOf(current)
+      if (snapshotIndex !== -1) return incoming
+
+      // Find the largest overlap between current suffix and incoming prefix.
+      const maxOverlap = Math.min(current.length, incoming.length)
+      for (let overlap = maxOverlap; overlap > 0; overlap -= 1) {
+        if (current.slice(-overlap) === incoming.slice(0, overlap)) {
+          return `${current}${incoming.slice(overlap)}`
+        }
+      }
+
+      return `${current}${incoming}`
+    }
+
     try {
       const res = await fetch(clawsFunApiUrl(`/api/session/${id}/terminal`), {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...getWalletHeaders(account) },
+        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream, application/json', ...getWalletHeaders(account) },
         body: JSON.stringify({ message: userMsg }), signal: controller.signal,
       })
       if (!res.ok) { const d = await res.json().catch(() => ({})); setMessages((prev) => prev.map((m) => m.isStreaming ? { ...m, type: 'error', content: d.error || 'Failed to get response', isStreaming: false } : m)); return }
+
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('text/event-stream')) {
+        const text = await res.text()
+        let parsed = null
+        try { parsed = JSON.parse(text) } catch {}
+        const directText = parsed?.content || parsed?.message || parsed?.response || parsed?.reply || text
+        updateStreamingAssistant((message) => ({ ...message, content: typeof directText === 'string' ? directText : JSON.stringify(directText), isStreaming: false }))
+        return
+      }
+
       const reader = res.body?.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
       if (!reader) throw new Error('No response body')
+
+      // Prevent requests from hanging forever when an upstream/proxy buffers SSE.
+      streamWatchdog = setTimeout(() => {
+        if (!streamReceivedAnyData) { wasWatchdogAbort = true; controller.abort() }
+      }, 45000)
+
       const processLine = (line) => {
-        if (!line.startsWith('data: ')) return
+        const normalized = line.trimEnd()
+        if (!normalized.startsWith('data:')) return
+        streamReceivedAnyData = true
+        const payload = normalized.slice(5).trimStart()
+        if (!payload || payload === '[DONE]') {
+          updateStreamingAssistant((message) => ({ ...message, isStreaming: false }))
+          return
+        }
         try {
-          const event = JSON.parse(line.slice(6))
+          const event = JSON.parse(payload)
           if (event.type === 'delta') {
             updateStreamingAssistant((message) => {
-              const nextContent = typeof event.content === 'string' ? event.content : ''
-              const mergedContent = nextContent.startsWith(message.content || '')
-                ? nextContent
-                : `${message.content || ''}${nextContent}`
+              const nextContent = typeof event.content === 'string'
+                ? event.content
+                : typeof event.delta === 'string'
+                  ? event.delta
+                  : typeof event.text === 'string'
+                    ? event.text
+                    : ''
+              const mergedContent = mergeStreamChunk(message.content, nextContent)
               return { ...message, content: mergedContent }
             })
           } else if (event.type === 'tool_start') setMessages((prev) => [...prev, { type: 'tool', content: `Using ${event.name}...`, toolName: event.name, toolPhase: 'start' }])
           else if (event.type === 'tool_result') setMessages((prev) => [...prev, { type: 'tool', content: typeof event.result === 'string' ? event.result.slice(0, 500) : JSON.stringify(event.result).slice(0, 500), toolName: event.name, toolPhase: 'result' }])
           else if (event.type === 'final' || event.type === 'aborted') updateStreamingAssistant((message) => ({ ...message, isStreaming: false }))
           else if (event.type === 'error') updateStreamingAssistant((message) => ({ ...message, type: 'error', content: event.message || 'Generation failed', isStreaming: false }))
-        } catch {}
+        } catch {
+          // If backend sends plain text chunks, still render them.
+          updateStreamingAssistant((message) => ({ ...message, content: `${message.content || ''}${payload}` }))
+        }
       }
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
         buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
+        const lines = buffer.split(/\r?\n/)
         buffer = lines.pop() || ''
         lines.forEach(processLine)
       }
@@ -242,9 +301,15 @@ const SessionTerminal = () => {
       if (buffer.trim()) {
         processLine(buffer.trim())
       }
+
+      // Ensure streaming is always finalized when the reader closes cleanly.
+      updateStreamingAssistant((message) => message.isStreaming ? { ...message, isStreaming: false } : message)
     } catch (err) {
       if (err.name !== 'AbortError') updateStreamingAssistant((message) => ({ ...message, type: 'error', content: err.message || 'Network error', isStreaming: false }))
+      else if (wasWatchdogAbort) updateStreamingAssistant((message) => ({ ...message, type: 'error', content: 'Request timed out before stream started. Please retry.', isStreaming: false }))
+      else updateStreamingAssistant((message) => ({ ...message, isStreaming: false, content: message.content || '(aborted)' }))
     } finally {
+      if (streamWatchdog) clearTimeout(streamWatchdog)
       setSending(false)
       abortControllerRef.current = null
       activeStreamIdRef.current = null

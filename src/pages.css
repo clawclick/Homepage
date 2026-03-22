@@ -2548,11 +2548,12 @@
 }
 
 /* ── Markdown in messages ── */
-.st-markdown { font-size: 0.85rem; line-height: 1.7; color: #1e293b; word-break: break-word; }
-.st-markdown p { margin: 0.4em 0; }
+.st-markdown { font-size: 0.85rem; line-height: 1.35; color: #1e293b; word-break: break-word; }
+.st-markdown p { margin: 0; }
 .st-markdown p:first-child { margin-top: 0; }
 .st-markdown p:last-child { margin-bottom: 0; }
-.st-markdown h1, .st-markdown h2, .st-markdown h3, .st-markdown h4 { margin: 0.8em 0 0.3em; font-weight: 700; color: #111827; }
+.st-markdown > * + * { margin-top: 0.2em; }
+.st-markdown h1, .st-markdown h2, .st-markdown h3, .st-markdown h4 { margin: 0.35em 0 0.1em; font-weight: 700; color: #111827; }
 .st-markdown h1 { font-size: 1.25em; }
 .st-markdown h2 { font-size: 1.1em; }
 .st-markdown h3 { font-size: 1em; }
@@ -2560,20 +2561,21 @@
   background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px;
   padding: 0.15em 0.35em; font-size: 0.88em; font-family: 'SF Mono', 'Fira Code', monospace; color: #0f172a;
 }
-.st-markdown pre { margin: 0.6em 0; border-radius: 8px; overflow-x: auto; background: #0f172a; border: 1px solid #1e293b; }
+.st-markdown pre { margin: 0.25em 0; border-radius: 8px; overflow-x: auto; background: #0f172a; border: 1px solid #1e293b; }
 .st-markdown pre code {
   display: block; padding: 0.8rem 1rem; background: none; border: none; color: #e2e8f0;
   font-size: 0.8rem; line-height: 1.6; white-space: pre; border-radius: 0;
 }
-.st-markdown ul, .st-markdown ol { margin: 0.4em 0; padding-left: 1.5em; }
-.st-markdown li { margin: 0.15em 0; }
-.st-markdown blockquote { margin: 0.5em 0; padding: 0.4em 0.8em; border-left: 3px solid #d1d5db; color: #6b7280; background: #f9fafb; border-radius: 0 6px 6px 0; }
+.st-markdown ul, .st-markdown ol { margin: 0.1em 0; padding-left: 1.25em; }
+.st-markdown li { margin: 0.04em 0; }
+.st-markdown li > p { margin: 0; }
+.st-markdown blockquote { margin: 0.25em 0; padding: 0.3em 0.65em; border-left: 3px solid #d1d5db; color: #6b7280; background: #f9fafb; border-radius: 0 6px 6px 0; }
 .st-markdown a { color: #2563eb; text-decoration: underline; }
 .st-markdown a:hover { color: #1d4ed8; }
-.st-markdown table { border-collapse: collapse; margin: 0.5em 0; font-size: 0.85em; width: 100%; }
+.st-markdown table { border-collapse: collapse; margin: 0.2em 0; font-size: 0.85em; width: 100%; }
 .st-markdown th, .st-markdown td { border: 1px solid #e2e8f0; padding: 0.4em 0.6em; text-align: left; }
 .st-markdown th { background: #f1f5f9; font-weight: 600; }
-.st-markdown hr { border: none; border-top: 1px solid #e2e8f0; margin: 0.8em 0; }
+.st-markdown hr { border: none; border-top: 1px solid #e2e8f0; margin: 0.3em 0; }
 .st-markdown img { max-width: 100%; border-radius: 8px; }
 .st-markdown strong { font-weight: 700; }
 
