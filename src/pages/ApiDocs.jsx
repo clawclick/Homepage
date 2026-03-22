@@ -17,7 +17,7 @@ const ApiDocs = () => {
     { id: 'chains', label: 'Supported Chains' },
     { id: 'websockets', label: 'WebSockets' },
     { id: 'error-handling', label: 'Error Handling' },
-    { id: 'integrations', label: 'Data Providers' },
+    { id: 'integrations', label: 'Capabilities' },
     { id: 'my-api', label: 'My Api', path: '/api/my-api', tone: 'muted' }
   ], [])
   const scrollSections = useMemo(() => navigationSections.filter((section) => !section.path), [navigationSections])
@@ -33,9 +33,9 @@ const ApiDocs = () => {
           response: '{"status": "ok", "service": "super-api"}'
         },
         {
-          method: 'GET', path: '/providers', description: 'List all 50+ providers and their config status',
+          method: 'GET', path: '/providers', description: 'List all configured data connectors and service status',
           requiresAuth: false, example: 'GET https://api.claw.click/providers',
-          response: '{"providers": [{"id": "moralis", "label": "Moralis", "category": "walletTracking", "configured": true}, {"id": "birdeye", "label": "Birdeye", "category": "marketData", "configured": true}, {"id": "dexScreener", "label": "DexScreener", "category": "marketData", "configured": true}, {"id": "codex", "label": "Codex.io", "category": "analytics", "configured": true}]}'
+          response: '{"providers": [{"id": "wallet-tracking", "label": "Wallet Tracking", "category": "walletTracking", "configured": true}, {"id": "market-data", "label": "Market Data", "category": "marketData", "configured": true}, {"id": "analytics", "label": "Analytics", "category": "analytics", "configured": true}, {"id": "risk", "label": "Risk", "category": "risk", "configured": true}]}'
         },
         {
           method: 'GET', path: '/stats', description: 'Summary daily stats: requests, users, volume (Admin)',
@@ -83,13 +83,13 @@ const ApiDocs = () => {
           response: '{"endpoint": "tokenPriceHistory", "status": "live", "chain": "sol", "points": [{"timestamp": 1710000000, "priceUsd": 150.5, "open": 150, "high": 152, "low": 149, "close": 150.5, "volume": 1000000}]}'
         },
         {
-          method: 'GET', path: '/detailedTokenStats', description: 'Bucketed token stats from Codex (cached 30 min)',
+          method: 'GET', path: '/detailedTokenStats', description: 'Bucketed token stats (cached 30 min)',
           requiresAuth: true,
           params: [
             { name: 'chain', required: false, default: 'eth', description: 'Chain' },
             { name: 'tokenAddress', required: true, default: '—', description: 'Token address' },
             { name: 'durations', required: false, default: 'hour1,day1', description: 'Comma-separated: min5, hour1, hour4, hour12, day1' },
-            { name: 'bucketCount', required: false, default: '6', description: 'Number of buckets from Codex' }
+            { name: 'bucketCount', required: false, default: '6', description: 'Number of buckets returned' }
           ],
           example: 'GET https://api.claw.click/detailedTokenStats?chain=eth&tokenAddress=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
           response: '{"endpoint": "detailedTokenStats", "status": "live", "durations": {"hour1": {"statsUsd": {"volume": {"currentValue": 13839617.47, "change": -0.3094}}}}}'
@@ -272,7 +272,7 @@ const ApiDocs = () => {
           response: '{"endpoint": "holderAnalysis", "status": "live", "chain": "eth", "tokenAddress": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "holderCount": 5000000, "top10Percent": 45.2, "top100Percent": 72.5, "giniCoefficient": 0.82, "distributionRisk": "medium", "concentration": {"veryHigh": 5, "high": 12, "medium": 45, "low": 200, "veryLow": 4738}}'
         },
         {
-          method: 'GET', path: '/tokenHolders', description: 'Paginated token holder list with cursor support (Codex)',
+          method: 'GET', path: '/tokenHolders', description: 'Paginated token holder list with cursor support',
           requiresAuth: true,
           params: [
             { name: 'tokenAddress', required: true, default: '—', description: 'Token address' },
@@ -289,20 +289,20 @@ const ApiDocs = () => {
       category: 'Discovery & Analytics',
       items: [
         {
-          method: 'GET', path: '/getTopEthTokens', description: 'Top Ethereum tokens from Ethplorer (Ethereum mainnet, cached 10 min)',
+          method: 'GET', path: '/getTopEthTokens', description: 'Top Ethereum tokens (Ethereum mainnet, cached 10 min)',
           requiresAuth: true,
           params: [
             { name: 'criteria', required: false, default: 'trade', description: 'Sort by trade, cap, or count' },
             { name: 'limit', required: false, default: '50', description: 'Max results (1-50)' }
           ],
           example: 'GET https://api.claw.click/getTopEthTokens?criteria=cap&limit=25',
-          response: '{"endpoint":"getTopEthTokens","status":"live","criteria":"cap","limit":25,"cached":false,"tokens":[{"address":"0xdAC17F958D2ee523a2206206994597C13D831ec7","totalSupply":"1000000000000000","name":"Tether USD","symbol":"USDT","decimals":"6","price":{"rate":1,"currency":"USD","diff":0.01,"diff7d":0.03,"diff30d":0.02,"marketCapUsd":100000000000,"availableSupply":100000000000,"volume24h":50000000000,"ts":1763000000},"countOps":12345678,"holdersCount":1000000,"lastUpdated":1763000000,"extraFieldsPreserved":true}],"providers":[{"provider":"ethplorer","status":"ok"}]}'
+          response: '{"endpoint":"getTopEthTokens","status":"live","criteria":"cap","limit":25,"cached":false,"tokens":[{"address":"0xdAC17F958D2ee523a2206206994597C13D831ec7","totalSupply":"1000000000000000","name":"Tether USD","symbol":"USDT","decimals":"6","price":{"rate":1,"currency":"USD","diff":0.01,"diff7d":0.03,"diff30d":0.02,"marketCapUsd":100000000000,"availableSupply":100000000000,"volume24h":50000000000,"ts":1763000000},"countOps":12345678,"holdersCount":1000000,"lastUpdated":1763000000,"extraFieldsPreserved":true}],"sources":[{"name":"ethereum-market-index","status":"ok"}]}'
         },
         {
-          method: 'GET', path: '/getNewEthTradableTokens', description: 'Newest tradable Ethereum tokens from Ethplorer (Ethereum mainnet, cached 10 min)',
+          method: 'GET', path: '/getNewEthTradableTokens', description: 'Newest tradable Ethereum tokens (Ethereum mainnet, cached 10 min)',
           requiresAuth: true,
           example: 'GET https://api.claw.click/getNewEthTradableTokens',
-          response: '{"endpoint":"getNewEthTradableTokens","status":"live","cached":false,"tokens":[{"address":"0x1234...","totalSupply":"1000000000000000000","name":"New Token","symbol":"NEW","decimals":"18","price":{"rate":0.00012,"currency":"USD","diff":4.2,"diff7d":4.2,"diff30d":4.2,"marketCapUsd":120000,"availableSupply":1000000000,"volume24h":25000,"ts":1763000000},"holdersCount":145,"lastUpdated":1763000000,"added":1762999500,"extraFieldsPreserved":true}],"providers":[{"provider":"ethplorer","status":"ok"}]}'
+          response: '{"endpoint":"getNewEthTradableTokens","status":"live","cached":false,"tokens":[{"address":"0x1234...","totalSupply":"1000000000000000000","name":"New Token","symbol":"NEW","decimals":"18","price":{"rate":0.00012,"currency":"USD","diff":4.2,"diff7d":4.2,"diff30d":4.2,"marketCapUsd":120000,"availableSupply":1000000000,"volume24h":25000,"ts":1763000000},"holdersCount":145,"lastUpdated":1763000000,"added":1762999500,"extraFieldsPreserved":true}],"sources":[{"name":"ethereum-discovery","status":"ok"}]}'
         },
         {
           method: 'GET', path: '/tokenSearch', description: 'Search tokens by name, symbol, or address',
@@ -314,7 +314,7 @@ const ApiDocs = () => {
           response: '{"endpoint": "tokenSearch", "status": "live", "query": "pepe", "results": [{"chainId": "ethereum", "pairAddress": "0x...", "tokenAddress": "0x6982508145454ce325ddbe47a25d4ec3d2311933", "name": "Pepe", "symbol": "PEPE", "priceUsd": 0.00001, "volume24hUsd": 200000000, "liquidityUsd": 50000000, "priceChange24hPct": 5.2, "fdvUsd": 4000000000, "dex": "uniswap"}]}'
         },
         {
-          method: 'GET', path: '/filterTokens', description: 'Filter tokens by metrics (Codex, cached 5 min)',
+          method: 'GET', path: '/filterTokens', description: 'Filter tokens by metrics (cached 5 min)',
           requiresAuth: true,
           params: [
             { name: 'network', required: false, default: '—', description: 'Chain filter: eth, base, bsc, sol (comma-separated)' },
@@ -337,7 +337,7 @@ const ApiDocs = () => {
           response: '{"endpoint": "volatilityScanner", "chain": "sol", "duration": "hour4", "count": 5, "cached": false, "scanned": 50, "candidates": [{"address": "TokenMint...", "name": "ExampleToken", "symbol": "EX", "priceUsd": "0.00523", "liquidity": "250000", "volume24h": "1200000", "support": 0.0042, "resistance": 0.0068, "swingPct": 18.5, "swingCount": 4, "currentPosition": 0.32, "buyVsSellRatio": 1.15, "swingScore": 85}]}'
         },
         {
-          method: 'GET', path: '/topTraders', description: 'Top traders for a token (multi-chain via Birdeye)',
+          method: 'GET', path: '/topTraders', description: 'Top traders for a token across supported chains',
           requiresAuth: true,
           params: [
             { name: 'chain', required: false, default: 'sol', description: 'Chain (sol, eth, base, bsc)' },
@@ -345,7 +345,7 @@ const ApiDocs = () => {
             { name: 'timeFrame', required: false, default: '24h', description: 'Time frame (30m, 1h, 2h, 4h, 8h, 24h)' }
           ],
           example: 'GET https://api.claw.click/topTraders?chain=eth&tokenAddress=0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7&timeFrame=24h',
-          response: '{"endpoint": "topTraders", "status": "live", "chain": "eth", "tokenAddress": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "timeFrame": "24h", "traders": [{"address": "0x...", "tradeCount": 4, "volume": 394.10, "buyVolume": 394.10, "sellVolume": 0, "profit": 12.5, "winRate": 0.75}], "providers": [{"provider": "birdeye", "status": "ok"}]}'
+          response: '{"endpoint": "topTraders", "status": "live", "chain": "eth", "tokenAddress": "0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7", "timeFrame": "24h", "traders": [{"address": "0x...", "tradeCount": 4, "volume": 394.10, "buyVolume": 394.10, "sellVolume": 0, "profit": 12.5, "winRate": 0.75}], "sources": [{"name": "trade-ranking", "status": "ok"}]}'
         },
         {
           method: 'GET', path: '/gasFeed', description: 'Current gas prices for EVM chains',
@@ -391,7 +391,7 @@ const ApiDocs = () => {
           response: '{"type":"agentStats","data":{"agentId":"scanner-alpha","window":"rolling_60m","requestsLastHour":124,"avgResponseMsLastHour":188.4,"currentMinuteRequests":3,"updatedAt":"2026-03-21T20:15:00.000Z"}}'
         },
         {
-          method: 'WS', path: '/ws/launchpadEvents', description: 'Real-time launchpad event stream (Codex)',
+          method: 'WS', path: '/ws/launchpadEvents', description: 'Real-time launchpad event stream',
           requiresAuth: true,
           params: [
             { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' }
@@ -411,25 +411,15 @@ const ApiDocs = () => {
   ]
 
   const integrations = [
-    { name: "Moralis", category: "Infrastructure", status: "live" },
-    { name: "Birdeye", category: "Market Data", status: "live" },
-    { name: "DexScreener", category: "Market Data", status: "live" },
-    { name: "Codex.io", category: "Analytics", status: "live" },
-    { name: "Alchemy", category: "Infrastructure", status: "live" },
-    { name: "GoPlus", category: "Risk", status: "live" },
-    { name: "CoinGecko", category: "Market Data", status: "apikey" },
-    { name: "CoinMarketCap", category: "Market Data", status: "live" },
-    { name: "GeckoTerminal", category: "Market Data", status: "live" },
-    { name: "Zerion", category: "Portfolio", status: "live" },
-    { name: "DeBank", category: "Portfolio", status: "apikey" },
-    { name: "Arkham", category: "Analytics", status: "apikey" },
-    { name: "Dune Analytics", category: "Analytics", status: "apikey" },
-    { name: "DefiLlama", category: "DeFi", status: "live" },
-    { name: "LunarCrush", category: "Sentiment", status: "apikey" },
-    { name: "Uniswap V2/V3/V4", category: "DEX", status: "live" },
-    { name: "PancakeSwap V2/V3", category: "DEX", status: "live" },
-    { name: "Raydium", category: "DEX", status: "live" },
-    { name: "Pump.fun", category: "Launchpad", status: "live" }
+    { name: "Market Data", category: "Coverage", status: "live" },
+    { name: "Wallet Intelligence", category: "Coverage", status: "live" },
+    { name: "Risk Signals", category: "Coverage", status: "live" },
+    { name: "DEX Routing", category: "Execution", status: "live" },
+    { name: "Launchpad Events", category: "Realtime", status: "live" },
+    { name: "Holder Analysis", category: "Analytics", status: "live" },
+    { name: "Token Discovery", category: "Analytics", status: "live" },
+    { name: "Sentiment Signals", category: "Analytics", status: "live" },
+    { name: "Gas Intelligence", category: "Infrastructure", status: "live" }
   ]
 
   // Scroll tracking
@@ -868,42 +858,22 @@ ws.on('message', (data) => {
         {/* Integrations */}
         <section className="integrations-section" id="integrations">
           <div className="api-docs-container">
-            <h2 className="section-title">Data Sources & Integrations</h2>
-            <p className="section-description">32+ premium data sources powering comprehensive crypto intelligence.</p>
+            <h2 className="section-title">Platform Capabilities</h2>
+            <p className="section-description">Unified coverage across market data, execution, risk, analytics, and realtime event flows.</p>
             <div className="api-integrations-grid">
               {[
-                { name: "Moralis", category: "Infrastructure", live: true },
-                { name: "Birdeye", category: "Market Data", live: true },
-                { name: "DexScreener", category: "Market Data", live: true },
-                { name: "Codex.io", category: "Analytics", live: true },
-                { name: "Etherscan", category: "Infrastructure", live: true },
-                { name: "GoPlus", category: "Risk", live: true },
-                { name: "CoinGecko", category: "Market Data", live: true },
-                { name: "CoinMarketCap", category: "Market Data", live: true },
-                { name: "GeckoTerminal", category: "Market Data", live: true },
-                { name: "Zerion", category: "Portfolio", live: false },
-                { name: "DeBank", category: "Portfolio", live: false },
-                { name: "Arkham", category: "Analytics", live: false },
-                { name: "Dune Analytics", category: "Analytics", live: true },
-                { name: "LunarCrush", category: "Sentiment", live: true },
-                { name: "Reddit API", category: "Sentiment", live: true },
-                { name: "X (Twitter)", category: "Sentiment", live: true },
-                { name: "Bubblemaps", category: "Risk", live: true },
-                { name: "QuickIntel", category: "Risk", live: true },
-                { name: "Honeypot.is", category: "Risk", live: true },
-                { name: "Nansen", category: "Analytics", live: false },
-                { name: "Uniswap V2/V3/V4", category: "DEX", live: true },
-                { name: "PancakeSwap V2/V3", category: "DEX", live: true },
-                { name: "Aerodrome V2/V3", category: "DEX", live: true },
-                { name: "Raydium", category: "DEX", live: true },
-                { name: "Meteora", category: "DEX", live: true },
-                { name: "Pump.fun", category: "Launchpad", live: true },
-                { name: "Clanker", category: "Launchpad", live: true },
-                { name: "Virtuals Protocol", category: "Launchpad", live: false },
-                { name: "Santiment", category: "Analytics", live: false },
-                { name: "DexTools", category: "Market Data", live: false },
-                { name: "Sim by Dune", category: "Analytics", live: false },
-                { name: "Telegram", category: "Sentiment", live: false },
+                { name: "Realtime Market Coverage", category: "Market Data", live: true },
+                { name: "Token Discovery", category: "Analytics", live: true },
+                { name: "Wallet Review", category: "Portfolio", live: true },
+                { name: "Risk Scanning", category: "Risk", live: true },
+                { name: "DEX Quotes", category: "Execution", live: true },
+                { name: "DEX Transaction Building", category: "Execution", live: true },
+                { name: "Launchpad Monitoring", category: "Realtime", live: true },
+                { name: "Holder Analysis", category: "Analytics", live: true },
+                { name: "Gas Tracking", category: "Infrastructure", live: true },
+                { name: "Sentiment Monitoring", category: "Analytics", live: true },
+                { name: "Strategy Guides", category: "Resources", live: true },
+                { name: "Rolling Agent Stats", category: "Realtime", live: true },
               ].map((item, i) => (
                 <div key={i} className={`api-integration-chip${item.live ? ' chip-live' : ''}`}>
                   <div className="api-integration-top">

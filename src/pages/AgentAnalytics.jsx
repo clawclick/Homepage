@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { fetchAgentStats } from '../lib/sessionApi'
+import { clawsFunApiUrl, fetchAgentStats, fetchAgents } from '../lib/sessionApi'
 
 function formatPct(value) {
   if (typeof value !== 'number') {
@@ -16,11 +16,41 @@ function formatNumber(value) {
   return value.toLocaleString()
 }
 
+function formatCurrency(value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return 'Unavailable'
+  }
+
+  return `$${value.toFixed(2)}`
+}
+
+function formatAgentGpu(agent) {
+  const gpuType = agent?.defaults?.gpuType || 'Any GPU'
+  const gpuCount = agent?.defaults?.numGpus || 1
+  const cpuCores = agent?.defaults?.cpuCores
+  const memoryGb = agent?.defaults?.memoryGb
+
+  const resourceBits = []
+
+  if (cpuCores) {
+    resourceBits.push(`${cpuCores} CPU`)
+  }
+
+  if (memoryGb) {
+    resourceBits.push(`${memoryGb}GB RAM`)
+  }
+
+  return `${gpuType} x${gpuCount}${resourceBits.length ? ` • ${resourceBits.join(' • ')}` : ''}`
+}
+
 const AgentAnalytics = () => {
   const { id } = useParams()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [payload, setPayload] = useState(null)
+  const [marketplaceAgents, setMarketplaceAgents] = useState([])
+  const [dailyEstimate, setDailyEstimate] = useState(null)
+  const [dailyEstimateLoading, setDailyEstimateLoading] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -49,15 +79,143 @@ const AgentAnalytics = () => {
     }
   }, [id])
 
-  const agent = useMemo(() => payload?.agents?.[0] || null, [payload])
+  useEffect(() => {
+    let isMounted = true
+
+    fetchAgents()
+      .then((data) => {
+        if (isMounted) {
+          setMarketplaceAgents(Array.isArray(data) ? data : [])
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const statsAgent = useMemo(() => payload?.agents?.[0] || null, [payload])
+
+  const marketplaceAgent = useMemo(() => {
+    return marketplaceAgents.find((item) => String(item.id) === String(id)) || null
+  }, [id, marketplaceAgents])
+
+  const agent = useMemo(() => {
+    if (!statsAgent && !marketplaceAgent) {
+      return null
+    }
+
+    return {
+      ...statsAgent,
+      ...marketplaceAgent,
+      defaults: {
+        ...(statsAgent?.defaults || {}),
+        ...(marketplaceAgent?.defaults || {}),
+      },
+      daily: statsAgent?.daily,
+      allTime: statsAgent?.allTime,
+      keys: statsAgent?.keys,
+    }
+  }, [marketplaceAgent, statsAgent])
+
+  useEffect(() => {
+    if (!agent?.defaults) {
+      setDailyEstimate(null)
+      setDailyEstimateLoading(false)
+      return
+    }
+
+    const gpuType = agent.defaults.gpuType
+    const numGpus = agent.defaults.numGpus || 1
+    const cpuCores = agent.defaults.cpuCores
+    const memoryGb = agent.defaults.memoryGb
+    const diskGb = agent.defaults.diskGb
+
+    setDailyEstimateLoading(true)
+
+    fetch(clawsFunApiUrl('/api/session/estimate'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gpuType: gpuType === 'Any GPU' ? undefined : gpuType,
+        numGpus,
+        cpuCores,
+        memoryGb,
+        diskGb,
+        durationHours: 24,
+      }),
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data && data.available && typeof data.totalPrice === 'number') {
+          setDailyEstimate({
+            totalPrice: data.totalPrice,
+            gpuName: data.gpuName || gpuType || 'Any GPU',
+          })
+          return
+        }
+
+        if (data && data.available && typeof data.hourlyPrice === 'number') {
+          setDailyEstimate({
+            totalPrice: data.hourlyPrice * 24,
+            gpuName: data.gpuName || gpuType || 'Any GPU',
+          })
+          return
+        }
+
+        setDailyEstimate(null)
+      })
+      .catch(() => {
+        setDailyEstimate(null)
+      })
+      .finally(() => {
+        setDailyEstimateLoading(false)
+      })
+  }, [agent])
 
   return (
     <div className="agent-analytics-page">
       <section className="agent-analytics-hero">
         <div className="agent-analytics-inner">
           <p className="agent-analytics-kicker">Agent Analytics</p>
-          <h1 className="agent-analytics-title">{id}</h1>
-          <p className="agent-analytics-subtitle">Daily + all-time API performance, including successful and failed request quality metrics.</p>
+          <h1 className="agent-analytics-title">{agent?.name || id}</h1>
+          <p className="agent-analytics-subtitle">
+            {agent?.description || 'Daily + all-time API performance, including successful and failed request quality metrics.'}
+          </p>
+
+          {agent && (
+            <div className="agent-analytics-overview">
+              <div className="agent-analytics-overview-main">
+                <div className="agent-overview-chip">
+                  <span>Type</span>
+                  <strong>{agent.type || 'Agent'}</strong>
+                </div>
+                <div className="agent-overview-chip agent-overview-chip-accent">
+                  <span>Recommended GPU</span>
+                  <strong>{formatAgentGpu(agent)}</strong>
+                </div>
+              </div>
+              <div className="agent-analytics-overview-meta">
+                <div className="agent-overview-meta-card">
+                  <span>Name</span>
+                  <strong>{agent.name || id}</strong>
+                </div>
+                <div className="agent-overview-meta-card">
+                  <span>Cost Per Day</span>
+                  <strong>
+                    {dailyEstimateLoading ? 'Estimating...' : formatCurrency(dailyEstimate?.totalPrice)}
+                  </strong>
+                  {!dailyEstimateLoading && (
+                    <em className="agent-overview-meta-note">
+                      {dailyEstimate?.gpuName ? `24h estimate via ${dailyEstimate.gpuName}` : '24h estimate based on recommended runtime'}
+                    </em>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="agent-analytics-actions">
             <Link className="btn-secondary" to="/app">Back to Marketplace</Link>
             <Link className="btn-primary" to={`/deploy?agent=${encodeURIComponent(id || '')}`}>Deploy Agent</Link>

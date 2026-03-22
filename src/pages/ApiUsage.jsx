@@ -125,13 +125,13 @@ const ApiUsage = () => {
 
   return (
     <div className="agent-analytics-page">
-      <section className="agent-analytics-hero">
+      <section className="agent-analytics-hero api-usage-hero">
         <div className="agent-analytics-inner">
           <div>
             <Link to="/api" className="deploy-link-back">Back to API docs</Link>
             <p className="agent-analytics-kicker">My Api</p>
             <h1 className="agent-analytics-title">{isConnected && account ? shortenWallet(account) : 'My Api'}</h1>
-            <p className="agent-analytics-subtitle">Your unified Claw.Click API dashboard, powered by the user stats endpoint.</p>
+            <p className="agent-analytics-subtitle">Your unified Claw.Click API dashboard.</p>
           </div>
           <div className="agent-analytics-actions">
             {isConnected && account && (
@@ -176,7 +176,7 @@ const ApiUsage = () => {
                       <h4>{generatedKey.name}</h4>
                     </div>
                   </div>
-                  <p className="api-generated-key-note">The new key has been created and the table below has been refreshed from the stats endpoint.</p>
+                  <p className="api-generated-key-note">The new key has been created and your dashboard has been refreshed.</p>
                   <div className="api-generated-key-value">{generatedKey.key}</div>
                 </div>
               )}
