@@ -51,6 +51,39 @@ function getLatencyClass(latency) {
   return 'critical'
 }
 
+function normalizeAgentStatsRows(payload) {
+  if (!payload || typeof payload !== 'object') {
+    return []
+  }
+
+  // Incremental updates after subscription.
+  if (payload.type === 'agentStats') {
+    return Array.isArray(payload.data) ? payload.data : [payload.data]
+  }
+
+  // Initial subscription response can carry snapshots in different shapes.
+  if (payload.type === 'subscribed') {
+    const snapshots = Array.isArray(payload.data?.snapshots)
+      ? payload.data.snapshots
+      : Array.isArray(payload.snapshots)
+        ? payload.snapshots
+        : []
+
+    return snapshots.map((snapshot) => {
+      const stats = snapshot?.stats && typeof snapshot.stats === 'object'
+        ? snapshot.stats
+        : snapshot
+
+      return {
+        ...stats,
+        agentId: snapshot?.agentId ?? stats?.agentId,
+      }
+    })
+  }
+
+  return []
+}
+
 const ValueProp = () => {
   const navigate = useNavigate()
   const [agents, setAgents] = useState([])
@@ -135,9 +168,7 @@ const ValueProp = () => {
           console.log('[agentStats] raw response', event.data)
           const payload = JSON.parse(event.data)
           console.log('[agentStats] parsed response', payload)
-          const rows = payload?.type === 'agentStats'
-            ? (Array.isArray(payload.data) ? payload.data : [payload.data])
-            : []
+          const rows = normalizeAgentStatsRows(payload)
 
           if (rows.length === 0) {
             console.log('[agentStats] ignoring non-agentStats payload', payload)
