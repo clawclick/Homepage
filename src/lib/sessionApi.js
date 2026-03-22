@@ -5,6 +5,72 @@ const ADMIN_API_KEY = 'ADMIN_API_KEY'
 const USER_KEYS_PATH = import.meta.env.VITE_SUPER_API_USER_KEYS_PATH || '/user/keys'
 const USER_KEY_CREATE_PATH = import.meta.env.VITE_SUPER_API_GENERATE_KEY_PATH || '/admin/apiKeys/generate'
 const USER_USAGE_PATH = import.meta.env.VITE_SUPER_API_USER_USAGE_PATH || '/admin/stats/user'
+const STATS_AGENTS_CACHE_TTL_MS = 2 * 60 * 60 * 1000
+const STATS_AGENTS_CACHE_PREFIX = 'stats-agents:v1:'
+const statsAgentsMemoryCache = new Map()
+
+function getStatsAgentsCacheKey(agentId, includeKeys) {
+  const idPart = agentId === undefined || agentId === null || agentId === '' ? '*' : String(agentId)
+  return `${idPart}:${includeKeys ? '1' : '0'}`
+}
+
+function readStatsAgentsCache(cacheKey) {
+  const now = Date.now()
+  const memoryEntry = statsAgentsMemoryCache.get(cacheKey)
+
+  if (memoryEntry) {
+    if (memoryEntry.expiresAt > now) {
+      return memoryEntry.data
+    }
+
+    statsAgentsMemoryCache.delete(cacheKey)
+  }
+
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return null
+  }
+
+  try {
+    const serialized = window.localStorage.getItem(`${STATS_AGENTS_CACHE_PREFIX}${cacheKey}`)
+    if (!serialized) {
+      return null
+    }
+
+    const parsed = JSON.parse(serialized)
+    if (!parsed || typeof parsed !== 'object' || parsed.expiresAt <= now) {
+      window.localStorage.removeItem(`${STATS_AGENTS_CACHE_PREFIX}${cacheKey}`)
+      return null
+    }
+
+    statsAgentsMemoryCache.set(cacheKey, {
+      data: parsed.data,
+      expiresAt: parsed.expiresAt,
+    })
+
+    return parsed.data
+  } catch {
+    return null
+  }
+}
+
+function writeStatsAgentsCache(cacheKey, data) {
+  const entry = {
+    data,
+    expiresAt: Date.now() + STATS_AGENTS_CACHE_TTL_MS,
+  }
+
+  statsAgentsMemoryCache.set(cacheKey, entry)
+
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return
+  }
+
+  try {
+    window.localStorage.setItem(`${STATS_AGENTS_CACHE_PREFIX}${cacheKey}`, JSON.stringify(entry))
+  } catch {
+    // Ignore storage write issues and keep runtime cache only.
+  }
+}
 
 function superApiUrl(path) {
   return `${SUPER_API_URL}${path}`
@@ -219,14 +285,19 @@ export async function fetchAgents() {
 }
 
 export async function fetchAgentStats(agentId, includeKeys = true) {
-  if (!agentId) {
-    throw new Error('Agent ID is required to load stats.')
+  const cacheKey = getStatsAgentsCacheKey(agentId, includeKeys)
+  const cached = readStatsAgentsCache(cacheKey)
+  if (cached) {
+    return cached
   }
 
   const query = new URLSearchParams({
-    agentId: String(agentId),
     includeKeys: includeKeys ? 'true' : 'false',
   })
+
+  if (agentId !== undefined && agentId !== null && agentId !== '') {
+    query.set('agentId', String(agentId))
+  }
 
   const response = await fetch(`${SUPER_API_URL}/admin/stats/agents?${query.toString()}`, {
     headers: {
@@ -240,6 +311,8 @@ export async function fetchAgentStats(agentId, includeKeys = true) {
   if (!response.ok) {
     throw new Error(data?.message || data?.error || `Request failed: ${response.status}`)
   }
+
+  writeStatsAgentsCache(cacheKey, data)
 
   return data
 }

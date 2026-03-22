@@ -1,19 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useEthereumWallet } from '../hooks/useEthereumWallet'
-import { fetchAgents } from '../lib/sessionApi'
-
-function formatCreator(creator) {
-  if (!creator) {
-    return 'System'
-  }
-
-  if (creator.startsWith('0x') && creator.length > 10) {
-    return `${creator.slice(0, 6)}...${creator.slice(-4)}`
-  }
-
-  return creator
-}
+import { fetchAgents, fetchAgentStats } from '../lib/sessionApi'
 
 function getChainLabel(chain) {
   if (!chain) {
@@ -33,9 +21,66 @@ function getRiskBadgeClass(risk) {
   return `badge-risk badge-risk-${normalized}`
 }
 
+function getSessionsSpawned(agent, statsAgent) {
+  const statsKeyCollections = [
+    statsAgent?.keys?.daily,
+    statsAgent?.keys?.allTime,
+  ]
+
+  for (const collection of statsKeyCollections) {
+    if (Array.isArray(collection) && collection.length > 0) {
+      return collection.length
+    }
+  }
+
+  const statsCountCandidates = [
+    statsAgent?.allTime?.keyCount,
+    statsAgent?.daily?.activeKeysToday,
+  ]
+
+  for (const value of statsCountCandidates) {
+    if (Number.isFinite(Number(value))) {
+      return Number(value)
+    }
+  }
+
+  const keyCollections = [
+    agent?.apiKeys,
+    agent?.api_keys,
+    agent?.keys,
+    agent?.allTime?.keys,
+  ]
+
+  for (const collection of keyCollections) {
+    if (Array.isArray(collection)) {
+      return collection.length
+    }
+
+    if (collection && typeof collection === 'object') {
+      return Object.keys(collection).length
+    }
+  }
+
+  const keyCountCandidates = [
+    agent?.keyCount,
+    agent?.apiKeyCount,
+    agent?.api_key_count,
+    agent?.allTime?.keyCount,
+  ]
+
+  for (const value of keyCountCandidates) {
+    if (Number.isFinite(Number(value))) {
+      return Number(value)
+    }
+  }
+
+  return 0
+}
+
 const AppMarketplace = () => {
   const [typeFilter, setTypeFilter] = useState('All')
   const [agents, setAgents] = useState([])
+  const [statsByAgentId, setStatsByAgentId] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [walletActionError, setWalletActionError] = useState('')
@@ -45,13 +90,30 @@ const AppMarketplace = () => {
   useEffect(() => {
     let isMounted = true
 
-    fetchAgents()
-      .then((data) => {
+    Promise.all([
+      fetchAgents(),
+      fetchAgentStats(undefined, true).catch(() => null),
+    ])
+      .then(([agentData, statsPayload]) => {
         if (!isMounted) {
           return
         }
 
-        setAgents(data)
+        setAgents(agentData)
+
+        const statsList = Array.isArray(statsPayload?.agents) ? statsPayload.agents : []
+        const nextStatsByAgentId = {}
+
+        statsList.forEach((statsAgent) => {
+          const statsId = statsAgent?.agentId
+          if (statsId === undefined || statsId === null || statsId === '') {
+            return
+          }
+
+          nextStatsByAgentId[String(statsId)] = statsAgent
+        })
+
+        setStatsByAgentId(nextStatsByAgentId)
       })
       .catch((agentError) => {
         if (!isMounted) {
@@ -166,7 +228,10 @@ const AppMarketplace = () => {
             </div>
           )}
 
-          {filtered.map((agent) => (
+          {filtered.map((agent) => {
+            const statsAgent = statsByAgentId[String(agent.id)]
+
+            return (
             <div key={agent.id} className="mp-card">
               <div className="mp-card-header">
                 <h3>{agent.name}</h3>
@@ -190,8 +255,8 @@ const AppMarketplace = () => {
                     <span className="mp-card-metric-value">{agent.is_active ? 'Active' : 'Inactive'}</span>
                   </div>
                   <div className="mp-card-metric">
-                    <span className="mp-card-metric-label">Provisioning</span>
-                    <span className="mp-card-metric-value" title={formatCreator(agent.created_by)}>{formatCreator(agent.created_by)}</span>
+                    <span className="mp-card-metric-label">Sessions Spawned</span>
+                    <span className="mp-card-metric-value">{getSessionsSpawned(agent, statsAgent).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -205,13 +270,6 @@ const AppMarketplace = () => {
                     {agent.risk || 'unrated'}
                   </span>
                 </div>
-
-                <div className="mp-card-tags">
-                  {(agent.chains || []).slice(1, 3).map((chain) => (
-                    <span key={chain} className="mp-tag" title={getChainLabel(chain)}>{getChainLabel(chain)}</span>
-                  ))}
-                  {agent.skill_source_type && <span className="mp-tag" title={agent.skill_source_type}>{agent.skill_source_type}</span>}
-                </div>
               </div>
 
               <div className="mp-card-actions">
@@ -219,7 +277,8 @@ const AppMarketplace = () => {
                 <button className="btn-secondary mp-btn" onClick={() => navigate(`/agents/${encodeURIComponent(agent.id)}/analytics`)}>Details</button>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
