@@ -2312,6 +2312,8 @@
 .st-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .st-btn-primary { background: #111827; color: #fff; border-color: #111827; }
 .st-btn-primary:hover:not(:disabled) { background: #000; }
+.st-btn-success { background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; border-color: #16a34a; box-shadow: 0 10px 24px rgba(34, 197, 94, 0.2); }
+.st-btn-success:hover:not(:disabled) { background: linear-gradient(135deg, #15803d, #16a34a); border-color: #15803d; }
 .st-btn-danger { background: #ef4444; color: #fff; border-color: #ef4444; }
 .st-btn-danger:hover:not(:disabled) { background: #dc2626; }
 .st-btn-secondary { background: #f3f4f6; color: #111827; border-color: #e5e7eb; }
@@ -2458,6 +2460,8 @@
 .st-ctrl-restart:hover { background: #fefce8; border-color: #ca8a04; }
 .st-ctrl-reboot { color: #ea580c; border-color: #fed7aa; }
 .st-ctrl-reboot:hover { background: #fff7ed; border-color: #ea580c; }
+.st-ctrl-extend { color: #22c55e; border-color: #86efac; }
+.st-ctrl-extend:hover { background: #dcfce7; border-color: #22c55e; }
 .st-ctrl-terminate { color: #dc2626; border-color: #fecaca; }
 .st-ctrl-terminate:hover { background: #fef2f2; border-color: #dc2626; }
 
@@ -2519,6 +2523,100 @@
 .st-modal h2 { font-size: 1.35rem; margin: 0 0 0.5rem; }
 .st-modal p { color: #6b7280; font-size: 0.9rem; line-height: 1.6; margin: 0 0 1.5rem; }
 .st-modal-actions { display: flex; gap: 0.75rem; justify-content: center; }
+/* ── Extend modal (white, matches st-modal) ── */
+.st-extend-modal { max-width: 380px; text-align: left; }
+.st-extend-modal h2 { text-align: center; }
+.st-extend-modal p { text-align: center; margin-bottom: 1rem; }
+
+.st-extend-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.st-extend-pill {
+  flex: 1;
+  padding: 0.55rem 0;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.st-extend-pill:hover { border-color: #111827; }
+.st-extend-pill.is-active {
+  background: #111827;
+  border-color: #111827;
+  color: #fff;
+}
+.st-extend-pill:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.st-extend-custom {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f9fafb;
+  min-width: 72px;
+}
+.st-extend-custom input {
+  width: 42px;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #111827;
+  padding: 0.55rem 0 0.55rem 0.5rem;
+  outline: none;
+  font-family: inherit;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.st-extend-custom input::-webkit-inner-spin-button,
+.st-extend-custom input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.st-extend-custom span {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  padding-right: 0.6rem;
+  user-select: none;
+}
+
+.st-extend-summary {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+.st-extend-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+}
+.st-extend-line:not(:last-child) { border-bottom: 1px solid #f3f4f6; }
+.st-extend-line span:first-child { color: #6b7280; }
+.st-extend-line span:last-child { font-weight: 600; color: #111827; }
+.st-extend-total {
+  background: #f0fdf4;
+}
+.st-extend-total span:last-child { color: #16a34a; }
+
+.st-extend-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
 
 /* ── File Editor Modal ── */
 .st-editor-modal {

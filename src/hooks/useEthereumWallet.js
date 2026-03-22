@@ -15,6 +15,10 @@ function parseEthToWeiHex(amount) {
   return `0x${(whole + fraction).toString(16)}`
 }
 
+function isValidHexAddress(address) {
+  return /^0x[a-fA-F0-9]{40}$/.test(String(address || ''))
+}
+
 export function useEthereumWallet() {
   const [account, setAccount] = useState('')
   const [chainId, setChainId] = useState('')
@@ -97,16 +101,40 @@ export function useEthereumWallet() {
       throw new Error('Connect your wallet before sending a transaction.')
     }
 
-    return ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [
-        {
-          from: account,
-          to,
-          value: parseEthToWeiHex(valueEth),
-        },
-      ],
-    })
+    const normalizedFrom = String(account || '').trim().toLowerCase()
+    const normalizedTo = String(to || '').trim().toLowerCase()
+
+    if (!isValidHexAddress(normalizedFrom)) {
+      throw new Error('Connected wallet address is invalid.')
+    }
+
+    if (!isValidHexAddress(normalizedTo)) {
+      throw new Error('Payment address is invalid.')
+    }
+
+    const normalizedValue = String(valueEth || '').trim()
+    if (!normalizedValue || Number(normalizedValue) <= 0) {
+      throw new Error('Payment amount must be greater than zero.')
+    }
+
+    try {
+      return await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [
+          {
+            from: normalizedFrom,
+            to: normalizedTo,
+            value: parseEthToWeiHex(normalizedValue),
+          },
+        ],
+      })
+    } catch (walletError) {
+      if (walletError?.code === 4001) {
+        throw new Error('Payment was rejected in MetaMask.')
+      }
+
+      throw new Error(walletError?.message || 'MetaMask payment failed.')
+    }
   }, [account])
 
   return useMemo(() => ({

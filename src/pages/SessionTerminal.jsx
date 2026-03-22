@@ -8,7 +8,7 @@ import { clawsFunApiUrl, fetchJson, getWalletHeaders } from '../lib/sessionApi'
 const SessionTerminal = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { account, connect, hasProvider, isConnected, isConnecting } = useEthereumWallet()
+  const { account, connect, hasProvider, isConnected, isConnecting, sendTransaction } = useEthereumWallet()
   const [session, setSession] = useState(null)
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -20,6 +20,15 @@ const SessionTerminal = () => {
   const [creatingNewChat, setCreatingNewChat] = useState(false)
   const [terminating, setTerminating] = useState(false)
   const [showTerminate, setShowTerminate] = useState(false)
+  const [showExtend, setShowExtend] = useState(false)
+  const [extendHours, setExtendHours] = useState(1)
+  const [estimatingExtend, setEstimatingExtend] = useState(false)
+  const [extendEstimate, setExtendEstimate] = useState(null)
+  const [extending, setExtending] = useState(false)
+  const [extendError, setExtendError] = useState('')
+  const [extendStatus, setExtendStatus] = useState('')
+  const [treasuryAddress, setTreasuryAddress] = useState('')
+  const [ethPriceUsd, setEthPriceUsd] = useState(0)
   const [rebooting, setRebooting] = useState(false)
   const [files, setFiles] = useState([])
   const [currentPath, setCurrentPath] = useState('')
@@ -178,6 +187,12 @@ const SessionTerminal = () => {
         loadHistory()
       }
     })
+    fetchJson('/api/payment')
+      .then((data) => {
+        if (data?.treasuryAddress) setTreasuryAddress(data.treasuryAddress)
+        if (typeof data?.ethPriceUsd === 'number') setEthPriceUsd(data.ethPriceUsd)
+      })
+      .catch(() => {})
     fetchFiles()
     fetchApiKeys()
     const interval = setInterval(() => {
@@ -383,6 +398,127 @@ const SessionTerminal = () => {
     finally { setTerminating(false) }
   }
 
+  const handleEstimateExtend = async (hours) => {
+    if (!session) return
+    const normalizedHours = Math.max(1, Number(hours) || 1)
+    setEstimatingExtend(true)
+    setExtendError('')
+    setExtendStatus('')
+    try {
+      const payload = {
+        gpuType: session.gpuType,
+        numGpus: session.numGpus,
+        cpuCores: session.cpuCores,
+        memoryGb: session.memoryGb,
+        diskGb: session.diskGb,
+        durationHours: normalizedHours,
+      }
+
+      let data = null
+      let estimateError = null
+      for (const endpoint of ['/estimate', '/api/session/estimate']) {
+        try {
+          const res = await fetch(clawsFunApiUrl(endpoint), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+          const parsed = await res.json().catch(() => ({}))
+          if (!res.ok) {
+            estimateError = new Error(parsed.error || 'Failed to estimate extension cost')
+            continue
+          }
+          data = parsed
+          estimateError = null
+          break
+        } catch (err) {
+          estimateError = err
+        }
+      }
+      if (!data) throw estimateError || new Error('Failed to estimate extension cost')
+
+      const hourly = Number(data.hourlyPrice || 0)
+      const total = Number(data.totalPrice || data.totalUsd || (hourly > 0 ? hourly * normalizedHours : 0))
+      const totalEth = String(data.totalEth || (ethPriceUsd > 0 ? (total / ethPriceUsd).toFixed(6) : ''))
+      setExtendEstimate({
+        hours: normalizedHours,
+        hourlyPrice: hourly,
+        totalPrice: total,
+        totalEth,
+        gpuName: data.gpuName || session.gpuType || 'N/A',
+      })
+    } catch (err) {
+      setExtendEstimate(null)
+      setExtendError(err.message || 'Failed to estimate extension cost')
+    } finally {
+      setEstimatingExtend(false)
+    }
+  }
+
+  const handleExtendSession = async () => {
+    if (!id || !account || extending) return
+    const normalizedHours = Math.max(1, Number(extendHours) || 1)
+    setExtending(true)
+    setExtendError('')
+    setExtendStatus('Preparing payment...')
+    try {
+      if (!extendEstimate) throw new Error('Estimate extension cost before continuing.')
+
+      let nextTreasuryAddress = String(treasuryAddress || '').trim()
+      let nextEthPriceUsd = ethPriceUsd
+      if (!nextTreasuryAddress || nextTreasuryAddress === '0x0000000000000000000000000000000000000000') {
+        const paymentData = await fetchJson('/api/payment').catch(() => null)
+        if (paymentData?.treasuryAddress) {
+          nextTreasuryAddress = String(paymentData.treasuryAddress).trim()
+          setTreasuryAddress(nextTreasuryAddress)
+        }
+        if (typeof paymentData?.ethPriceUsd === 'number') {
+          nextEthPriceUsd = paymentData.ethPriceUsd
+          setEthPriceUsd(paymentData.ethPriceUsd)
+        }
+      }
+
+      if (!nextTreasuryAddress || nextTreasuryAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Payment address unavailable. Please try again in a moment.')
+      }
+
+      const amountEth = String(extendEstimate.totalEth || (nextEthPriceUsd > 0 ? (extendEstimate.totalPrice / nextEthPriceUsd).toFixed(6) : '')).trim()
+      if (!amountEth || Number(amountEth) <= 0) {
+        throw new Error('Unable to calculate ETH amount for extension payment.')
+      }
+
+      setExtendStatus('Waiting for MetaMask confirmation...')
+      const paymentTx = await sendTransaction({ to: nextTreasuryAddress, valueEth: amountEth })
+
+      setExtendStatus('Payment confirmed. Extending session...')
+      const res = await fetch(clawsFunApiUrl(`/api/session/${id}/extend`), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getWalletHeaders(account) },
+        body: JSON.stringify({ additionalHours: normalizedHours, paymentTx }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Failed to extend session')
+
+      setMessages((prev) => [...prev, { type: 'system', content: `Session extended by ${normalizedHours} hour${normalizedHours > 1 ? 's' : ''}.` }])
+      setShowExtend(false)
+      setExtendEstimate(null)
+      fetchSession()
+    } catch (err) {
+      setExtendError(err.message || 'Failed to extend session')
+    } finally {
+      setExtendStatus('')
+      setExtending(false)
+    }
+  }
+
+  const handleOpenExtend = async () => {
+    setShowExtend(true)
+    setExtendError('')
+    setExtendStatus('')
+    setExtendEstimate(null)
+    await handleEstimateExtend(extendHours)
+  }
+
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -549,10 +685,64 @@ const SessionTerminal = () => {
           <div className="st-modal">
             <div className="st-empty-icon">⚠️</div>
             <h2>Terminate Session?</h2>
-            <p>This will destroy the GPU instance and stop the agent. Any unsaved data will be lost.</p>
+            <p>Are you sure?</p>
+            <div className="st-error-banner">This will delete all unsaved data. Please make sure all private keys are saved or wallets have been emptied!</div>
             <div className="st-modal-actions">
               <button className="st-btn st-btn-danger" onClick={handleTerminate} disabled={terminating}>{terminating ? 'Terminating...' : 'Yes, Terminate'}</button>
               <button className="st-btn st-btn-secondary" onClick={() => setShowTerminate(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Extend session modal */}
+      {showExtend && (
+        <div className="st-modal-overlay" onClick={() => !extending && setShowExtend(false)}>
+          <div className="st-modal st-extend-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Extend Session</h2>
+            <p>Add more runtime without redeploying.</p>
+
+            <div className="st-extend-pills">
+              {[1, 2, 4, 8].map((hours) => (
+                <button
+                  key={hours}
+                  type="button"
+                  className={`st-extend-pill${extendHours === hours ? ' is-active' : ''}`}
+                  onClick={() => { setExtendHours(hours); handleEstimateExtend(hours) }}
+                  disabled={estimatingExtend || extending}
+                >
+                  {hours}h
+                </button>
+              ))}
+              <div className="st-extend-custom">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={extendHours}
+                  onChange={(e) => setExtendHours(Math.max(1, Number(e.target.value) || 1))}
+                  disabled={estimatingExtend || extending}
+                />
+                <span>hr</span>
+              </div>
+            </div>
+
+            {extendEstimate && (
+              <div className="st-extend-summary">
+                <div className="st-extend-line"><span>{extendEstimate.gpuName}</span><span>${extendEstimate.hourlyPrice.toFixed(3)}/hr</span></div>
+                <div className="st-extend-line"><span>{extendEstimate.hours}h extension</span><span>${extendEstimate.totalPrice.toFixed(3)}</span></div>
+                <div className="st-extend-line st-extend-total"><span>Total (ETH)</span><span>{extendEstimate.totalEth || 'N/A'} ETH</span></div>
+              </div>
+            )}
+
+            {extendStatus && <div className="st-extend-info">{extendStatus}</div>}
+            {extendError && <div className="st-error-banner">{extendError}</div>}
+
+            <div className="st-modal-actions">
+              <button className="st-btn st-btn-success" onClick={handleExtendSession} disabled={extending || estimatingExtend}>
+                {extending ? 'Processing...' : `Pay & Extend ${Math.max(1, Number(extendHours) || 1)}h`}
+              </button>
+              <button className="st-btn st-btn-secondary" onClick={() => setShowExtend(false)} disabled={extending}>Cancel</button>
             </div>
           </div>
         </div>
@@ -759,6 +949,9 @@ const SessionTerminal = () => {
                     {rebooting ? 'Rebooting...' : '⚡ Reboot Instance'}
                   </button>
                   <div style={{ flex: 1 }} />
+                  <button className="st-ctrl-btn st-ctrl-extend" onClick={handleOpenExtend} disabled={sending || extending || !session}>
+                    {extending ? 'Extending...' : '+ Extend'}
+                  </button>
                   <button className="st-ctrl-btn st-ctrl-terminate" onClick={() => setShowTerminate(true)}>
                     ■ Terminate
                   </button>
