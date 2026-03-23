@@ -2882,6 +2882,28 @@ button {
   color: var(--white-soft);
 }
 
+.my-session-gateway-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(92, 212, 190, 0.24);
+  background: rgba(13, 158, 138, 0.12);
+  color: #8cf1e2;
+  font-size: 0.86rem;
+  font-weight: 700;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.my-session-gateway-link:hover {
+  background: rgba(13, 158, 138, 0.18);
+  border-color: rgba(92, 212, 190, 0.34);
+  transform: translateY(-1px);
+}
+
 .my-session-card-topline strong.my-session-status {
   margin-top: 0;
   padding: 8px 12px;

@@ -228,8 +228,19 @@ const MySessions = () => {
                     <strong>{formatTimeRemaining(session.timeRemaining)}</strong>
                   </div>
                   <div>
-                    <span>Instance</span>
-                    <strong>{session.instance?.publicIp || 'Pending'}</strong>
+                    <span>Gateway</span>
+                    {session.instance?.agentUrl ? (
+                      <a
+                        href={session.instance.agentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="my-session-gateway-link"
+                      >
+                        Open Gateway
+                      </a>
+                    ) : (
+                      <strong>Pending</strong>
+                    )}
                   </div>
                   <div>
                     <span>Agent</span>

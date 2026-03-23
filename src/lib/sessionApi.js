@@ -5,7 +5,7 @@ const ADMIN_API_KEY = 'ADMIN_API_KEY'
 const USER_KEYS_PATH = import.meta.env.VITE_SUPER_API_USER_KEYS_PATH || '/user/keys'
 const USER_KEY_CREATE_PATH = import.meta.env.VITE_SUPER_API_GENERATE_KEY_PATH || '/admin/apiKeys/generate'
 const USER_USAGE_PATH = import.meta.env.VITE_SUPER_API_USER_USAGE_PATH || '/admin/stats/user'
-const STATS_AGENTS_CACHE_TTL_MS = 2 * 60 * 60 * 1000
+const STATS_AGENTS_CACHE_TTL_MS = 10 * 60 * 1000
 const STATS_AGENTS_CACHE_PREFIX = 'stats-agents:v1:'
 const statsAgentsMemoryCache = new Map()
 
@@ -298,6 +298,7 @@ export async function fetchAgentStats(agentId, includeKeys = true) {
   const cacheKey = getStatsAgentsCacheKey(agentId, includeKeys)
   const cached = readStatsAgentsCache(cacheKey)
   if (cached) {
+    console.log('[fetchAgentStats] cache hit', { agentId, includeKeys, cacheKey, data: cached })
     return cached
   }
 
@@ -308,6 +309,12 @@ export async function fetchAgentStats(agentId, includeKeys = true) {
   if (agentId !== undefined && agentId !== null && agentId !== '') {
     query.set('agentId', String(agentId))
   }
+
+  console.log('[fetchAgentStats] request', {
+    agentId,
+    includeKeys,
+    url: `${SUPER_API_URL}/admin/stats/agents?${query.toString()}`,
+  })
 
   const response = await fetch(`${SUPER_API_URL}/admin/stats/agents?${query.toString()}`, {
     headers: {
@@ -321,6 +328,8 @@ export async function fetchAgentStats(agentId, includeKeys = true) {
   if (!response.ok) {
     throw new Error(data?.message || data?.error || `Request failed: ${response.status}`)
   }
+
+  console.log('[fetchAgentStats] response', { agentId, includeKeys, data })
 
   writeStatsAgentsCache(cacheKey, data)
 
@@ -415,6 +424,79 @@ export function superApiPublicUrl(path) {
   return `${SUPER_API_URL}${path.startsWith('/') ? path : `/${path}`}`
 }
 
+function normalizeSessionRecord(session) {
+  const normalizeTimestamp = (value) => {
+    if (value === null || value === undefined || value === '' || value === '0' || value === 0) {
+      return null
+    }
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value > 1e12 ? value : value * 1000
+    }
+
+    if (typeof value === 'string' && /^\d+$/.test(value)) {
+      const numeric = Number(value)
+      if (Number.isFinite(numeric)) {
+        return numeric > 1e12 ? numeric : numeric * 1000
+      }
+    }
+
+    const parsed = Date.parse(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+
+  const expiresAtRaw = session?.expiresAt || session?.expires_at || null
+  const createdAtRaw = session?.createdAt || session?.created_at || null
+  const updatedAtRaw = session?.updatedAt || session?.updated_at || null
+  const expiresAtMs = normalizeTimestamp(expiresAtRaw)
+  const createdAtMs = normalizeTimestamp(createdAtRaw)
+  const updatedAtMs = normalizeTimestamp(updatedAtRaw)
+  const now = Date.now()
+  const timeRemaining = expiresAtMs
+    ? Math.max(0, Math.floor((expiresAtMs - now) / 1000))
+    : 0
+
+  return {
+    ...session,
+    id: session?.id ?? null,
+    status: session?.status || (session?.active ? 'running' : 'unknown'),
+    isActive: Boolean(session?.isActive ?? session?.active),
+    active: Boolean(session?.active),
+    cpuCores: session?.cpuCores ?? session?.cpu_cores ?? null,
+    memoryGb: session?.memoryGb ?? session?.memory_gb ?? null,
+    gpuType: session?.gpuType ?? session?.gpu_type ?? null,
+    numGpus: session?.numGpus ?? session?.num_gpus ?? null,
+    durationHours: session?.durationHours ?? session?.duration_hours ?? null,
+    storageUsed: session?.storageUsed ?? session?.storage_used ?? 0,
+    paymentTx: session?.paymentTx ?? session?.payment_tx ?? null,
+    conversationId: session?.conversationId ?? session?.conversation_id ?? null,
+    createdAt: createdAtMs ? new Date(createdAtMs).toISOString() : null,
+    updatedAt: updatedAtMs ? new Date(updatedAtMs).toISOString() : null,
+    expiresAt: expiresAtMs ? new Date(expiresAtMs).toISOString() : null,
+    timeRemaining,
+    isExpired: expiresAtMs ? expiresAtMs <= now : false,
+    userAddress: session?.userAddress || session?.user_address || null,
+    agentName: session?.agentName || session?.agent_name || null,
+    agentType: session?.agentType || session?.agent_type || null,
+    agentAddress: session?.agentAddress || session?.agent_address || null,
+    agentSolWallet: session?.agentSolWallet || session?.agents_sol_wallet || null,
+    agent: {
+      id: session?.agent?.id ?? session?.agentId ?? session?.agent_id ?? null,
+      name: session?.agent?.name || session?.agentName || session?.agent_name || null,
+      type: session?.agent?.type || session?.agentType || session?.agent_type || null,
+      address: session?.agent?.address || session?.agentAddress || session?.agent_address || null,
+      solWallet: session?.agent?.solWallet || session?.agentSolWallet || session?.agents_sol_wallet || null,
+      description: session?.agent?.description || null,
+    },
+    instance: {
+      id: session?.instance?.id ?? session?.vastaiInstanceId ?? session?.vastai_instance_id ?? null,
+      publicIp: session?.instance?.publicIp || session?.vastaiPublicIp || session?.vastai_public_ip || null,
+      agentUrl: session?.instance?.agentUrl || session?.vastaiAgentUrl || session?.vastai_agent_url || null,
+      costPerHour: session?.instance?.costPerHour ?? session?.vastaiCostPerHour ?? session?.vastai_cost_per_hour ?? null,
+    },
+  }
+}
+
 export async function fetchUserSessions(walletAddress) {
   if (!walletAddress) {
     throw new Error('Wallet address is required to load sessions.')
@@ -424,7 +506,9 @@ export async function fetchUserSessions(walletAddress) {
     headers: getWalletHeaders(walletAddress),
   })
 
-  return Array.isArray(data?.sessions) ? data.sessions : []
+  console.log('[fetchUserSessions] response', data)
+
+  return Array.isArray(data?.sessions) ? data.sessions.map(normalizeSessionRecord) : []
 }
 
 export function findReusableSession(sessions) {
