@@ -3966,6 +3966,56 @@ button {
   background: var(--purple);
 }
 
+.deploy-warning-card {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(243, 155, 131, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(243, 155, 131, 0.08), transparent 34%),
+    rgba(22, 14, 14, 0.92);
+}
+
+.deploy-warning-kicker {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f39b83;
+}
+
+.deploy-warning-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  color: var(--grey-200);
+}
+
+.deploy-warning-list li {
+  position: relative;
+  padding-left: 18px;
+}
+
+.deploy-warning-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f39b83;
+}
+
+.deploy-warning-ack {
+  margin-top: 14px;
+  color: #f6c0b2;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .deploy-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

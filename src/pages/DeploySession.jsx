@@ -365,6 +365,16 @@ const DeploySession = () => {
               <li>The selected card now supplies the agent id used for backend session lookups and provisioning.</li>
               <li>If a live session already exists for this wallet and agent id, you skip payment and reopen it.</li>
             </ul>
+
+            <div className="deploy-warning-card">
+              <span className="deploy-warning-kicker">Risk Warning</span>
+              <ul className="deploy-warning-list">
+                <li>No profit is guaranteed, and you can lose money using these agents.</li>
+                <li>This is an experimental system built around autonomous trading workflows and revolutionary new trading techniques.</li>
+                <li>Core decisions primarily rely on third-party LLMs and automated strategy logic, which can be wrong, delayed, or behave unpredictably in live markets.</li>
+              </ul>
+              <p className="deploy-warning-ack">By starting your session, you agree to these risks.</p>
+            </div>
           </aside>
 
           <section className="deploy-panel">
