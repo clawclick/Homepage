@@ -202,7 +202,7 @@ const AgentAnalytics = () => {
                   <strong>{agent.name || id}</strong>
                 </div>
                 <div className="agent-overview-meta-card">
-                  <span>Cost Per Day</span>
+                  <span>Cost Per Day With Recommended GPU</span>
                   <strong>
                     {dailyEstimateLoading ? 'Estimating...' : formatCurrency(dailyEstimate?.totalPrice)}
                   </strong>

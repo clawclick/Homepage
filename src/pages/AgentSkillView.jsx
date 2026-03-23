@@ -29,6 +29,16 @@ function extractSkillContent(data) {
   return JSON.stringify(data, null, 2)
 }
 
+function formatSkillType(value) {
+  if (!value) {
+    return 'Route Skill'
+  }
+
+  return String(value)
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
 const AgentSkillView = () => {
   const { id } = useParams()
   const [loading, setLoading] = useState(true)
@@ -98,34 +108,58 @@ const AgentSkillView = () => {
   }, [agent])
 
   return (
-    <div className="agent-analytics-page">
-      <section className="agent-analytics-hero">
-        <div className="agent-analytics-inner">
-          <p className="agent-analytics-kicker">Agent Skill</p>
-          <h1 className="agent-analytics-title">{agent?.name || id}</h1>
-          <p className="agent-analytics-subtitle">
-            Live skill content loaded from the agent route.
-          </p>
-          <div className="agent-analytics-actions">
-            <Link className="btn-secondary" to={`/agents/${encodeURIComponent(id || '')}/analytics`}>Back to Analytics</Link>
-            {sourceUrl && (
-              <a className="btn-primary" href={sourceUrl} target="_blank" rel="noopener noreferrer">Open Source</a>
-            )}
+    <div className="agent-skill-page st-page">
+      <section className="agent-skill-hero">
+        <div className="agent-skill-container">
+          <div className="agent-skill-hero-copy">
+            <p className="agent-skill-kicker">Agent Skill</p>
+            <h1 className="agent-skill-title">
+              <span className="text-gradient">{agent?.name || id}</span>
+            </h1>
+            <p className="agent-skill-subtitle">
+              {agent?.description || 'Skill instructions, routing details, and rendered markdown presented with the same visual language as the homepage.'}
+            </p>
+
+            <div className="agent-skill-badges">
+              <span className="agent-skill-badge">{formatSkillType(agent?.skill?.type)}</span>
+              {agent?.type && <span className="agent-skill-badge agent-skill-badge-muted">{agent.type}</span>}
+              {agent?.risk && <span className="agent-skill-badge agent-skill-badge-muted">Risk: {agent.risk}</span>}
+            </div>
+
+            <div className="agent-skill-actions">
+              <Link className="btn-secondary" to={`/agents/${encodeURIComponent(id || '')}/analytics`}>Back to Analytics</Link>
+              {sourceUrl && (
+                <a className="btn-primary btn-glow" href={sourceUrl} target="_blank" rel="noopener noreferrer">Open Source</a>
+              )}
+            </div>
           </div>
+
+          <aside className="agent-skill-spotlight">
+            <div className="agent-skill-spotlight-card">
+              <span>Source Route</span>
+              <strong>{agent?.skill?.route || 'Unavailable'}</strong>
+              <p>Live content is fetched directly from the public skill endpoint.</p>
+            </div>
+          </aside>
         </div>
       </section>
 
-      <section className="agent-analytics-section">
-        <div className="agent-analytics-inner">
-          {loading && <div className="agent-analytics-message">Loading skill...</div>}
+      <section className="agent-skill-content-section">
+        <div className="agent-skill-container">
+          {loading && <div className="agent-skill-message">Loading skill...</div>}
           {!loading && error && <div className="deploy-error-banner">{error}</div>}
           {!loading && !error && (
-            <article className="agent-panel agent-skill-panel">
-              <div className="agent-skill-meta">
-                <span>Skill Type</span>
-                <strong>{agent?.skill?.type || 'route'}</strong>
-                {sourceUrl && <code>{sourceUrl}</code>}
+            <article className="agent-skill-shell">
+              <div className="agent-skill-shell-header">
+                <div>
+                  <p className="agent-skill-shell-label">Rendered Skill</p>
+                  <h2 className="agent-skill-shell-title">{agent?.name || id}</h2>
+                </div>
+                {sourceUrl && (
+                  <code className="agent-skill-shell-code">{sourceUrl}</code>
+                )}
               </div>
+
               <div className="agent-skill-body st-markdown">
                 <ReactMarkdown>{content}</ReactMarkdown>
               </div>
