@@ -325,8 +325,8 @@ const DeploySession = () => {
             <h1>Launch a live agent session</h1>
             <p>
               {selectedAgent
-                ? `You selected ${selectedAgent.name}. Configure hardware, route payment through claws-fun, and boot into a live terminal.`
-                : 'Configure hardware, route payment through claws-fun, and boot into a live terminal.'}
+                ? `You selected ${selectedAgent.name}. Configure hardware, and boot into a live terminal.`
+                : 'Configure hardware, and boot into a live terminal.'}
             </p>
 
             {selectedAgent && (
@@ -361,9 +361,8 @@ const DeploySession = () => {
             </div>
 
             <ul className="deploy-note-list">
-              <li>Pricing is estimated directly from the claws-fun Vast.ai session API.</li>
+              <li>Pricing is estimated directly from Vast.ai.</li>
               <li>The selected card now supplies the agent id used for backend session lookups and provisioning.</li>
-              <li>If a live session already exists for this wallet and agent id, you skip payment and reopen it.</li>
             </ul>
 
             <div className="deploy-warning-card">

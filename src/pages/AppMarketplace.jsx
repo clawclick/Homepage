@@ -201,7 +201,7 @@ const AppMarketplace = () => {
         <div className="mp-hero-inner">
           <h1 className="mp-title">Agent Marketplace</h1>
           <p className="mp-subtitle">
-            Launch real agents from the claws-fun backend with live session provisioning
+            Launch real agents from the claw.click backend with live session provisioning
           </p>
           <div className="mp-stats-row">
             <div className="mp-stat">
@@ -314,7 +314,7 @@ const AppMarketplace = () => {
       <section className="mp-cta">
         <div className="mp-cta-inner">
           <h2>Bring Your Own Agent</h2>
-          <p>Publish agents into the claws-fun backend and they can appear here automatically.</p>
+          <p>Publish agents into the claw.click backend and they can appear here automatically.</p>
           <div className="mp-cta-actions">
             <button className="btn-primary">Create Agent</button>
             <Link to="/api" className="btn-secondary">Documentation</Link>
