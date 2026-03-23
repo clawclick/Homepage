@@ -263,12 +263,22 @@ export async function fetchJson(path, options = {}) {
 }
 
 function normalizeAgent(agent) {
+  const metadata = isObject(agent.metadata) ? agent.metadata : {}
+  const skillType = agent.skillType || agent.skill_type || metadata.skillType || metadata.skill_type || metadata.type || null
+  const skillRoute = agent.skillRoute || agent.skill_route || agent.route || metadata.skillRoute || metadata.skill_route || metadata.route || null
+  const skillInline = agent.skillInline || agent.skill_inline || agent.inline || metadata.skillInline || metadata.skill_inline || metadata.inline || metadata.content || null
+
   return {
     ...agent,
     type: agent.type || agent.agent_type || null,
     walletAddress: agent.walletAddress || agent.wallet_address || null,
     chains: agent.chains || agent.metadata?.chains || [],
     risk: agent.risk || agent.metadata?.risk_level || null,
+    skill: {
+      type: skillType,
+      route: skillRoute,
+      inline: typeof skillInline === 'string' ? skillInline : null,
+    },
     defaults: {
       cpuCores: agent.defaults?.cpuCores ?? agent.default_cpu_cores ?? null,
       memoryGb: agent.defaults?.memoryGb ?? agent.default_memory_gb ?? null,
@@ -379,6 +389,30 @@ export async function fetchUserUsageStats(walletAddress) {
   })
 
   return normalizeUsagePayload(data)
+}
+
+export async function fetchAdminVolumeStats() {
+  if (!ADMIN_API_KEY) {
+    throw new Error('VITE_ADMIN_API_KEY or ADMIN_API_KEY must be set.')
+  }
+
+  return fetchSuperApiJson('/admin/stats/volume', {
+    headers: {
+      'x-admin-key': ADMIN_API_KEY,
+    },
+  })
+}
+
+export function superApiPublicUrl(path) {
+  if (!path) {
+    return SUPER_API_URL
+  }
+
+  if (/^https?:\/\//i.test(path)) {
+    return path
+  }
+
+  return `${SUPER_API_URL}${path.startsWith('/') ? path : `/${path}`}`
 }
 
 export async function fetchUserSessions(walletAddress) {

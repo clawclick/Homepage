@@ -12,6 +12,7 @@ import DeploySession from './pages/DeploySession'
 import MySessions from './pages/MySessions'
 import SessionTerminal from './pages/SessionTerminal'
 import AgentAnalytics from './pages/AgentAnalytics'
+import AgentSkillView from './pages/AgentSkillView'
 
 function AppShell() {
   const location = useLocation()
@@ -32,6 +33,7 @@ function AppShell() {
           <Route path="/sessions" element={<MySessions />} />
           <Route path="/deploy" element={<DeploySession />} />
           <Route path="/agents/:id/analytics" element={<AgentAnalytics />} />
+          <Route path="/agents/:id/skill" element={<AgentSkillView />} />
           <Route path="/session/:id" element={<SessionTerminal />} />
         </Routes>
       </main>

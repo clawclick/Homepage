@@ -1200,44 +1200,50 @@ const SessionTerminal = () => {
 
                   {/* API Keys */}
                   <div className="st-integrations-section">
-                    <div className="st-integrations-title">API Integrations</div>
-                    <div className="st-api-list">
-                      {[
-                        { key: 'ANTHROPIC_API_KEY', name: 'Anthropic (recommended)', desc: 'Claude models' },
-                        { key: 'OPENAI_API_KEY', name: 'OpenAI', desc: 'GPT-4, Vision, TTS' },
-                        { key: 'COINGECKO_API_KEY', name: 'CoinGecko', desc: 'Crypto data & prices' },
-                        { key: 'TWITTER_API_KEY', name: 'Twitter', desc: 'Post & monitor' },
-                        { key: 'ALCHEMY_API_KEY', name: 'Alchemy RPC', desc: 'Blockchain queries' },
-                      ].map((api) => {
-                        const saved = apiKeys.find((k) => k.key_name === api.key)
-                        const isEditing = newKeyName === api.key
-                        return (
-                          <div key={api.key} className="st-api-item">
-                            <button onClick={() => { if (isEditing) { setNewKeyName(''); setNewKeyValue('') } else { setNewKeyName(api.key); setNewKeyValue('') } }} className="st-api-toggle">
-                              <div>
-                                <div className="st-api-name">{api.name}</div>
-                                <div className="st-api-desc">{api.desc}</div>
-                              </div>
-                              {saved ? (
-                                <div className="st-api-status">
-                                  <span className="st-api-dot st-api-dot-active" />
-                                  <button onClick={(e) => { e.stopPropagation(); handleDeleteKey(api.key) }} className="st-api-remove">✕</button>
+                    <button onClick={() => toggleSection('apiKeys')} className="st-info-toggle">
+                      <span>API Integrations</span>
+                      <span className={openSections.apiKeys ? 'st-chevron-open' : 'st-chevron'}>▼</span>
+                    </button>
+                    {openSections.apiKeys && (
+                      <div className="st-api-list">
+                        {[
+                          { key: 'ANTHROPIC_API_KEY', name: 'Anthropic (recommended)', desc: 'Claude models' },
+                          { key: 'OPENAI_API_KEY', name: 'OpenAI', desc: 'GPT-4, Vision, TTS' },
+                          { key: 'XAI_API_KEY', name: 'xAI', desc: 'Grok models' },
+                          { key: 'COINGECKO_API_KEY', name: 'CoinGecko', desc: 'Crypto data & prices' },
+                          { key: 'TWITTER_API_KEY', name: 'Twitter', desc: 'Post & monitor' },
+                          { key: 'ALCHEMY_API_KEY', name: 'Alchemy RPC', desc: 'Blockchain queries' },
+                        ].map((api) => {
+                          const saved = apiKeys.find((k) => k.key_name === api.key)
+                          const isEditing = newKeyName === api.key
+                          return (
+                            <div key={api.key} className="st-api-item">
+                              <button onClick={() => { if (isEditing) { setNewKeyName(''); setNewKeyValue('') } else { setNewKeyName(api.key); setNewKeyValue('') } }} className="st-api-toggle">
+                                <div>
+                                  <div className="st-api-name">{api.name}</div>
+                                  <div className="st-api-desc">{api.desc}</div>
                                 </div>
-                              ) : (
-                                <span className="st-api-dot" />
+                                {saved ? (
+                                  <div className="st-api-status">
+                                    <span className="st-api-dot st-api-dot-active" />
+                                    <button onClick={(e) => { e.stopPropagation(); handleDeleteKey(api.key) }} className="st-api-remove">✕</button>
+                                  </div>
+                                ) : (
+                                  <span className="st-api-dot" />
+                                )}
+                              </button>
+                              {isEditing && !saved && (
+                                <div className="st-api-input-row">
+                                  <input type="password" value={newKeyValue} onChange={(e) => setNewKeyValue(e.target.value)} placeholder={`Paste ${api.name} key...`} className="st-api-input" onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()} autoFocus />
+                                  <button onClick={handleSaveKey} disabled={!newKeyValue.trim() || savingKey} className="st-btn st-btn-small">{savingKey ? '...' : 'Save'}</button>
+                                </div>
                               )}
-                            </button>
-                            {isEditing && !saved && (
-                              <div className="st-api-input-row">
-                                <input type="password" value={newKeyValue} onChange={(e) => setNewKeyValue(e.target.value)} placeholder={`Paste ${api.name} key...`} className="st-api-input" onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()} autoFocus />
-                                <button onClick={handleSaveKey} disabled={!newKeyValue.trim() || savingKey} className="st-btn st-btn-small">{savingKey ? '...' : 'Save'}</button>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                      <p className="st-api-note">Keys are encrypted & injected as env vars into the agent.</p>
-                    </div>
+                            </div>
+                          )
+                        })}
+                        <p className="st-api-note">Keys are encrypted & injected as env vars into the agent.</p>
+                      </div>
+                    )}
                   </div>
                 </>
               )}

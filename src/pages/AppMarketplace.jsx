@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useEthereumWallet } from '../hooks/useEthereumWallet'
-import { fetchAgents, fetchAgentStats } from '../lib/sessionApi'
+import { fetchAgents, fetchAgentStats, fetchAdminVolumeStats } from '../lib/sessionApi'
 
 function getChainLabel(chain) {
   if (!chain) {
@@ -77,6 +77,29 @@ function getSessionsSpawned(agent, statsAgent) {
   return 0
 }
 
+function formatUsdCompact(value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return '$0'
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
+    maximumFractionDigits: value >= 1000000 ? 1 : 0,
+  }).format(value)
+}
+
+function getAllTimeVolumeUsd(stats) {
+  const totalVolumeUsd = Number(stats?.allTime?.totalVolumeUsd)
+
+  if (Number.isFinite(totalVolumeUsd)) {
+    return totalVolumeUsd
+  }
+
+  return null
+}
+
 const AppMarketplace = () => {
   const [typeFilter, setTypeFilter] = useState('All')
   const [agents, setAgents] = useState([])
@@ -84,6 +107,7 @@ const AppMarketplace = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [walletActionError, setWalletActionError] = useState('')
+  const [totalVolumeUsd, setTotalVolumeUsd] = useState(null)
   const navigate = useNavigate()
   const { connect, hasProvider, isConnected, isConnecting } = useEthereumWallet()
 
@@ -93,11 +117,14 @@ const AppMarketplace = () => {
     Promise.all([
       fetchAgents(),
       fetchAgentStats(undefined, true).catch(() => null),
+      fetchAdminVolumeStats().catch(() => null),
     ])
-      .then(([agentData, statsPayload]) => {
+      .then(([agentData, statsPayload, volumePayload]) => {
         if (!isMounted) {
           return
         }
+
+        console.log('[AppMarketplace] admin/stats/volume response', volumePayload)
 
         setAgents(agentData)
 
@@ -114,6 +141,7 @@ const AppMarketplace = () => {
         })
 
         setStatsByAgentId(nextStatsByAgentId)
+        setTotalVolumeUsd(getAllTimeVolumeUsd(volumePayload))
       })
       .catch((agentError) => {
         if (!isMounted) {
@@ -177,11 +205,11 @@ const AppMarketplace = () => {
           </p>
           <div className="mp-stats-row">
             <div className="mp-stat">
-              <span className="mp-stat-value">$47.2M</span>
+              <span className="mp-stat-value">{formatUsdCompact(totalVolumeUsd ?? 0)}</span>
               <span className="mp-stat-label">Total Volume</span>
             </div>
             <div className="mp-stat">
-              <span className="mp-stat-value">5,847</span>
+              <span className="mp-stat-value">{agents.length.toLocaleString()}</span>
               <span className="mp-stat-label">Active Strategies</span>
             </div>
             <div className="mp-stat">

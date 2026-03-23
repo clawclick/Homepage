@@ -218,6 +218,9 @@ const AgentAnalytics = () => {
 
           <div className="agent-analytics-actions">
             <Link className="btn-secondary" to="/app">Back to Marketplace</Link>
+            {agent?.skill?.route && (
+              <Link className="btn-secondary" to={`/agents/${encodeURIComponent(id || '')}/skill`}>View Skill</Link>
+            )}
             <Link className="btn-primary" to={`/deploy?agent=${encodeURIComponent(id || '')}`}>Deploy Agent</Link>
           </div>
         </div>
