@@ -10,6 +10,47 @@ const ANY_GPU = {
   minPrice: 0.03,
 }
 
+function normalizeGpuOptions(data) {
+  if (!data?.gpus?.length) {
+    return [ANY_GPU]
+  }
+
+  const fetched = data.gpus.slice(0, 20).map((gpu) => ({
+    id: gpu.name,
+    label: gpu.name,
+    desc: `${gpu.vramGb}GB VRAM`,
+    minPrice: gpu.minPricePerHour,
+    available: gpu.available,
+  }))
+  const cheapest = Math.min(...fetched.map((gpu) => gpu.minPrice))
+
+  return [{ ...ANY_GPU, minPrice: Number.isFinite(cheapest) ? cheapest : ANY_GPU.minPrice }, ...fetched]
+}
+
+function buildGpuInventoryPayload({
+  gpuType,
+  numGpus,
+  cpu,
+  memory,
+  diskGb,
+  durationHours,
+  location,
+  privateGpuOnly,
+}) {
+  return {
+    gpuType: gpuType === 'any' ? undefined : gpuType,
+    numGpus,
+    cpuCores: cpu,
+    memoryGb: memory,
+    diskGb,
+    durationHours,
+    geolocation: LOCATION_TO_COUNTRIES[location],
+    privateGpuOnly,
+    inventoryType: privateGpuOnly ? 'private' : 'unsecure',
+    useUnsecureGpuPool: !privateGpuOnly,
+  }
+}
+
 const LOCATION_TO_COUNTRIES = {
   any: undefined,
   US: 'US',
@@ -70,6 +111,7 @@ const DeploySession = () => {
   const [showApiKeys, setShowApiKeys] = useState(false)
   const [gpuOptions, setGpuOptions] = useState([ANY_GPU])
   const [gpusLoading, setGpusLoading] = useState(true)
+  const [privateGpuOnly, setPrivateGpuOnly] = useState(true)
   const [treasuryAddress, setTreasuryAddress] = useState('')
   const [ethPriceUsd, setEthPriceUsd] = useState(2500)
   const [pricingLoading, setPricingLoading] = useState(false)
@@ -93,27 +135,6 @@ const DeploySession = () => {
       .then((data) => setAgents(data))
       .catch(() => {})
 
-    setGpusLoading(true)
-
-    fetchJson('/api/session/gpus')
-      .then((data) => {
-        if (!data?.gpus?.length) {
-          return
-        }
-
-        const fetched = data.gpus.slice(0, 20).map((gpu) => ({
-          id: gpu.name,
-          label: gpu.name,
-          desc: `${gpu.vramGb}GB VRAM`,
-          minPrice: gpu.minPricePerHour,
-          available: gpu.available,
-        }))
-        const cheapest = Math.min(...fetched.map((gpu) => gpu.minPrice))
-        setGpuOptions([{ ...ANY_GPU, minPrice: cheapest }, ...fetched])
-      })
-      .catch(() => {})
-      .finally(() => setGpusLoading(false))
-
     fetchJson('/api/payment')
       .then((data) => {
         if (data?.treasuryAddress) {
@@ -126,6 +147,41 @@ const DeploySession = () => {
       })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    let isMounted = true
+    const gpuEndpoint = privateGpuOnly ? '/api/session/gpus' : '/api/session/gpus-unsecure'
+
+    setGpusLoading(true)
+
+    fetchJson(gpuEndpoint)
+      .then((data) => {
+        if (!isMounted) {
+          return
+        }
+
+        const nextGpuOptions = normalizeGpuOptions(data)
+        setGpuOptions(nextGpuOptions)
+        setGpuType((currentGpuType) => (
+          nextGpuOptions.some((gpu) => gpu.id === currentGpuType) ? currentGpuType : ANY_GPU.id
+        ))
+      })
+      .catch(() => {
+        if (isMounted) {
+          setGpuOptions([ANY_GPU])
+          setGpuType(ANY_GPU.id)
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setGpusLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [privateGpuOnly])
 
   useEffect(() => {
     if (!selectedAgent?.defaults) {
@@ -161,22 +217,28 @@ const DeploySession = () => {
   }, [gpuType])
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setPricingLoading(true)
-      setPricingFallback(false)
+    setPricingLoading(true)
+    setPricingFallback(false)
+    setRealHourlyPrice(null)
+    setRealGpuName('')
+    setNumOffers(0)
 
-      fetch(clawsFunApiUrl('/api/session/estimate'), {
+    const timer = window.setTimeout(() => {
+      const estimateEndpoint = privateGpuOnly ? '/api/session/estimate' : '/api/session/estimate-unsecure'
+
+      fetch(clawsFunApiUrl(estimateEndpoint), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gpuType: gpuType === 'any' ? undefined : gpuType,
+        body: JSON.stringify(buildGpuInventoryPayload({
+          gpuType,
           numGpus,
-          cpuCores: cpu,
-          memoryGb: memory,
+          cpu,
+          memory,
           diskGb,
           durationHours,
-          geolocation: LOCATION_TO_COUNTRIES[location],
-        }),
+          location,
+          privateGpuOnly,
+        })),
       })
         .then((response) => (response.ok ? response.json() : null))
         .then((data) => {
@@ -204,7 +266,7 @@ const DeploySession = () => {
     }, 550)
 
     return () => window.clearTimeout(timer)
-  }, [cpu, diskGb, durationHours, gpuType, location, memory, numGpus])
+  }, [cpu, diskGb, durationHours, gpuType, location, memory, numGpus, privateGpuOnly])
 
   const selectedGpu = useMemo(() => {
     return gpuOptions.find((gpu) => gpu.id === gpuType) || gpuOptions[0] || ANY_GPU
@@ -253,13 +315,16 @@ const DeploySession = () => {
       const createPayload = {
         agentId,
         userAddress: account,
-        cpuCores: cpu,
-        memoryGb: memory,
-        gpuType: gpuType === 'any' ? undefined : gpuType,
-        numGpus,
-        durationHours,
-        diskGb,
-        geolocation: LOCATION_TO_COUNTRIES[location],
+        ...buildGpuInventoryPayload({
+          gpuType,
+          numGpus,
+          cpu,
+          memory,
+          diskGb,
+          durationHours,
+          location,
+          privateGpuOnly,
+        }),
         paymentTx,
         apiKeys: {
           openai: openaiKey || undefined,
@@ -361,7 +426,7 @@ const DeploySession = () => {
             </div>
 
             <ul className="deploy-note-list">
-              <li>Pricing is estimated directly from Vast.ai.</li>
+              <li>Pricing updates from the currently selected Vast.ai inventory source: private or unsecure.</li>
               <li>The selected card now supplies the agent id used for backend session lookups and provisioning.</li>
             </ul>
 
@@ -381,7 +446,36 @@ const DeploySession = () => {
               <div className="deploy-config-section deploy-field-full">
                 <div className="deploy-section-heading">
                   <span>GPU type</span>
-                  <small>{gpusLoading ? 'Loading available machines...' : `${Math.max(gpuOptions.length - 1, 0)} live GPU models`}</small>
+                  <small>
+                    {gpusLoading
+                      ? `Loading ${privateGpuOnly ? 'private' : 'P2P'} machines...`
+                      : `${Math.max(gpuOptions.length - 1, 0)} ${privateGpuOnly ? 'private' : 'P2P'} GPU models`}
+                  </small>
+                </div>
+                <div className="deploy-gpu-source-row">
+                  <div className="deploy-gpu-source-copy">
+                    <span>
+                      Inventory source
+                      <span className="deploy-help-tooltip" tabIndex={0}>
+                        <span className="deploy-help-tooltip-trigger" aria-label="Explain GPU privacy options">?</span>
+                        <span className="deploy-help-tooltip-bubble" role="tooltip">
+                          Private GPUs are hosted in verified secure data centers around the world and are fully private, subject to the rules of the country where they are hosted. Non-private GPUs are P2P (peer-to-peer) machines rented from individuals worldwide who have spare GPUs. Vast.ai rules advise providers not to inspect workloads, but there may still be bad actors peeking at what is running on rented machines.
+                        </span>
+                      </span>
+                    </span>
+                    <small>{privateGpuOnly ? 'Private GPUs only' : 'P2P GPU inventory'}</small>
+                  </div>
+                  <button
+                    type="button"
+                    className={`deploy-privacy-toggle ${privateGpuOnly ? 'is-active' : ''}`}
+                    onClick={() => setPrivateGpuOnly((value) => !value)}
+                    aria-pressed={privateGpuOnly}
+                  >
+                    <span className="deploy-privacy-toggle-track">
+                      <span className="deploy-privacy-toggle-thumb" />
+                    </span>
+                    <span className="deploy-privacy-toggle-label">{privateGpuOnly ? 'Private' : 'P2P'}</span>
+                  </button>
                 </div>
                 <div className="deploy-grid-select deploy-gpu-grid">
                   {gpuOptions.map((gpu) => (
@@ -495,7 +589,7 @@ const DeploySession = () => {
                 <strong>{pricingLoading ? 'Refreshing...' : `$${hourlyPrice.toFixed(2)}`}</strong>
               </div>
               <div>
-                <span>Offers</span>
+                <span>{privateGpuOnly ? 'Private Offers' : 'P2P Offers'}</span>
                 <strong>{numOffers || 'n/a'}</strong>
               </div>
             </div>
