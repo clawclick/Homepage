@@ -12,7 +12,7 @@ const CTA = () => {
             No setup fees, no contracts.
           </p>
           <div className="cta-actions">
-            <Link to="/app" className="btn-premium btn-glow">
+            <Link to="/api/my-api" className="btn-premium btn-glow">
               Get API Key →
             </Link>
             <Link to="/api" className="btn-secondary">
