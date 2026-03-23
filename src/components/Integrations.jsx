@@ -82,12 +82,12 @@ const Integrations = () => {
           Connected to <span className="text-gradient">everything</span>
         </h2>
         <p className="section-desc">
-          45+ data sources, DEXs, and analytics platforms — all through one unified API.
+          37 configured providers across data, execution, and analytics — all through one unified API.
         </p>
       </div>
 
       <div className="integrations-count">
-        <span className="integrations-count-num">45+</span>
+        <span className="integrations-count-num">37</span>
         <span className="integrations-count-label">Active Integrations</span>
       </div>
 

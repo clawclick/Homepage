@@ -52,8 +52,8 @@ const Hero = () => {
 
   const [reqRef, reqVal] = useCountUp(liveRequests, 1800)
   const [chainRef, chainVal] = useCountUp(4, 1200)
-  const [apiRef, apiVal] = useCountUp(30, 1600, '', '+')
-  const [intRef, intVal] = useCountUp(24, 2000, '', '/52')
+  const [apiRef, apiVal] = useCountUp(35, 1600, '', '+')
+  const [intRef, intVal] = useCountUp(37, 2000, '', '/50')
 
   return (
     <section className="hero">
