@@ -502,9 +502,9 @@ const DeploySession = () => {
 
             <div className={`deploy-api-spotlight ${showApiKeys ? 'is-open' : ''}`}>
               <div className="deploy-api-spotlight-copy">
-                <span className="deploy-api-spotlight-kicker">Important setup</span>
+                <span className="deploy-api-spotlight-kicker">Recommended setup step</span>
                 <strong>Attach your model API keys before launch</strong>
-                <p>Sessions work best when a model provider key is attached. Anthropic is the top recommendation for strong agentic task handling.</p>
+                <p>An LLM model provider key is required, for easiest setup we recommend attaching your API key before starting the session. Anthropic is the top recommendation for strong agentic task handling.</p>
               </div>
               <button className="deploy-toggle deploy-toggle-prominent deploy-toggle-flashy" onClick={() => setShowApiKeys((value) => !value)}>
                 {showApiKeys ? 'Hide model API keys' : 'Attach model API keys'}
