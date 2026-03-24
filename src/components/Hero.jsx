@@ -69,28 +69,31 @@ const Hero = () => {
       </div>
 
       <div className="hero-content">
-        {/* Big logo */}
-        <div className="hero-logo-wrap">
-          <img src="/logo8.webp" alt="Claw.Click" className="hero-big-logo" />
-        </div>
+        <div className="hero-main">
+          <div className="hero-copy">
+            <h1>
+              The Universal Trading Router<br />
+              for <span className="highlight">AI Agents</span>.
+            </h1>
 
-        <h1>
-          The Universal Router<br />
-          for <span className="highlight">Agents</span>.
-        </h1>
+            <p className="hero-subtitle">
+              One API to connect your trading agents to every chain, every DEX,
+              and every data source. Built for speed, reliability, and scale.
+            </p>
 
-        <p className="hero-subtitle">
-          One API to connect your trading agents to every chain, every DEX,
-          and every data source. Built for speed, reliability, and scale.
-        </p>
+            <div className="hero-actions">
+              <Link to="/app" className="btn-premium btn-glow">
+                Start Building →
+              </Link>
+              <Link to="/api" className="btn-secondary">
+                View API Docs
+              </Link>
+            </div>
+          </div>
 
-        <div className="hero-actions">
-          <Link to="/app" className="btn-premium btn-glow">
-            Start Building →
-          </Link>
-          <Link to="/api" className="btn-secondary">
-            View API Docs
-          </Link>
+          <div className="hero-logo-wrap">
+            <img src="/logo8.webp" alt="Claw.Click" className="hero-big-logo" />
+          </div>
         </div>
 
         <div className="hero-stats">
