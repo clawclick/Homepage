@@ -336,6 +336,7 @@ const SessionTerminal = () => {
   const fileInputRef = useRef(null)
   const historySyncingRef = useRef(false)
   const activeStreamIdRef = useRef(null)
+  const suppressNextAutoScrollRef = useRef(false)
 
   const transcriptStorageKey = id && account ? `session-terminal:${id}:${account.toLowerCase()}` : ''
 
@@ -487,6 +488,7 @@ const SessionTerminal = () => {
   }, [])
 
   const toggleAssistantDetails = useCallback((messageIndex) => {
+    suppressNextAutoScrollRef.current = true
     setMessages((prev) => prev.map((message, index) => {
       if (index !== messageIndex || message.type !== 'assistant') return message
       const details = ensureAssistantDetails(message)
@@ -516,6 +518,10 @@ const SessionTerminal = () => {
 
   useEffect(() => {
     if (!messagesEndRef.current) return
+    if (suppressNextAutoScrollRef.current) {
+      suppressNextAutoScrollRef.current = false
+      return
+    }
     const hasStreamingMessage = messages.some((message) => message.isStreaming)
     messagesEndRef.current.scrollIntoView({ behavior: hasStreamingMessage ? 'auto' : 'smooth', block: 'end' })
   }, [messages])
