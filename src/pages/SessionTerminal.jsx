@@ -376,6 +376,16 @@ const SessionTerminal = () => {
     }
   }, [account, id])
 
+  const fetchLatestUsage = useCallback(async () => {
+    if (!id || !account) return null
+    try {
+      const data = await fetchJson(`/api/session/${id}`, { headers: getWalletHeaders(account) })
+      return normalizeUsage(data?.usage)
+    } catch {
+      return null
+    }
+  }, [account, id])
+
   const fetchFiles = useCallback(async (dirPath) => {
     const p = dirPath ?? currentPath
     try {
@@ -741,6 +751,7 @@ const SessionTerminal = () => {
             })
           } else if (event.type === 'final' || event.type === 'aborted') {
             logTerminalStream(`sse:${event.type}`, { sessionId: id, streamId, payload: event })
+            const streamedUsage = normalizeUsage(event.usage)
             updateStreamingAssistant((message) => {
               const details = ensureAssistantDetails(message)
               return {
@@ -749,10 +760,25 @@ const SessionTerminal = () => {
                 details: {
                   ...details,
                   elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
-                  usage: normalizeUsage(event.usage) || details.usage,
+                  usage: streamedUsage || details.usage,
                 },
               }
             })
+            if (!streamedUsage) {
+              fetchLatestUsage().then((latestUsage) => {
+                if (!latestUsage) return
+                updateStreamingAssistant((message) => {
+                  const details = ensureAssistantDetails(message)
+                  return {
+                    ...message,
+                    details: {
+                      ...details,
+                      usage: latestUsage || details.usage,
+                    },
+                  }
+                })
+              })
+            }
           } else if (event.type === 'usage') {
             logTerminalStream('sse:usage', { sessionId: id, streamId, payload: event })
             updateStreamingAssistant((message) => {
