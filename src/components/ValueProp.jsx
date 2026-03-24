@@ -321,9 +321,18 @@ const ValueProp = () => {
               const sparklinePoints = getSparklinePoints(agent, index)
               const latencyClass = getLatencyClass(telemetry.latency)
               const volumeValue = 120000 + ((Number(agent.id) || 1) * 17300) + (index * 2900)
-              const pnlPresets = [128.4, 347.2, 189.6, -12.8, 265.3, 142.1]
-              const pnlValue = pnlPresets[index % pnlPresets.length]
-              const pnlDisplay = `${pnlValue >= 0 ? '+' : ''}${pnlValue.toFixed(1)}%`
+              const normalizedAgentName = String(agent.name || '').trim().toLowerCase()
+              const winRatePresets = [58.2, 63.7, 55.9, 61.1, 66.3, 59.8]
+              let winRateDisplay = `${winRatePresets[index % winRatePresets.length].toFixed(1)}%`
+              const isCustomAgent = normalizedAgentName.includes('custom')
+              let isInfiniteWinRate = false
+
+              if (normalizedAgentName.includes('candle surfer') || normalizedAgentName.includes('candel surfer')) {
+                winRateDisplay = '61.4%'
+              } else if (isCustomAgent) {
+                winRateDisplay = '∞'
+                isInfiniteWinRate = true
+              }
 
               return (
             <div key={`${agent.id}-${index}`} className="strategy-preview-card">
@@ -357,7 +366,7 @@ const ValueProp = () => {
                     <span className="spc-metric-label">Agent ID</span>
                     <span className="spc-metric-value">#{agent.id}</span>
                   </div>
-                  <div className="spc-metric">
+                  <div className="spc-metric spc-metric-centered">
                     <span className="spc-metric-label">Type</span>
                     <span className="spc-metric-value spc-blue" title={agent.type || 'Unknown'}>{agent.type || 'Unknown'}</span>
                   </div>
@@ -365,9 +374,9 @@ const ValueProp = () => {
                     <span className="spc-metric-label">Volume</span>
                     <span className="spc-metric-value">${volumeValue.toLocaleString()}</span>
                   </div>
-                  <div className="spc-metric">
-                    <span className="spc-metric-label">PnL</span>
-                    <span className={`spc-metric-value ${pnlValue >= 0 ? 'spc-blue' : ''}`}>{pnlDisplay}</span>
+                  <div className="spc-metric spc-metric-centered">
+                    <span className="spc-metric-label">Win rate</span>
+                    <span className={`spc-metric-value spc-blue${isInfiniteWinRate ? ' spc-metric-value-infinity' : ''}`}>{winRateDisplay}</span>
                   </div>
                 </div>
               </div>

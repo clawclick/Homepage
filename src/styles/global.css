@@ -2032,6 +2032,15 @@ button {
   text-overflow: ellipsis;
 }
 
+.spc-metric-centered {
+  text-align: center;
+}
+
+.spc-metric-value-infinity {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
 .spc-green { color: var(--purple); }
 .spc-blue { color: #5cd4be; }
 
