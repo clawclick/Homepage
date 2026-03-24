@@ -98,21 +98,8 @@ function parseGatewayHistoryMessages(rawMessages) {
   const parsed = rawMessages.map((message, index) => {
     const content = message?.content
     const blocks = Array.isArray(content) ? content : typeof content === 'string' ? [{ type: 'text', text: content }] : []
-    const visibleText = blocks
-      .filter((block) => block && block.type === 'text' && typeof block.text === 'string')
-      .map((block) => block.text)
-      .join('')
-    const reasoning = blocks
-      .filter((block) => block && (
-        block.type === 'thinking'
-        || block.type === 'reasoning'
-        || block.type === 'reasoning_text'
-        || block.type === 'summary_text'
-        || block.type === 'reasoning_summary'
-      ))
-      .map((block) => block.thinking || block.reasoning || block.text || block.content || '')
-      .filter(Boolean)
-      .join('\n')
+    const visibleText = extractText(message)
+    const reasoning = extractThinking(message)
     const toolCalls = parseHistoryToolCalls(blocks)
     const details = createAssistantDetails()
     details.reasoning = reasoning
@@ -222,48 +209,34 @@ function summarizeToolResult(result) {
   }
 }
 
-function extractEventText(event) {
-  if (!event || typeof event !== 'object') return ''
+function extractText(message) {
+  if (!message || typeof message !== 'object') return ''
 
-  if (typeof event.content === 'string' && event.channel !== 'reasoning') return event.content
-  if (typeof event.delta === 'string' && event.channel !== 'reasoning') return event.delta
-  if (typeof event.text === 'string' && event.channel !== 'reasoning') return event.text
-
-  const content = event.message?.content
-  if (Array.isArray(content)) {
-    return content
-      .filter((block) => block && block.type === 'text' && typeof block.text === 'string')
-      .map((block) => block.text)
-      .join('')
-  }
-
+  const content = message.content
   if (typeof content === 'string') return content
-  return ''
+  if (!Array.isArray(content)) return ''
+
+  return content
+    .filter((block) => block && block.type === 'text')
+    .map((block) => block.text || '')
+    .join('\n')
 }
 
-function extractEventThinking(event) {
-  if (!event || typeof event !== 'object') return ''
+function extractThinking(message) {
+  if (!message || typeof message !== 'object') return ''
 
-  if (event.channel === 'reasoning') {
-    if (typeof event.content === 'string') return event.content
-    if (typeof event.delta === 'string') return event.delta
-    if (typeof event.text === 'string') return event.text
-  }
+  const content = message.content
+  if (!Array.isArray(content)) return ''
 
-  const content = event.message?.content
-  if (Array.isArray(content)) {
-    return content
-      .filter((block) => block && (block.type === 'thinking' || block.type === 'reasoning'))
-      .map((block) => block.thinking || block.reasoning || block.text || '')
-      .filter(Boolean)
-      .join('')
-  }
-
-  const segments = Array.isArray(event.segments) ? event.segments : []
-  return segments
-    .filter((segment) => segment && segment.channel === 'reasoning' && typeof segment.text === 'string')
-    .map((segment) => segment.text)
-    .join('')
+  const thinking = content
+    .filter((block) => {
+      // console.log('Extracting thinking from message block type:', block?.type, block)
+      return block && block.type === 'thinking'
+    })
+    .map((block) => block.thinking || block.text || '')
+    .filter(Boolean)
+    .join('\n')
+  return thinking
 }
 
 function normalizeUsage(value) {
@@ -660,8 +633,9 @@ const SessionTerminal = () => {
             })
             updateStreamingAssistant((message) => {
               const details = ensureAssistantDetails(message)
-              const nextContent = extractEventText(event)
-              const nextReasoning = extractEventThinking(event)
+              const streamedMessage = event.message && typeof event.message === 'object' ? event.message : null
+              const nextContent = extractText(streamedMessage)
+              const nextReasoning = extractThinking(streamedMessage)
               return {
                 ...message,
                 content: nextContent ? mergeStreamChunk(message.content, nextContent) : message.content,
@@ -669,30 +643,6 @@ const SessionTerminal = () => {
                   ...details,
                   reasoning: nextReasoning ? mergeStreamChunk(details.reasoning, nextReasoning) : details.reasoning,
                   reasoningUpdatedAt: nextReasoning ? Date.now() : details.reasoningUpdatedAt,
-                  elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
-                },
-              }
-            })
-          } else if (event.type === 'reasoning_delta') {
-            logTerminalStream('sse:reasoning_delta', {
-              sessionId: id,
-              streamId,
-              chunkLength: typeof event.delta === 'string' ? event.delta.length : 0,
-              elapsedMs: event.elapsedMs,
-            })
-            updateStreamingAssistant((message) => {
-              const details = ensureAssistantDetails(message)
-              const nextReasoning = typeof event.delta === 'string'
-                ? event.delta
-                : typeof event.content === 'string'
-                  ? event.content
-                  : ''
-              return {
-                ...message,
-                details: {
-                  ...details,
-                  reasoning: mergeStreamChunk(details.reasoning, nextReasoning),
-                  reasoningUpdatedAt: Date.now(),
                   elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
                 },
               }
