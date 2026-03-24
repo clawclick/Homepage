@@ -443,7 +443,10 @@ const ApiDocs = () => {
           method: 'WS', path: '/ws/xFilteredStream', description: 'Real-time X filtered stream proxy',
           requiresAuth: true,
           params: [
-            { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' }
+            { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' },
+            { name: 'username', required: false, default: '—', description: 'Single X username to stream posts from' },
+            { name: 'usernames', required: false, default: '—', description: 'Multiple X usernames to stream posts from' },
+            { name: 'rules', required: false, default: '—', description: 'Optional raw X filtered-stream rules array' }
           ],
           example: 'WS wss://api.claw.click/ws/xFilteredStream',
           response: '{"type":"post","data":{"id":"1900000000000000000","text":"Bitcoin is moving again","createdAt":"2026-03-24T10:15:00.000Z","authorId":"2244994945","authorName":"X Dev","authorUsername":"XDevelopers","authorVerified":true,"authorFollowers":500000,"url":"https://x.com/XDevelopers/status/1900000000000000000","metrics":{"likes":152,"replies":12,"reposts":18,"quotes":3,"bookmarks":7,"impressions":42000}}}'
