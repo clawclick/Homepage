@@ -36,21 +36,6 @@ const ApiDocs = () => {
           method: 'GET', path: '/providers', description: 'List all configured data connectors and service status',
           requiresAuth: false, example: 'GET https://api.claw.click/providers',
           response: '{"providers": [{"id": "wallet-tracking", "label": "Wallet Tracking", "category": "walletTracking", "configured": true}, {"id": "market-data", "label": "Market Data", "category": "marketData", "configured": true}, {"id": "analytics", "label": "Analytics", "category": "analytics", "configured": true}, {"id": "risk", "label": "Risk", "category": "risk", "configured": true}]}'
-        },
-        {
-          method: 'GET', path: '/stats', description: 'Summary daily stats: requests, users, volume (Admin)',
-          requiresAuth: true, example: 'GET https://api.claw.click/stats',
-          response: '{"endpoint": "stats", "dayKey": "2026-03-19", "requests": {"total": 1240}, "users": {"totalGenerated": 12, "activeToday": 4}, "volume": {"buyWei": "1000000000000000000", "sellWei": "500000000000000000", "buyEth": "1", "sellEth": "0.5", "buyCount": 3, "sellCount": 2}}'
-        },
-        {
-          method: 'GET', path: '/admin/stats/agents', description: 'Per-agent analytics including successful and failed requests (Admin)',
-          requiresAuth: true,
-          params: [
-            { name: 'agentId', required: false, default: '—', description: 'Filter by a specific agent ID' },
-            { name: 'includeKeys', required: false, default: 'true', description: 'Include per-key daily and all-time rollups' }
-          ],
-          example: 'GET https://api.claw.click/admin/stats/agents?agentId=scanner-alpha&includeKeys=true',
-          response: '{"endpoint": "statsAgents", "dayKey": "2026-03-20", "summary": {"matchedAgents": 1, "totalAgents": 3, "activeAgentsToday": 2, "totalEverUsedAgents": 3}, "agents": [{"agentId": "scanner-alpha", "daily": {"totalRequests": 18200, "requestsToday": 740, "successfulToday": 712, "failedToday": 28, "clientErrorsToday": 21, "serverErrorsToday": 7, "successRatePctToday": 96.22, "failureRatePctToday": 3.78}, "allTime": {"totalRequests": 18200, "successful": 17610, "failed": 590, "clientErrors": 410, "serverErrors": 180, "successRatePct": 96.76, "failureRatePct": 3.24}}]}'
         }
       ]
     },
@@ -122,11 +107,64 @@ const ApiDocs = () => {
           params: [
             { name: 'chain', required: false, default: 'eth', description: 'Chain' },
             { name: 'tokenAddress', required: false, default: '—', description: 'Token address' },
-            { name: 'symbol', required: false, default: '—', description: 'Token symbol' },
-            { name: 'tokenName', required: false, default: '—', description: 'Token name (at least one required)' }
+            { name: 'symbol', required: false, default: '—', description: 'Token symbol, required with tokenName if tokenAddress is omitted' },
+            { name: 'tokenName', required: false, default: '—', description: 'Token name, required with symbol if tokenAddress is omitted' }
           ],
-          example: 'GET https://api.claw.click/fudSearch?chain=eth&symbol=USDC',
+          example: 'GET https://api.claw.click/fudSearch?chain=eth&tokenName=USD%20Coin&symbol=USDC',
           response: '{"endpoint": "fudSearch", "status": "live", "chain": "eth", "symbol": "USDC", "concerns": [{"type": "regulatory", "severity": "low", "description": "SEC inquiry"}, {"type": "technical", "severity": "low", "description": "Minor smart contract audit findings"}], "overallRisk": "low"}'
+        },
+        {
+          method: 'GET', path: '/xSearch', description: 'Search recent X posts by query',
+          requiresAuth: true,
+          params: [
+            { name: 'query', required: true, default: '—', description: 'X search query such as bitcoin lang:en -is:retweet' },
+            { name: 'maxResults', required: false, default: '25', description: 'Result count (10–100)' }
+          ],
+          example: 'GET https://api.claw.click/xSearch?query=bitcoin%20lang:en%20-is:retweet&maxResults=10',
+          response: '{"endpoint":"xSearch","status":"live","query":"bitcoin lang:en -is:retweet","maxResults":10,"count":10,"nextToken":"abc123","posts":[{"id":"1900000000000000000","text":"Bitcoin is moving again","createdAt":"2026-03-24T10:15:00.000Z","authorId":"2244994945","authorName":"X Dev","authorUsername":"XDevelopers","authorVerified":true,"authorFollowers":500000,"url":"https://x.com/XDevelopers/status/1900000000000000000","metrics":{"likes":152,"replies":12,"reposts":18,"quotes":3,"bookmarks":7,"impressions":42000}}],"providers":[{"provider":"x:searchRecentPosts","status":"ok"}]}'
+        },
+        {
+          method: 'GET', path: '/xCountRecent', description: 'Count recent X posts for a query',
+          requiresAuth: true,
+          params: [
+            { name: 'query', required: true, default: '—', description: 'X search query' },
+            { name: 'granularity', required: false, default: 'hour', description: 'minute, hour, or day' }
+          ],
+          example: 'GET https://api.claw.click/xCountRecent?query=bitcoin%20lang:en&granularity=hour',
+          response: '{"endpoint":"xCountRecent","status":"live","query":"bitcoin lang:en","granularity":"hour","totalPostCount":4832,"nextToken":null,"buckets":[{"start":"2026-03-24T09:00:00.000Z","end":"2026-03-24T10:00:00.000Z","postCount":214},{"start":"2026-03-24T10:00:00.000Z","end":"2026-03-24T11:00:00.000Z","postCount":287}],"providers":[{"provider":"x:countRecentPosts","status":"ok"}]}'
+        },
+        {
+          method: 'GET', path: '/xUserByUsername', description: 'Look up an X user profile by username',
+          requiresAuth: true,
+          params: [
+            { name: 'username', required: true, default: '—', description: 'Username without @' }
+          ],
+          example: 'GET https://api.claw.click/xUserByUsername?username=XDevelopers',
+          response: '{"endpoint":"xUserByUsername","status":"live","username":"XDevelopers","user":{"id":"2244994945","name":"X Dev","username":"XDevelopers","verified":true,"protected":false,"createdAt":"2013-12-14T04:35:55Z","description":"The voice of the X API platform.","profileImageUrl":"https://...","metrics":{"followers":500000,"following":12,"tweets":18000,"listed":4200,"likes":3200}},"providers":[{"provider":"x:userByUsername","status":"ok"}]}'
+        },
+        {
+          method: 'GET', path: '/xUserLikes', description: 'Get liked X posts for a user by username or userId',
+          requiresAuth: true,
+          params: [
+            { name: 'username', required: false, default: '—', description: 'Username without @' },
+            { name: 'userId', required: false, default: '—', description: 'X user id' },
+            { name: 'maxResults', required: false, default: '25', description: 'Result count (5–100)' },
+            { name: 'paginationToken', required: false, default: '—', description: 'Optional next-page token' }
+          ],
+          example: 'GET https://api.claw.click/xUserLikes?username=XDevelopers&maxResults=10',
+          response: '{"endpoint":"xUserLikes","status":"live","username":"XDevelopers","userId":"2244994945","count":10,"nextToken":"next_abc","posts":[{"id":"1900000000000000001","text":"We shipped another API update","createdAt":"2026-03-24T08:00:00.000Z","authorId":"123","authorName":"Builder","authorUsername":"builder","authorVerified":false,"authorFollowers":8400,"url":"https://x.com/builder/status/1900000000000000001","metrics":{"likes":88,"replies":4,"reposts":9,"quotes":1,"bookmarks":2,"impressions":12000}}],"providers":[{"provider":"x:userByUsername","status":"ok"},{"provider":"x:userLikes","status":"ok"}]}'
+        },
+        {
+          method: 'GET', path: '/xUserFollowers', description: 'Get followers for an X user by username or userId',
+          requiresAuth: true,
+          params: [
+            { name: 'username', required: false, default: '—', description: 'Username without @' },
+            { name: 'userId', required: false, default: '—', description: 'X user id' },
+            { name: 'maxResults', required: false, default: '25', description: 'Result count (1–1000)' },
+            { name: 'paginationToken', required: false, default: '—', description: 'Optional next-page token' }
+          ],
+          example: 'GET https://api.claw.click/xUserFollowers?username=XDevelopers&maxResults=10',
+          response: '{"endpoint":"xUserFollowers","status":"live","username":"XDevelopers","userId":"2244994945","count":10,"nextToken":"next_def","followers":[{"id":"6253282","name":"X API","username":"api","verified":true,"protected":false,"createdAt":"2007-05-23T06:01:13Z","description":"Platform account","profileImageUrl":"https://...","metrics":{"followers":2400000,"following":150,"tweets":52000,"listed":18000,"likes":5400}}],"providers":[{"provider":"x:userByUsername","status":"ok"},{"provider":"x:userFollowers","status":"ok"}]}'
         },
         {
           method: 'GET', path: '/trendingTokens', description: 'Currently trending tokens across all chains',
@@ -249,6 +287,17 @@ const ApiDocs = () => {
           ],
           example: 'GET https://api.claw.click/walletReview?chain=sol&walletAddress=8X35r...&days=30',
           response: '{"endpoint": "walletReview", "status": "live", "chain": "sol", "walletAddress": "8X35r...", "days": "30", "summary": {"totalNetWorthUsd": 125000, "chainNetWorthUsd": 80000, "realizedProfitUsd": 15000, "realizedProfitPct": 23.5, "totalTradeVolumeUsd": 500000, "totalTrades": 150, "profitable": true, "tokenCount": 15, "protocolCount": 5, "activeChains": ["sol", "eth"]}, "topHoldings": [{"tokenAddress": "So111...", "chain": "sol", "symbol": "SOL", "amount": 500, "priceUsd": 160, "valueUsd": 80000}]}'
+        },
+        {
+          method: 'GET', path: '/pnl', description: 'Focused wallet PnL summary by chain',
+          requiresAuth: true,
+          params: [
+            { name: 'chain', required: false, default: 'eth', description: 'Chain' },
+            { name: 'walletAddress', required: true, default: '—', description: 'Wallet address' },
+            { name: 'days', required: false, default: '30', description: 'Lookback period' }
+          ],
+          example: 'GET https://api.claw.click/pnl?chain=eth&walletAddress=0x4687371FFE7d5514FB7290145619d5d7343A77a4&days=30',
+          response: '{"endpoint":"pnl","status":"live","chain":"eth","walletAddress":"0x4687371FFE7d5514FB7290145619d5d7343A77a4","source":"zerion","summary":{"realizedPnlUsd":20804.39,"realizedPnlPct":54.65,"unrealizedPnlUsd":-389.13,"totalPnlUsd":20415.26,"avgProfitPerTradeUsd":null,"totalTrades":null,"totalBuys":null,"totalSells":null,"winRate":null,"uniqueTokens":null},"providers":[{"provider":"zerionPnl","status":"ok"}]}'
         },
         {
           method: 'GET', path: '/holders', description: 'Top holder rows for a token',
@@ -382,15 +431,6 @@ const ApiDocs = () => {
       category: 'WebSocket Streams',
       items: [
         {
-          method: 'WS', path: '/ws/agentStats', description: 'Real-time rolling agent performance stats stream',
-          requiresAuth: false,
-          params: [
-            { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' }
-          ],
-          example: 'WS wss://api.claw.click/ws/agentStats',
-          response: '{"type":"agentStats","data":{"agentId":"scanner-alpha","window":"rolling_60m","requestsLastHour":124,"avgResponseMsLastHour":188.4,"currentMinuteRequests":3,"updatedAt":"2026-03-21T20:15:00.000Z"}}'
-        },
-        {
           method: 'WS', path: '/ws/launchpadEvents', description: 'Real-time launchpad event stream',
           requiresAuth: true,
           params: [
@@ -398,6 +438,15 @@ const ApiDocs = () => {
           ],
           example: 'WS https://api.claw.click/ws/launchpadEvents',
           response: '{"type": "launchpadEvent", "launchpad": "pump.fun", "event": "new_mint", "data": {"tokenAddress": "...", "name": "NewToken", "symbol": "NEW", "description": "A new token", "createdAt": 1710000000, "marketCap": 50000}}'
+        },
+        {
+          method: 'WS', path: '/ws/xFilteredStream', description: 'Real-time X filtered stream proxy',
+          requiresAuth: true,
+          params: [
+            { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' }
+          ],
+          example: 'WS wss://api.claw.click/ws/xFilteredStream',
+          response: '{"type":"post","data":{"id":"1900000000000000000","text":"Bitcoin is moving again","createdAt":"2026-03-24T10:15:00.000Z","authorId":"2244994945","authorName":"X Dev","authorUsername":"XDevelopers","authorVerified":true,"authorFollowers":500000,"url":"https://x.com/XDevelopers/status/1900000000000000000","metrics":{"likes":152,"replies":12,"reposts":18,"quotes":3,"bookmarks":7,"impressions":42000}}}'
         }
       ]
     }

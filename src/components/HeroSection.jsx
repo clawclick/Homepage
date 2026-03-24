@@ -57,7 +57,7 @@ const HeroSection = () => {
               <span className="hero-stat-label">API Endpoints</span>
             </div>
             <div className="hero-stat-item">
-              <span className="hero-stat-number">37/50</span>
+              <span className="hero-stat-number">45</span>
               <span className="hero-stat-label">Live Integrations</span>
             </div>
           </div>

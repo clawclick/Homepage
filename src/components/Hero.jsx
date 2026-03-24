@@ -110,7 +110,7 @@ const Hero = () => {
             <div className="stat-label">API Endpoints</div>
           </div>
           <div className="stat-item" ref={intRef}>
-            <div className="stat-value">{intVal}</div>
+            <div className="stat-value">45/50</div>
             <div className="stat-label">Live Integrations</div>
           </div>
         </div>

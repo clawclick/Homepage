@@ -39,18 +39,18 @@ const CarouselRow = ({ items, direction }) => (
 const IntegrationCarousel = () => (
   <section className="integration-carousel-section">
     <div className="integration-carousel-header">
-      <span className="code-showcase-tag">37 Live Integrations</span>
+      <span className="code-showcase-tag">45 Live Integrations</span>
       <h2 className="integration-carousel-title">Connected to everything</h2>
       <p className="integration-carousel-subtitle">
         Every major chain, DEX, analytics platform and data provider — unified behind one API.
       </p>
       <div className="integration-stats-row">
         <div className="integration-stat-item">
-          <span className="integration-stat-num">37</span>
+          <span className="integration-stat-num">45</span>
           <span className="integration-stat-label">Live Now</span>
         </div>
         <div className="integration-stat-item">
-          <span className="integration-stat-num">23</span>
+          <span className="integration-stat-num">20</span>
           <span className="integration-stat-label">Coming Soon</span>
         </div>
         <div className="integration-stat-item">
