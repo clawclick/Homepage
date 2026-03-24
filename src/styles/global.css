@@ -7749,6 +7749,253 @@ button:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.st-assistant-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.st-reasoning {
+  border: 1px solid rgba(92, 212, 190, 0.18);
+  background: linear-gradient(180deg, rgba(92, 212, 190, 0.08), rgba(92, 212, 190, 0.03));
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.st-reasoning-toggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #baf7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.st-reasoning-body {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 0 14px 14px;
+  white-space: pre-wrap;
+  color: rgba(235, 255, 251, 0.88);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.st-usage-card {
+  margin-top: 2px;
+  padding-top: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.st-usage-head,
+.st-usage-foot,
+.st-usage-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.st-usage-head,
+.st-usage-foot,
+.st-usage-label span {
+  font-size: 0.78rem;
+  color: rgba(235, 255, 251, 0.7);
+}
+
+.st-usage-label strong,
+.st-usage-head span:last-child,
+.st-usage-foot span:last-child {
+  color: #ebfffb;
+  font-weight: 600;
+}
+
+.st-usage-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.st-usage-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.st-usage-bar {
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.st-usage-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5cd4be, #f39b83);
+  transition: width 0.2s ease-out;
+}
+
+.st-agent-details {
+  margin-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+.st-agent-details-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.st-agent-details-toggle {
+  flex: 1 1 280px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: rgba(235, 255, 251, 0.88);
+  font: inherit;
+  cursor: pointer;
+}
+
+.st-agent-details-meta {
+  color: rgba(235, 255, 251, 0.62);
+  font-size: 0.78rem;
+}
+
+.st-agent-usage-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(92, 212, 190, 0.22);
+  background: rgba(92, 212, 190, 0.08);
+  color: rgba(235, 255, 251, 0.88);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.st-agent-usage-label {
+  color: rgba(235, 255, 251, 0.62);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.st-agent-usage-value {
+  color: #ebfffb;
+  font-weight: 600;
+}
+
+.st-agent-details-panel {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.st-agent-detail-block {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.st-agent-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(235, 255, 251, 0.82);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.st-agent-detail-body {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 14px;
+  white-space: pre-wrap;
+  color: rgba(235, 255, 251, 0.88);
+}
+
+.st-agent-tools-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.st-agent-tool-item + .st-agent-tool-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.st-agent-tool-item {
+  padding: 14px;
+}
+
+.st-agent-tool-row,
+.st-agent-tool-time {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.st-agent-tool-name {
+  color: #ebfffb;
+  font-weight: 600;
+}
+
+.st-agent-tool-status {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.st-agent-tool-status-running {
+  color: #facc15;
+}
+
+.st-agent-tool-status-completed {
+  color: #5cd4be;
+}
+
+.st-agent-tool-time {
+  margin-top: 6px;
+  color: rgba(235, 255, 251, 0.58);
+  font-size: 0.78rem;
+}
+
+.st-agent-tool-code {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(235, 255, 251, 0.88);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  font-size: 0.78rem;
+}
+
 .st-page.st-ide .st-msg-system,
 .st-page.st-ide .st-msg-error,
 .st-page.st-ide .st-msg-tool {

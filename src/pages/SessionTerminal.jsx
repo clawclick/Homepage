@@ -44,16 +44,116 @@ function mergeStreamChunk(currentContent, incomingContent) {
   return `${current}${incoming}`
 }
 
-function normalizeHistoryMessage(message) {
-  return {
-    type: message.role === 'user' ? 'user' : 'assistant',
-    content: typeof message.content === 'string'
-      ? message.content
-      : Array.isArray(message.content)
-        ? message.content.filter((block) => block.type === 'text').map((block) => block.text).join('')
-        : '',
-    timestamp: message.timestamp,
+function parseHistoryToolCalls(blocks) {
+  const toolCalls = []
+
+  for (const block of blocks) {
+    if (!block || typeof block !== 'object') continue
+
+    if (block.type === 'tool_use' || block.type === 'toolCall') {
+      toolCalls.push({
+        id: block.id || `tool-${Date.now()}-${toolCalls.length}`,
+        name: block.name || 'Tool',
+        status: 'running',
+        args: summarizeToolArgs(block.input ?? block.arguments),
+        result: '',
+        startedAtMs: null,
+        finishedAtMs: null,
+      })
+      continue
+    }
+
+    if (block.type === 'tool_result' || block.type === 'toolResult') {
+      const result = summarizeToolResult(block.content)
+      const toolUseId = block.tool_use_id || block.toolCallId
+      const existingIndex = toolCalls.findIndex((toolCall) => toolCall.id === toolUseId || (!toolUseId && toolCall.status === 'running'))
+
+      if (existingIndex >= 0) {
+        toolCalls[existingIndex] = {
+          ...toolCalls[existingIndex],
+          status: 'completed',
+          result,
+          finishedAtMs: null,
+        }
+      } else {
+        toolCalls.push({
+          id: toolUseId || `tool-${Date.now()}-${toolCalls.length}`,
+          name: block.name || 'Tool',
+          status: 'completed',
+          args: '',
+          result,
+          startedAtMs: null,
+          finishedAtMs: null,
+        })
+      }
+    }
   }
+
+  return toolCalls
+}
+
+function parseGatewayHistoryMessages(rawMessages) {
+  if (!Array.isArray(rawMessages)) return []
+
+  const parsed = rawMessages.map((message, index) => {
+    const content = message?.content
+    const blocks = Array.isArray(content) ? content : typeof content === 'string' ? [{ type: 'text', text: content }] : []
+    const visibleText = blocks
+      .filter((block) => block && block.type === 'text' && typeof block.text === 'string')
+      .map((block) => block.text)
+      .join('')
+    const reasoning = blocks
+      .filter((block) => block && (
+        block.type === 'thinking'
+        || block.type === 'reasoning'
+        || block.type === 'reasoning_text'
+        || block.type === 'summary_text'
+        || block.type === 'reasoning_summary'
+      ))
+      .map((block) => block.thinking || block.reasoning || block.text || block.content || '')
+      .filter(Boolean)
+      .join('\n')
+    const toolCalls = parseHistoryToolCalls(blocks)
+    const details = createAssistantDetails()
+    details.reasoning = reasoning
+    details.toolCalls = toolCalls
+
+    return {
+      id: message?.id || `hist-${index}`,
+      type: message?.role === 'user' ? 'user' : 'assistant',
+      content: visibleText,
+      timestamp: message?.timestamp,
+      details,
+      _internalOnly: message?.role !== 'user' && !visibleText && (reasoning || toolCalls.length > 0),
+      _toolResultRole: message?.role === 'toolResult',
+    }
+  })
+
+  const merged = []
+  for (const entry of parsed) {
+    if (entry.type === 'assistant' && (entry._internalOnly || entry._toolResultRole)) {
+      const last = merged[merged.length - 1]
+      if (last && last.type === 'assistant') {
+        const lastDetails = ensureAssistantDetails(last)
+        last.details = {
+          ...lastDetails,
+          reasoning: [lastDetails.reasoning, entry.details.reasoning].filter(Boolean).join('\n').trim(),
+          toolCalls: [...lastDetails.toolCalls, ...entry.details.toolCalls],
+        }
+      }
+      continue
+    }
+
+    merged.push({
+      id: entry.id,
+      type: entry.type,
+      content: entry.content,
+      timestamp: entry.timestamp,
+      details: entry.type === 'assistant' ? entry.details : undefined,
+    })
+  }
+
+  return merged.filter((message) => message.type === 'user' || message.content || message.details?.reasoning || message.details?.toolCalls?.length)
 }
 
 function getMessageIdentity(message) {
@@ -75,6 +175,119 @@ function logTerminalStream(event, details = {}) {
   try {
     console.log(`[SessionTerminal] ${event}`, details)
   } catch {}
+}
+
+function createAssistantDetails() {
+  return {
+    isOpen: true,
+    reasoning: '',
+    reasoningUpdatedAt: null,
+    toolCalls: [],
+    elapsedMs: 0,
+    usage: null,
+  }
+}
+
+function ensureAssistantDetails(message) {
+  return message.details || createAssistantDetails()
+}
+
+function formatElapsedMs(value) {
+  const elapsedMs = Number(value) || 0
+  if (elapsedMs < 1000) return `${elapsedMs}ms`
+  const totalSeconds = Math.max(1, Math.round(elapsedMs / 1000))
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  if (minutes === 0) return `${totalSeconds}s`
+  return `${minutes}m ${seconds}s`
+}
+
+function summarizeToolArgs(args) {
+  if (args == null) return ''
+  if (typeof args === 'string') return args
+  try {
+    return JSON.stringify(args, null, 2)
+  } catch {
+    return String(args)
+  }
+}
+
+function summarizeToolResult(result) {
+  if (result == null) return ''
+  if (typeof result === 'string') return result
+  try {
+    return JSON.stringify(result, null, 2)
+  } catch {
+    return String(result)
+  }
+}
+
+function extractEventText(event) {
+  if (!event || typeof event !== 'object') return ''
+
+  if (typeof event.content === 'string' && event.channel !== 'reasoning') return event.content
+  if (typeof event.delta === 'string' && event.channel !== 'reasoning') return event.delta
+  if (typeof event.text === 'string' && event.channel !== 'reasoning') return event.text
+
+  const content = event.message?.content
+  if (Array.isArray(content)) {
+    return content
+      .filter((block) => block && block.type === 'text' && typeof block.text === 'string')
+      .map((block) => block.text)
+      .join('')
+  }
+
+  if (typeof content === 'string') return content
+  return ''
+}
+
+function extractEventThinking(event) {
+  if (!event || typeof event !== 'object') return ''
+
+  if (event.channel === 'reasoning') {
+    if (typeof event.content === 'string') return event.content
+    if (typeof event.delta === 'string') return event.delta
+    if (typeof event.text === 'string') return event.text
+  }
+
+  const content = event.message?.content
+  if (Array.isArray(content)) {
+    return content
+      .filter((block) => block && (block.type === 'thinking' || block.type === 'reasoning'))
+      .map((block) => block.thinking || block.reasoning || block.text || '')
+      .filter(Boolean)
+      .join('')
+  }
+
+  const segments = Array.isArray(event.segments) ? event.segments : []
+  return segments
+    .filter((segment) => segment && segment.channel === 'reasoning' && typeof segment.text === 'string')
+    .map((segment) => segment.text)
+    .join('')
+}
+
+function normalizeUsage(value) {
+  if (!value || typeof value !== 'object') return null
+
+  const normalized = {
+    inputTokens: Number(value.inputTokens ?? value.input_tokens ?? value.promptTokens ?? value.prompt_tokens) || 0,
+    outputTokens: Number(value.outputTokens ?? value.output_tokens ?? value.completionTokens ?? value.completion_tokens) || 0,
+    reasoningTokens: Number(value.reasoningTokens ?? value.reasoning_tokens ?? value.thinkingTokens ?? value.thinking_tokens) || 0,
+    totalTokens: Number(value.totalTokens ?? value.total_tokens ?? value.total) || 0,
+    contextWindow: Number(value.contextWindow ?? value.context_window ?? value.maxContextTokens ?? value.max_context_tokens ?? value.maxTokens ?? value.max_tokens) || 0,
+  }
+
+  if (!normalized.totalTokens) {
+    normalized.totalTokens = normalized.inputTokens + normalized.outputTokens + normalized.reasoningTokens
+  }
+
+  if (!normalized.totalTokens && !normalized.contextWindow) return null
+  return normalized
+}
+
+function usagePercent(used, total) {
+  if (!used || !total) return 0
+  return Math.max(0, Math.min(100, (used / total) * 100))
 }
 
 const SessionTerminal = () => {
@@ -190,7 +403,7 @@ const SessionTerminal = () => {
       throw new Error('Failed to load terminal history')
     }
     const data = await res.json()
-    return Array.isArray(data.messages) ? data.messages.map(normalizeHistoryMessage) : []
+    return parseGatewayHistoryMessages(data.messages)
   }, [id, account])
 
   const loadHistory = useCallback(async (force = false) => {
@@ -263,6 +476,20 @@ const SessionTerminal = () => {
     })
   }, [])
 
+  const toggleAssistantDetails = useCallback((messageIndex) => {
+    setMessages((prev) => prev.map((message, index) => {
+      if (index !== messageIndex || message.type !== 'assistant') return message
+      const details = ensureAssistantDetails(message)
+      return {
+        ...message,
+        details: {
+          ...details,
+          isOpen: !details.isOpen,
+        },
+      }
+    }))
+  }, [])
+
   useEffect(() => {
     if (!transcriptStorageKey || typeof window === 'undefined') {
       return
@@ -277,7 +504,11 @@ const SessionTerminal = () => {
     } catch {}
   }, [messages, transcriptStorageKey])
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => {
+    if (!messagesEndRef.current) return
+    const hasStreamingMessage = messages.some((message) => message.isStreaming)
+    messagesEndRef.current.scrollIntoView({ behavior: hasStreamingMessage ? 'auto' : 'smooth', block: 'end' })
+  }, [messages])
 
   useEffect(() => {
     if (!inputRef.current) return
@@ -337,7 +568,11 @@ const SessionTerminal = () => {
     activeStreamIdRef.current = streamId
     setInput('')
     setSending(true)
-    setMessages((prev) => [...prev, { type: 'user', content: userMsg, timestamp: Date.now() / 1000 }, { type: 'assistant', content: '', isStreaming: true, streamId }])
+    setMessages((prev) => [
+      ...prev,
+      { type: 'user', content: userMsg, timestamp: Date.now() / 1000 },
+      { type: 'assistant', content: '', isStreaming: true, streamId, details: createAssistantDetails() },
+    ])
     const controller = new AbortController()
     abortControllerRef.current = controller
     let streamWatchdog = null
@@ -408,28 +643,145 @@ const SessionTerminal = () => {
                     : 0,
             })
             updateStreamingAssistant((message) => {
-              const nextContent = typeof event.content === 'string'
-                ? event.content
-                : typeof event.delta === 'string'
-                  ? event.delta
-                  : typeof event.text === 'string'
-                    ? event.text
-                    : ''
-              const mergedContent = mergeStreamChunk(message.content, nextContent)
-              return { ...message, content: mergedContent }
+              const details = ensureAssistantDetails(message)
+              const nextContent = extractEventText(event)
+              const nextReasoning = extractEventThinking(event)
+              return {
+                ...message,
+                content: nextContent ? mergeStreamChunk(message.content, nextContent) : message.content,
+                details: {
+                  ...details,
+                  reasoning: nextReasoning ? mergeStreamChunk(details.reasoning, nextReasoning) : details.reasoning,
+                  reasoningUpdatedAt: nextReasoning ? Date.now() : details.reasoningUpdatedAt,
+                  elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
+                },
+              }
+            })
+          } else if (event.type === 'reasoning_delta') {
+            logTerminalStream('sse:reasoning_delta', {
+              sessionId: id,
+              streamId,
+              chunkLength: typeof event.delta === 'string' ? event.delta.length : 0,
+              elapsedMs: event.elapsedMs,
+            })
+            updateStreamingAssistant((message) => {
+              const details = ensureAssistantDetails(message)
+              const nextReasoning = typeof event.delta === 'string'
+                ? event.delta
+                : typeof event.content === 'string'
+                  ? event.content
+                  : ''
+              return {
+                ...message,
+                details: {
+                  ...details,
+                  reasoning: mergeStreamChunk(details.reasoning, nextReasoning),
+                  reasoningUpdatedAt: Date.now(),
+                  elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
+                },
+              }
             })
           } else if (event.type === 'tool_start') {
             logTerminalStream('sse:tool_start', { sessionId: id, streamId, name: event.name, args: event.args })
-            setMessages((prev) => [...prev, { type: 'tool', content: `Using ${event.name}...`, toolName: event.name, toolPhase: 'start' }])
+            updateStreamingAssistant((message) => {
+              const details = ensureAssistantDetails(message)
+              return {
+                ...message,
+                details: {
+                  ...details,
+                  elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
+                  toolCalls: [
+                    ...details.toolCalls,
+                    {
+                      id: `tool-${Date.now()}-${details.toolCalls.length}`,
+                      name: event.name || 'Tool',
+                      status: 'running',
+                      args: summarizeToolArgs(event.args),
+                      result: '',
+                      startedAtMs: Number(event.elapsedMs) || 0,
+                      finishedAtMs: null,
+                    },
+                  ],
+                },
+              }
+            })
           } else if (event.type === 'tool_result') {
             logTerminalStream('sse:tool_result', { sessionId: id, streamId, name: event.name, result: event.result })
-            setMessages((prev) => [...prev, { type: 'tool', content: typeof event.result === 'string' ? event.result.slice(0, 500) : JSON.stringify(event.result).slice(0, 500), toolName: event.name, toolPhase: 'result' }])
+            updateStreamingAssistant((message) => {
+              const details = ensureAssistantDetails(message)
+              const nextToolCalls = [...details.toolCalls]
+              const runningIndex = nextToolCalls.findIndex((toolCall) => toolCall.name === event.name && toolCall.status === 'running')
+              const summarizedResult = summarizeToolResult(event.result)
+              if (runningIndex >= 0) {
+                nextToolCalls[runningIndex] = {
+                  ...nextToolCalls[runningIndex],
+                  status: 'completed',
+                  result: summarizedResult,
+                  finishedAtMs: Number(event.elapsedMs) || 0,
+                }
+              } else {
+                nextToolCalls.push({
+                  id: `tool-${Date.now()}-${nextToolCalls.length}`,
+                  name: event.name || 'Tool',
+                  status: 'completed',
+                  args: '',
+                  result: summarizedResult,
+                  startedAtMs: null,
+                  finishedAtMs: Number(event.elapsedMs) || 0,
+                })
+              }
+              return {
+                ...message,
+                details: {
+                  ...details,
+                  elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
+                  toolCalls: nextToolCalls,
+                },
+              }
+            })
           } else if (event.type === 'final' || event.type === 'aborted') {
             logTerminalStream(`sse:${event.type}`, { sessionId: id, streamId, payload: event })
-            updateStreamingAssistant((message) => ({ ...message, isStreaming: false }))
+            updateStreamingAssistant((message) => {
+              const details = ensureAssistantDetails(message)
+              return {
+                ...message,
+                isStreaming: false,
+                details: {
+                  ...details,
+                  elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
+                  usage: normalizeUsage(event.usage) || details.usage,
+                },
+              }
+            })
+          } else if (event.type === 'usage') {
+            logTerminalStream('sse:usage', { sessionId: id, streamId, payload: event })
+            updateStreamingAssistant((message) => {
+              const details = ensureAssistantDetails(message)
+              return {
+                ...message,
+                details: {
+                  ...details,
+                  usage: normalizeUsage(event.usage) || details.usage,
+                  elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
+                },
+              }
+            })
           } else if (event.type === 'error') {
             logTerminalStream('sse:error', { sessionId: id, streamId, payload: event })
-            updateStreamingAssistant((message) => ({ ...message, type: 'error', content: event.message || 'Generation failed', isStreaming: false }))
+            updateStreamingAssistant((message) => {
+              const details = ensureAssistantDetails(message)
+              return {
+                ...message,
+                type: 'error',
+                content: event.message || 'Generation failed',
+                isStreaming: false,
+                details: {
+                  ...details,
+                  elapsedMs: Math.max(details.elapsedMs || 0, Number(event.elapsedMs) || 0),
+                  usage: normalizeUsage(event.usage) || details.usage,
+                },
+              }
+            })
           } else {
             logTerminalStream('sse:unknown-event', { sessionId: id, streamId, payload: event })
           }
@@ -1060,9 +1412,7 @@ const SessionTerminal = () => {
               {messages.map((msg, i) => (
                 <div key={i} className={`st-msg-row ${msg.type === 'user' ? 'st-msg-row-right' : ''}`}>
                   <div className={`st-msg st-msg-${msg.type}`}>
-                    {msg.type === 'tool' ? (
-                      <div className="st-msg-tool"><span>{msg.toolPhase === 'start' ? '⚙️' : '✓'}</span> {msg.content}</div>
-                    ) : msg.type === 'assistant' && msg.content && !msg.isStreaming ? (
+                    {msg.type === 'assistant' && msg.content && !msg.isStreaming ? (
                       <div className="st-msg-body st-markdown">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                       </div>
@@ -1072,6 +1422,81 @@ const SessionTerminal = () => {
                         {msg.isStreaming && <span className="st-cursor" />}
                       </div>
                     )}
+                    {msg.type === 'assistant' && msg.details ? (
+                      <div className="st-agent-details">
+                        <div className="st-agent-details-bar">
+                          <button
+                            type="button"
+                            className={`st-agent-details-toggle${msg.details.isOpen ? ' is-open' : ''}`}
+                            onClick={() => toggleAssistantDetails(i)}
+                          >
+                            <span>{msg.details.isOpen ? 'Hide details' : 'Show details'}</span>
+                            <span className="st-agent-details-meta">
+                              {msg.details.reasoning ? 'Thinking' : 'Live run'}
+                              {msg.details.toolCalls?.length ? ` • ${msg.details.toolCalls.length} tool${msg.details.toolCalls.length === 1 ? '' : 's'}` : ''}
+                              {msg.details.elapsedMs ? ` • ${formatElapsedMs(msg.details.elapsedMs)}` : ''}
+                            </span>
+                          </button>
+                          {!msg.isStreaming && msg.details.usage ? (
+                            <div className="st-agent-usage-summary">
+                              <span className="st-agent-usage-label">Tokens</span>
+                              <span className="st-agent-usage-value">
+                                {msg.details.usage.totalTokens.toLocaleString()}
+                                {msg.details.usage.contextWindow > 0 ? ` / ${msg.details.usage.contextWindow.toLocaleString()}` : ''}
+                                {msg.details.usage.contextWindow > 0 ? ` • ${usagePercent(msg.details.usage.totalTokens, msg.details.usage.contextWindow).toFixed(1)}%` : ''}
+                              </span>
+                            </div>
+                          ) : null}
+                        </div>
+                        {msg.details.isOpen && (
+                          <div className="st-agent-details-panel">
+                            <div className="st-agent-detail-block">
+                              <div className="st-agent-detail-header">
+                                <span>Thinking</span>
+                                {msg.details.elapsedMs ? <span>{formatElapsedMs(msg.details.elapsedMs)}</span> : null}
+                              </div>
+                              <div className={`st-agent-detail-body${msg.details.reasoning ? '' : ' st-agent-detail-empty'}`}>
+                                {msg.details.reasoning || (msg.isStreaming ? 'Waiting for reasoning stream...' : 'No reasoning was exposed for this run.')}
+                              </div>
+                            </div>
+                            <div className="st-agent-detail-block">
+                              <div className="st-agent-detail-header">
+                                <span>Tool activity</span>
+                                <span>{msg.details.toolCalls?.length || 0}</span>
+                              </div>
+                              {msg.details.toolCalls?.length ? (
+                                <div className="st-agent-tools-list">
+                                  {msg.details.toolCalls.map((toolCall) => (
+                                    <div key={toolCall.id} className="st-agent-tool-item">
+                                      <div className="st-agent-tool-row">
+                                        <span className="st-agent-tool-name">{toolCall.name}</span>
+                                        <span className={`st-agent-tool-status st-agent-tool-status-${toolCall.status}`}>
+                                          {toolCall.status === 'running' ? 'Running' : 'Done'}
+                                        </span>
+                                      </div>
+                                      {toolCall.startedAtMs != null ? (
+                                        <div className="st-agent-tool-time">
+                                          Started at {formatElapsedMs(toolCall.startedAtMs)}
+                                          {toolCall.finishedAtMs != null ? ` • Finished at ${formatElapsedMs(toolCall.finishedAtMs)}` : ''}
+                                        </div>
+                                      ) : toolCall.finishedAtMs != null ? (
+                                        <div className="st-agent-tool-time">Finished at {formatElapsedMs(toolCall.finishedAtMs)}</div>
+                                      ) : null}
+                                      {toolCall.args ? <pre className="st-agent-tool-code">{toolCall.args}</pre> : null}
+                                      {toolCall.result ? <pre className="st-agent-tool-code">{toolCall.result}</pre> : null}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="st-agent-detail-body st-agent-detail-empty">
+                                  No tool calls yet.
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ))}
