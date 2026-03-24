@@ -179,7 +179,7 @@ function logTerminalStream(event, details = {}) {
 
 function createAssistantDetails() {
   return {
-    isOpen: true,
+    isOpen: false,
     reasoning: '',
     reasoningUpdatedAt: null,
     toolCalls: [],
