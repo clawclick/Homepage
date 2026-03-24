@@ -350,7 +350,7 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: logo-reveal 1.2s var(--ease-out) both;
+  animation: logo-reveal 1.2s var(--ease-out) 0.45s both;
 }
 
 .hero-big-logo {
@@ -552,7 +552,7 @@ button {
   letter-spacing: -0.03em;
   color: var(--white);
   margin-bottom: 28px;
-  animation: fade-up 0.8s var(--ease-out) 0.5s both;
+  animation: fade-up 0.8s var(--ease-out) 0.45s both;
 }
 
 .hero h1 .highlight {
@@ -573,7 +573,7 @@ button {
   margin: 0 0 40px;
   line-height: 1.6;
   letter-spacing: -0.01em;
-  animation: fade-up 0.8s var(--ease-out) 0.7s both;
+  animation: fade-up 0.8s var(--ease-out) 0.45s both;
 }
 
 .hero-actions {
@@ -581,7 +581,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  animation: fade-up 0.8s var(--ease-out) 0.9s both;
+  animation: fade-up 0.8s var(--ease-out) 0.45s both;
 }
 
 @keyframes fade-up {
