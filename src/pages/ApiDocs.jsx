@@ -8,6 +8,7 @@ const ApiDocs = () => {
   const [responses, setResponses] = useState({})
   const [loading, setLoading] = useState({})
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [copiedCommand, setCopiedCommand] = useState('')
 
   const navigationSections = useMemo(() => [
     { id: 'overview', label: 'Overview' },
@@ -511,6 +512,15 @@ const ApiDocs = () => {
     { name: "Gas Intelligence", category: "Infrastructure", status: "live" }
   ]
 
+  const totalEndpointCount = useMemo(
+    () => endpoints.reduce((total, category) => total + category.items.length, 0),
+    []
+  )
+  const protectedEndpointCount = useMemo(
+    () => endpoints.reduce((total, category) => total + category.items.filter((item) => item.requiresAuth).length, 0),
+    []
+  )
+
   // Scroll tracking
   useEffect(() => {
     const handleScroll = () => {
@@ -572,7 +582,32 @@ const ApiDocs = () => {
     }
   }
 
-  const CodeBlock = ({ children, language = 'bash' }) => {
+  const copyToClipboard = async (commandKey, text) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        const textarea = document.createElement('textarea')
+        textarea.value = text
+        textarea.setAttribute('readonly', '')
+        textarea.style.position = 'absolute'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+      }
+
+      setCopiedCommand(commandKey)
+      window.setTimeout(() => {
+        setCopiedCommand((current) => (current === commandKey ? '' : current))
+      }, 1600)
+    } catch (error) {
+      console.error('Failed to copy command', error)
+    }
+  }
+
+  const CodeBlock = ({ children, language = 'bash', showHeader = true }) => {
     const highlightSyntax = (text) => {
       if (language === 'bash') {
         return text
@@ -583,10 +618,12 @@ const ApiDocs = () => {
     }
 
     return (
-      <div className="code-example">
-        <div className="code-header">
-          <span className="code-language">{language}</span>
-        </div>
+      <div className={`code-example ${showHeader ? '' : 'code-example-no-header'}`.trim()}>
+        {showHeader && (
+          <div className="code-header">
+            <span className="code-language">{language}</span>
+          </div>
+        )}
         <div className="code-block">
           <pre 
             className={`language-${language}`}
@@ -622,6 +659,22 @@ const ApiDocs = () => {
       </div>
     )
   }
+
+  const QuickStartCommand = ({ commandKey, children }) => (
+    <div className="quick-start-command">
+      <div className="quick-start-command-top">
+        <span className="quick-start-command-label">Example request</span>
+        <button
+          type="button"
+          className={`quick-start-copy-button ${copiedCommand === commandKey ? 'copied' : ''}`.trim()}
+          onClick={() => copyToClipboard(commandKey, children)}
+        >
+          {copiedCommand === commandKey ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <pre>{children}</pre>
+    </div>
+  )
 
   return (
     <div className="api-docs-page">
@@ -684,13 +737,54 @@ const ApiDocs = () => {
         <header className="api-docs-header" id="overview">
           <div className="api-docs-container">
             <div className="api-docs-hero api-docs-hero--left">
+              <span className="api-docs-kicker">Developer Docs</span>
               <h1 className="api-docs-title">Super API Documentation</h1>
               <p className="api-docs-subtitle">
                 Unified Crypto Intelligence API — 50+ data providers behind clean REST endpoints
               </p>
+              <div className="api-docs-hero-actions">
+                <button className="cta-button primary" type="button" onClick={() => navigate('/api/my-api')}>
+                  Get API Key
+                </button>
+                <button className="cta-button secondary" type="button" onClick={() => scrollToSection('x402')}>
+                  Explore x402
+                </button>
+              </div>
               <div className="api-base-url api-base-url--inline">
                 <span className="base-url-label">Base URL</span>
                 <code className="base-url">https://api.claw.click</code>
+              </div>
+              <div className="api-docs-overview-grid">
+                <div className="api-docs-overview-card">
+                  <span className="api-docs-overview-value">{totalEndpointCount}+</span>
+                  <span className="api-docs-overview-label">Documented endpoints</span>
+                </div>
+                <div className="api-docs-overview-card">
+                  <span className="api-docs-overview-value">{protectedEndpointCount}+</span>
+                  <span className="api-docs-overview-label">Protected routes</span>
+                </div>
+                <div className="api-docs-overview-card">
+                  <span className="api-docs-overview-value">{supportedChains.length}</span>
+                  <span className="api-docs-overview-label">Supported chains</span>
+                </div>
+                <div className="api-docs-overview-card">
+                  <span className="api-docs-overview-value">{x402Pricing.length}</span>
+                  <span className="api-docs-overview-label">x402 priced routes</span>
+                </div>
+              </div>
+              <div className="api-docs-highlight-row">
+                <div className="api-docs-highlight-card">
+                  <h3>One surface for crypto intelligence</h3>
+                  <p>Market data, holder analytics, wallet review, sentiment, risk checks, execution helpers, and live streams.</p>
+                </div>
+                <div className="api-docs-highlight-card">
+                  <h3>Flexible access</h3>
+                  <p>Use API keys for normal access, then continue with x402 pay-per-request when you need it.</p>
+                </div>
+                <div className="api-docs-highlight-card">
+                  <h3>Built for agents</h3>
+                  <p>Clean REST responses, machine-readable pricing, and endpoint coverage designed for automated workflows.</p>
+                </div>
               </div>
             </div>
           </div>
@@ -700,18 +794,61 @@ const ApiDocs = () => {
         <section className="quick-start-section" id="quickstart">
           <div className="api-docs-container">
             <h2 className="section-title">Quick Start</h2>
-            <div className="quick-start-stack">
-              <div className="quick-start-step">
-                <h3>1. Get Token Info</h3>
-                <CodeBlock language="bash">{`curl "https://api.claw.click/tokenPoolInfo?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"`}</CodeBlock>
+            <p className="section-description quick-start-description">
+              Start with three common flows: inspect a token, run a fast risk check, then generate unsigned execution data.
+            </p>
+            <div className="quick-start-flow">
+              <div className="quick-start-item">
+                <div className="quick-start-item-meta">
+                  <div className="quick-start-step-head">
+                    <span className="quick-start-step-index">01</span>
+                    <span className="quick-start-step-kicker">Market Data</span>
+                  </div>
+                </div>
+                <div className="quick-start-item-body">
+                  <h3>Get Token Info</h3>
+                  <p>Fetch price, liquidity, market cap, and pair metadata for a live token.</p>
+                  <QuickStartCommand commandKey="quickstart-token-info">{`curl --get "https://api.claw.click/tokenPoolInfo" \\
+  -H "x-api-key: YOUR_API_KEY" \\
+  --data-urlencode "chain=eth" \\
+  --data-urlencode "tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"`}</QuickStartCommand>
+                </div>
               </div>
-              <div className="quick-start-step">
-                <h3>2. Check Risk</h3>
-                <CodeBlock language="bash">{`curl "https://api.claw.click/isScam?chain=eth&tokenAddress=0x..."`}</CodeBlock>
+              <div className="quick-start-item">
+                <div className="quick-start-item-meta">
+                  <div className="quick-start-step-head">
+                    <span className="quick-start-step-index">02</span>
+                    <span className="quick-start-step-kicker">Risk</span>
+                  </div>
+                </div>
+                <div className="quick-start-item-body">
+                  <h3>Check Risk</h3>
+                  <p>Run a lightweight fraud and contract safety screen before taking a position.</p>
+                  <QuickStartCommand commandKey="quickstart-risk">{`curl --get "https://api.claw.click/isScam" \\
+  -H "x-api-key: YOUR_API_KEY" \\
+  --data-urlencode "chain=eth" \\
+  --data-urlencode "tokenAddress=0x..."`}</QuickStartCommand>
+                </div>
               </div>
-              <div className="quick-start-step">
-                <h3>3. Build Swap</h3>
-                <CodeBlock language="bash">{`curl "https://api.claw.click/swap?chain=eth&dex=uniswapV3&walletAddress=0x...&tokenIn=0x...&tokenOut=0x...&amountIn=1000000000000000000"`}</CodeBlock>
+              <div className="quick-start-item">
+                <div className="quick-start-item-meta">
+                  <div className="quick-start-step-head">
+                    <span className="quick-start-step-index">03</span>
+                    <span className="quick-start-step-kicker">Execution</span>
+                  </div>
+                </div>
+                <div className="quick-start-item-body">
+                  <h3>Build Swap</h3>
+                  <p>Create unsigned swap transaction payloads your app or agent can sign and submit.</p>
+                  <QuickStartCommand commandKey="quickstart-swap">{`curl --get "https://api.claw.click/swap" \\
+  -H "x-api-key: YOUR_API_KEY" \\
+  --data-urlencode "chain=eth" \\
+  --data-urlencode "dex=uniswapV3" \\
+  --data-urlencode "walletAddress=0x..." \\
+  --data-urlencode "tokenIn=0x..." \\
+  --data-urlencode "tokenOut=0x..." \\
+  --data-urlencode "amountIn=1000000000000000000"`}</QuickStartCommand>
+                </div>
               </div>
             </div>
           </div>
@@ -856,22 +993,49 @@ const ApiDocs = () => {
         <section className="auth-section" id="auth">
           <div className="api-docs-container">
             <h2 className="section-title">Authentication</h2>
-            <div className="auth-cards">
-              <div className="auth-card">
-                <h3>Public Endpoints</h3>
-                <p>No authentication required</p>
-                <ul>
-                  <li>/health</li>
-                  <li>/providers</li>
-                </ul>
+            <p className="section-description auth-description">
+              Most endpoints require an API key. Send it in the `x-api-key` header on every protected request.
+            </p>
+            <div className="auth-layout">
+              <div className="auth-reference">
+                <div className="auth-reference-block">
+                  <h3>Public routes</h3>
+                  <p>No authentication required.</p>
+                  <ul className="auth-route-list">
+                    <li><code>/health</code></li>
+                    <li><code>/providers</code></li>
+                  </ul>
+                </div>
+                <div className="auth-reference-block">
+                  <h3>Protected routes</h3>
+                  <p>Include your API key in request headers.</p>
+                  <ul className="auth-rule-list">
+                    <li>Send <code>x-api-key: YOUR_API_KEY</code> on REST calls.</li>
+                    <li>You can also use <code>Authorization: Bearer YOUR_API_KEY</code>.</li>
+                    <li>x402 can be used on supported routes when key access is unavailable or rate-limited.</li>
+                  </ul>
+                </div>
               </div>
-              <div className="auth-card">
-                <h3>Protected Endpoints</h3>
-                <p>Include API key in headers</p>
-                <CodeBlock language="bash">
-                  {`curl -H "x-api-key: YOUR_API_KEY" \\
-  "https://api.claw.click/tokenPoolInfo?..."`}
-                </CodeBlock>
+              <div className="auth-example-panel">
+                <div className="auth-example-tabs">
+                  <span className="auth-example-tab active">curl</span>
+                  <span className="auth-example-tab">headers</span>
+                </div>
+                <div className="auth-example-shell">
+                  <div className="auth-example-top">
+                    <span className="auth-example-label">Header example</span>
+                    <button
+                      type="button"
+                      className={`quick-start-copy-button ${copiedCommand === 'auth-example' ? 'copied' : ''}`.trim()}
+                      onClick={() => copyToClipboard('auth-example', `curl -H "x-api-key: YOUR_API_KEY" \\
+  "https://api.claw.click/tokenPoolInfo?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"`)}
+                    >
+                      {copiedCommand === 'auth-example' ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                  <pre className="auth-example-code">{`curl -H "x-api-key: YOUR_API_KEY" \\
+  "https://api.claw.click/tokenPoolInfo?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"`}</pre>
+                </div>
               </div>
             </div>
           </div>
@@ -904,10 +1068,29 @@ const ApiDocs = () => {
         <section className="websocket-section" id="websockets">
           <div className="api-docs-container">
             <h2 className="section-title">WebSocket Streaming</h2>
-            <div className="websocket-card">
-              <h3>Real-time Launchpad Events</h3>
-              <p>Connect to our WebSocket for live token launches and updates</p>
-              <CodeBlock language="javascript">
+            <p className="section-description websocket-description">
+              Subscribe to live event streams when polling is too slow for launches, social firehoses, and market triggers.
+            </p>
+            <div className="websocket-grid">
+              <div className="websocket-card websocket-card-feature">
+                <div className="websocket-card-head">
+                  <span className="websocket-pill">Live Feed</span>
+                  <span className="websocket-url">wss://api.claw.click/ws/launchpadEvents</span>
+                </div>
+                <h3>Real-time Launchpad Events</h3>
+                <p>Stream token launches and protocol events as they happen, then filter down to the launchpads you care about.</p>
+                <div className="websocket-bullets">
+                  <span>Low-latency event delivery</span>
+                  <span>Protocol-level filtering</span>
+                  <span>JSON payloads for bots and frontends</span>
+                </div>
+              </div>
+              <div className="websocket-card websocket-card-code">
+                <div className="websocket-code-meta">
+                  <span>Node example</span>
+                  <span>Subscribe after the info handshake</span>
+                </div>
+                <CodeBlock language="javascript">
 {`const WebSocket = require('ws');
 const ws = new WebSocket('wss://api.claw.click/ws/launchpadEvents');
 
@@ -921,7 +1104,8 @@ ws.on('message', (data) => {
     });
   }
 });`}
-              </CodeBlock>
+                </CodeBlock>
+              </div>
             </div>
           </div>
         </section>
@@ -990,7 +1174,7 @@ ws.on('message', (data) => {
                   Continue using paid Claw.Click endpoints with x402 when you do not have an API key or when you want pay-per-request access.
                 </p>
               </div>
-              <a href="https://docs.x402.org/" target="_blank" rel="noopener noreferrer" className="x402-doc-link">
+              <a href="https://docs.x402.org/getting-started/quickstart-for-buyers" target="_blank" rel="noopener noreferrer" className="x402-doc-link">
                 x402.org
               </a>
             </div>
