@@ -2507,8 +2507,9 @@ button {
 }
 
 .api-terminal-line-menu-heading .api-terminal-line-main {
-  color: rgba(241, 245, 249, 0.96);
+  color: var(--purple);
   font-size: 0.98rem;
+  text-shadow: 0 0 14px rgba(13, 158, 138, 0.18);
 }
 
 .api-terminal-line-menu-option,
