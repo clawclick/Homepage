@@ -1708,19 +1708,16 @@ button {
   min-width: 0;
   height: 820px;
   overflow: hidden;
-  border-radius: 28px;
-  border: 1px solid rgba(92, 212, 190, 0.14);
-  background:
-    radial-gradient(circle at top right, rgba(92, 212, 190, 0.08), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%),
-    #040809;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 28px 60px rgba(0, 0, 0, 0.24);
+  border-radius: 22px;
+  border: 1px solid rgba(127, 141, 163, 0.18);
+  background: linear-gradient(180deg, #060708 0%, #030405 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 24px 48px rgba(0, 0, 0, 0.3);
   outline: none;
 }
 
 .api-terminal-shell:focus-visible {
-  border-color: rgba(92, 212, 190, 0.24);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 0 0 2px rgba(92, 212, 190, 0.12), 0 28px 60px rgba(0, 0, 0, 0.24);
+  border-color: rgba(155, 170, 194, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0 0 2px rgba(155, 170, 194, 0.08), 0 24px 48px rgba(0, 0, 0, 0.3);
 }
 
 .api-visual-shell {
@@ -1729,33 +1726,30 @@ button {
   box-sizing: border-box;
   padding: 18px;
   overflow: hidden;
-  border-radius: 28px;
-  border: 1px solid rgba(92, 212, 190, 0.14);
-  background:
-    radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0%, rgba(255, 255, 255, 0.015) 100%),
-    #050b10;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 28px 60px rgba(0, 0, 0, 0.24);
+  border-radius: 22px;
+  border: 1px solid rgba(127, 141, 163, 0.18);
+  background: linear-gradient(180deg, #070809 0%, #040506 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 24px 48px rgba(0, 0, 0, 0.3);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: 12px;
 }
 
 .api-visual-shell-buy {
-  border-color: rgba(92, 212, 190, 0.18);
+  border-color: rgba(134, 149, 138, 0.22);
 }
 
 .api-visual-shell-sell {
-  border-color: rgba(251, 146, 60, 0.18);
+  border-color: rgba(150, 127, 103, 0.22);
 }
 
 .api-visual-shell-neutral,
 .api-visual-shell-pending {
-  border-color: rgba(147, 197, 253, 0.16);
+  border-color: rgba(122, 136, 158, 0.22);
 }
 
 .api-visual-shell-reject {
-  border-color: rgba(251, 113, 133, 0.18);
+  border-color: rgba(144, 115, 122, 0.22);
 }
 
 .api-visual-hero {
@@ -1764,9 +1758,9 @@ button {
   gap: 14px;
   align-items: start;
   padding: 18px;
-  border-radius: 22px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(127, 141, 163, 0.14);
+  background: rgba(255, 255, 255, 0.01);
 }
 
 .api-visual-hero-copy {
@@ -1784,7 +1778,7 @@ button {
 .api-visual-kicker {
   display: inline-block;
   margin-bottom: 10px;
-  color: #74f3d4;
+  color: #7ebfcd;
   font-size: 0.74rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1800,24 +1794,22 @@ button {
 
 .api-visual-hero-copy p {
   margin: 0;
-  color: rgba(226, 232, 240, 0.74);
+  color: rgba(185, 195, 209, 0.72);
   font-size: 0.92rem;
   line-height: 1.62;
 }
 
-.api-visual-decision {
-  min-width: 118px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  background: rgba(15, 23, 42, 0.55);
+.api-visual-status-rail {
+  min-width: 180px;
+  padding: 4px 0 4px 18px;
+  border-left: 1px solid rgba(127, 141, 163, 0.16);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  text-align: right;
+  gap: 8px;
+  align-self: stretch;
 }
 
-.api-visual-decision-label {
+.api-visual-status-label {
   color: rgba(148, 163, 184, 0.82);
   font-size: 0.72rem;
   font-family: var(--font-mono);
@@ -1825,62 +1817,75 @@ button {
   letter-spacing: 0.1em;
 }
 
-.api-visual-decision strong {
+.api-visual-status-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.api-visual-status-main strong {
   color: #f8fafc;
-  font-size: 1.18rem;
+  font-size: 1.34rem;
   line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 
-.api-visual-decision-confidence {
+.api-visual-status-confidence {
   color: rgba(226, 232, 240, 0.78);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.api-visual-decision-buy {
-  border-color: rgba(92, 212, 190, 0.2);
-  background: rgba(92, 212, 190, 0.08);
+.api-visual-status-detail {
+  color: rgba(185, 195, 209, 0.72);
+  font-size: 0.84rem;
+  line-height: 1.5;
 }
 
-.api-visual-decision-buy strong {
-  color: #74f3d4;
+.api-visual-status-rail-buy {
+  border-left-color: rgba(98, 173, 151, 0.28);
 }
 
-.api-visual-decision-sell {
-  border-color: rgba(251, 146, 60, 0.2);
-  background: rgba(251, 146, 60, 0.08);
+.api-visual-status-rail-buy .api-visual-status-main strong {
+  color: #8fe1c8;
 }
 
-.api-visual-decision-sell strong {
-  color: #fb923c;
+.api-visual-status-rail-sell {
+  border-left-color: rgba(194, 136, 88, 0.28);
 }
 
-.api-visual-decision-neutral,
-.api-visual-decision-pending {
-  border-color: rgba(147, 197, 253, 0.18);
-  background: rgba(147, 197, 253, 0.08);
+.api-visual-status-rail-sell .api-visual-status-main strong {
+  color: #f0b17a;
 }
 
-.api-visual-decision-neutral strong,
-.api-visual-decision-pending strong {
-  color: #93c5fd;
+.api-visual-status-rail-neutral,
+.api-visual-status-rail-pending {
+  border-left-color: rgba(101, 145, 194, 0.28);
 }
 
-.api-visual-decision-reject {
-  border-color: rgba(251, 113, 133, 0.2);
-  background: rgba(251, 113, 133, 0.08);
+.api-visual-status-rail-neutral .api-visual-status-main strong,
+.api-visual-status-rail-pending .api-visual-status-main strong {
+  color: #90bff2;
 }
 
-.api-visual-decision-reject strong {
-  color: #fb7185;
+.api-visual-status-rail-reject {
+  border-left-color: rgba(174, 100, 116, 0.28);
+}
+
+.api-visual-status-rail-reject .api-visual-status-main strong {
+  color: #e6a1af;
 }
 
 .api-visual-panel {
   min-height: 0;
   padding: 14px;
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  background: rgba(255, 255, 255, 0.024);
+  border-radius: 16px;
+  border: 1px solid rgba(127, 141, 163, 0.12);
+  background: rgba(255, 255, 255, 0.01);
   overflow: hidden;
 }
 
@@ -1894,7 +1899,7 @@ button {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
-  color: rgba(203, 213, 225, 0.82);
+  color: rgba(165, 178, 196, 0.82);
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1920,7 +1925,7 @@ button {
 }
 
 .api-visual-stage-list::-webkit-scrollbar-thumb {
-  background: rgba(147, 197, 253, 0.18);
+  background: rgba(138, 150, 170, 0.18);
   border-radius: 999px;
 }
 
@@ -1939,7 +1944,7 @@ button {
   top: 18px;
   bottom: -12px;
   width: 1px;
-  background: rgba(148, 163, 184, 0.16);
+  background: rgba(127, 141, 163, 0.16);
 }
 
 .api-visual-stage-dot {
@@ -1949,8 +1954,8 @@ button {
   height: 14px;
   margin-top: 4px;
   border-radius: 999px;
-  border: 2px solid rgba(148, 163, 184, 0.45);
-  background: #0f172a;
+  border: 2px solid rgba(127, 141, 163, 0.4);
+  background: #11161d;
 }
 
 .api-visual-stage-copy strong {
@@ -1965,26 +1970,26 @@ button {
 
 .api-visual-stage-copy span {
   display: block;
-  color: rgba(191, 219, 254, 0.76);
+  color: rgba(167, 179, 196, 0.74);
   font-size: 0.86rem;
   line-height: 1.5;
 }
 
 .api-visual-stage-complete .api-visual-stage-dot {
-  border-color: rgba(92, 212, 190, 0.85);
-  background: #74f3d4;
-  box-shadow: 0 0 0 4px rgba(92, 212, 190, 0.14);
+  border-color: rgba(113, 181, 163, 0.78);
+  background: #74c6b2;
+  box-shadow: 0 0 0 3px rgba(116, 198, 178, 0.12);
 }
 
 .api-visual-stage-active .api-visual-stage-dot {
-  border-color: rgba(125, 211, 252, 0.9);
-  background: #93c5fd;
-  box-shadow: 0 0 0 6px rgba(147, 197, 253, 0.16);
+  border-color: rgba(130, 181, 238, 0.9);
+  background: #8fbcf0;
+  box-shadow: 0 0 0 4px rgba(143, 188, 240, 0.12);
 }
 
 .api-visual-stage-up-next .api-visual-stage-dot {
-  border-color: rgba(250, 204, 21, 0.72);
-  background: rgba(250, 204, 21, 0.8);
+  border-color: rgba(199, 161, 101, 0.76);
+  background: rgba(206, 167, 99, 0.9);
 }
 
 .api-visual-stage-queued .api-visual-stage-copy strong,
@@ -2013,7 +2018,7 @@ button {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  color: rgba(226, 232, 240, 0.82);
+  color: rgba(203, 212, 223, 0.8);
   font-size: 0.86rem;
 }
 
@@ -2028,8 +2033,8 @@ button {
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.88);
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(3, 4, 6, 0.92);
+  border: 1px solid rgba(127, 141, 163, 0.12);
 }
 
 .api-visual-metric-fill {
@@ -2040,19 +2045,19 @@ button {
 }
 
 .api-visual-metric-fill-good {
-  background: linear-gradient(90deg, rgba(92, 212, 190, 0.55) 0%, #74f3d4 100%);
+  background: linear-gradient(90deg, rgba(63, 126, 109, 0.82) 0%, #78c5af 100%);
 }
 
 .api-visual-metric-fill-neutral {
-  background: linear-gradient(90deg, rgba(147, 197, 253, 0.45) 0%, #93c5fd 100%);
+  background: linear-gradient(90deg, rgba(71, 103, 141, 0.82) 0%, #82abd9 100%);
 }
 
 .api-visual-metric-fill-caution {
-  background: linear-gradient(90deg, rgba(250, 204, 21, 0.45) 0%, #facc15 100%);
+  background: linear-gradient(90deg, rgba(133, 99, 54, 0.84) 0%, #d3a15e 100%);
 }
 
 .api-visual-metric-fill-danger {
-  background: linear-gradient(90deg, rgba(251, 113, 133, 0.45) 0%, #fb7185 100%);
+  background: linear-gradient(90deg, rgba(133, 70, 82, 0.84) 0%, #d08a9a 100%);
 }
 
 .api-visual-checks {
@@ -2065,10 +2070,10 @@ button {
   display: inline-flex;
   align-items: center;
   padding: 6px 10px;
-  border-radius: 999px;
-  color: rgba(219, 234, 254, 0.86);
-  background: rgba(147, 197, 253, 0.08);
-  border: 1px solid rgba(147, 197, 253, 0.16);
+  border-radius: 10px;
+  color: rgba(195, 205, 218, 0.84);
+  background: rgba(255, 255, 255, 0.016);
+  border: 1px solid rgba(127, 141, 163, 0.14);
   font-size: 0.74rem;
   letter-spacing: 0.03em;
 }
@@ -2079,8 +2084,8 @@ button {
   gap: 16px;
   align-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid rgba(92, 212, 190, 0.1);
-  background: rgba(92, 212, 190, 0.03);
+  border-bottom: 1px solid rgba(127, 141, 163, 0.12);
+  background: rgba(255, 255, 255, 0.01);
 }
 
 .api-terminal-dots {
@@ -2095,15 +2100,15 @@ button {
 }
 
 .api-terminal-dots span:first-child {
-  background: #fb7185;
+  background: #8f6f76;
 }
 
 .api-terminal-dots span:nth-child(2) {
-  background: #facc15;
+  background: #927f66;
 }
 
 .api-terminal-dots span:last-child {
-  background: #4ade80;
+  background: #6f8678;
 }
 
 .api-terminal-meta {
@@ -2121,7 +2126,7 @@ button {
 }
 
 .api-terminal-title {
-  color: #74f3d4;
+  color: #7ebfcd;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -2147,10 +2152,10 @@ button {
 .api-terminal-status span {
   max-width: 220px;
   padding: 8px 12px;
-  border-radius: 999px;
-  color: rgba(219, 234, 254, 0.8);
-  background: rgba(125, 211, 252, 0.08);
-  border: 1px solid rgba(125, 211, 252, 0.12);
+  border-radius: 12px;
+  color: rgba(194, 205, 219, 0.8);
+  background: rgba(255, 255, 255, 0.014);
+  border: 1px solid rgba(127, 141, 163, 0.12);
   font-size: 0.74rem;
   white-space: nowrap;
   overflow: hidden;
@@ -2163,20 +2168,19 @@ button {
   gap: 14px;
   align-items: center;
   padding: 14px 20px;
-  border-bottom: 1px solid rgba(92, 212, 190, 0.08);
-  background:
-    linear-gradient(180deg, rgba(92, 212, 190, 0.06) 0%, rgba(92, 212, 190, 0.03) 100%);
+  border-bottom: 1px solid rgba(127, 141, 163, 0.1);
+  background: rgba(255, 255, 255, 0.01);
   font-family: var(--font-mono);
 }
 
 .api-terminal-command-prompt {
-  color: #74f3d4;
+  color: #8cc8d6;
   white-space: nowrap;
 }
 
 .api-terminal-command-value {
   min-width: 0;
-  color: #f8fafc;
+  color: #d7e0eb;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2322,7 +2326,7 @@ button {
 }
 
 .api-terminal-viewport::-webkit-scrollbar-thumb {
-  background: rgba(92, 212, 190, 0.2);
+  background: rgba(127, 141, 163, 0.18);
   border-radius: 999px;
 }
 
@@ -2332,10 +2336,10 @@ button {
   gap: 14px;
   align-items: start;
   padding: 12px 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.08);
-  background: rgba(255, 255, 255, 0.025);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  border-radius: 14px;
+  border: 1px solid rgba(127, 141, 163, 0.12);
+  background: rgba(255, 255, 255, 0.012);
+  box-shadow: none;
   font-size: 0.92rem;
   line-height: 1.6;
   color: rgba(226, 232, 240, 0.82);
@@ -2373,18 +2377,44 @@ button {
   word-break: break-word;
 }
 
+.api-terminal-line-has-endpoint {
+  grid-template-rows: auto auto;
+}
+
+.api-terminal-line-has-endpoint .api-terminal-line-prefix,
+.api-terminal-line-has-endpoint .api-terminal-line-badge {
+  grid-row: 1;
+}
+
+.api-terminal-line-has-endpoint .api-terminal-line-text {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+
 .api-terminal-line-main {
-  color: #f8fafc;
+  color: #e6ecf3;
   font-size: 0.99rem;
   font-weight: 600;
   line-height: 1.45;
 }
 
 .api-terminal-line-detail {
-  color: rgba(191, 219, 254, 0.72);
+  color: rgba(161, 173, 189, 0.74);
   font-size: 0.84rem;
   line-height: 1.6;
   max-width: 72ch;
+}
+
+.api-terminal-line-endpoint {
+  grid-column: 1 / 3;
+  grid-row: 2;
+  margin-top: -6px;
+  color: rgba(122, 132, 146, 0.78);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.45;
 }
 
 .api-terminal-line-badge {
@@ -2394,8 +2424,8 @@ button {
   align-self: start;
   min-width: 86px;
   padding: 5px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(127, 141, 163, 0.14);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -2409,43 +2439,43 @@ button {
 .api-terminal-line-badge-found,
 .api-terminal-line-badge-buy,
 .api-terminal-line-badge-complete {
-  color: #74f3d4;
-  background: rgba(92, 212, 190, 0.08);
-  border-color: rgba(92, 212, 190, 0.18);
+  color: #a6e2d1;
+  background: rgba(54, 97, 87, 0.22);
+  border-color: rgba(98, 173, 151, 0.28);
 }
 
 .api-terminal-line-badge-meta,
 .api-terminal-line-badge-neutral {
-  color: #93c5fd;
-  background: rgba(147, 197, 253, 0.08);
-  border-color: rgba(147, 197, 253, 0.16);
+  color: #a9c9ea;
+  background: rgba(47, 70, 97, 0.22);
+  border-color: rgba(101, 145, 194, 0.28);
 }
 
 .api-terminal-line-badge-scan,
 .api-terminal-line-badge-signal {
-  color: #f8fafc;
-  background: rgba(248, 250, 252, 0.06);
-  border-color: rgba(248, 250, 252, 0.12);
+  color: #dde4ed;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(127, 141, 163, 0.14);
 }
 
 .api-terminal-line-badge-risk,
 .api-terminal-line-badge-reject {
-  color: #fb7185;
-  background: rgba(251, 113, 133, 0.08);
-  border-color: rgba(251, 113, 133, 0.18);
+  color: #e3b1bc;
+  background: rgba(96, 54, 64, 0.24);
+  border-color: rgba(174, 100, 116, 0.28);
 }
 
 .api-terminal-line-badge-decision,
 .api-terminal-line-badge-sell {
-  color: #fb923c;
-  background: rgba(251, 146, 60, 0.08);
-  border-color: rgba(251, 146, 60, 0.18);
+  color: #f0c594;
+  background: rgba(104, 73, 47, 0.24);
+  border-color: rgba(194, 136, 88, 0.28);
 }
 
 .api-terminal-line-badge-pending {
-  color: #facc15;
-  background: rgba(250, 204, 21, 0.08);
-  border-color: rgba(250, 204, 21, 0.18);
+  color: #a9c9ea;
+  background: rgba(47, 70, 97, 0.22);
+  border-color: rgba(101, 145, 194, 0.28);
 }
 
 .api-terminal-line-meta .api-terminal-line-prefix,
@@ -2462,13 +2492,13 @@ button {
 }
 
 .api-terminal-line-meta {
-  background: rgba(125, 211, 252, 0.05);
-  border-color: rgba(125, 211, 252, 0.12);
+  background: rgba(70, 82, 100, 0.12);
+  border-color: rgba(127, 141, 163, 0.16);
 }
 
 .api-terminal-line-stage {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(92, 212, 190, 0.1);
+  background: rgba(255, 255, 255, 0.018);
+  border-color: rgba(127, 141, 163, 0.12);
 }
 
 .api-terminal-line-menu-heading {
@@ -2508,22 +2538,28 @@ button {
 }
 
 .api-terminal-line-menu-selected .api-terminal-line-prefix {
-  color: #74f3d4;
+  color: var(--purple);
   font-size: 0.86rem;
+  text-shadow: 0 0 10px rgba(13, 158, 138, 0.16);
 }
 
 .api-terminal-line-menu-selected .api-terminal-line-main {
-  color: #74f3d4;
+  color: var(--purple);
+  text-shadow: 0 0 14px rgba(13, 158, 138, 0.18);
 }
 
 .api-terminal-line-menu-selected .api-terminal-line-detail {
-  color: rgba(191, 219, 254, 0.84);
+  color: rgba(92, 212, 190, 0.72);
+}
+
+.api-terminal-line-menu-selected .api-terminal-line-detail {
+  color: rgba(176, 188, 204, 0.82);
 }
 
 .api-terminal-line-menu-meta {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px dashed rgba(148, 163, 184, 0.2);
+  border-top: 1px dashed rgba(127, 141, 163, 0.18);
 }
 
 .api-terminal-line-menu-option .api-terminal-line-prefix,
@@ -2543,61 +2579,61 @@ button {
 }
 
 .api-terminal-line-pending {
-  background: rgba(250, 204, 21, 0.05);
-  border-color: rgba(250, 204, 21, 0.14);
+  background: rgba(76, 88, 106, 0.16);
+  border-color: rgba(127, 141, 163, 0.18);
 }
 
 .api-terminal-line-metric,
 .api-terminal-line-summary {
-  background: rgba(59, 130, 246, 0.045);
-  border-color: rgba(96, 165, 250, 0.12);
+  background: rgba(62, 72, 88, 0.14);
+  border-color: rgba(127, 141, 163, 0.16);
 }
 
 .api-terminal-line-pending .api-terminal-line-main {
-  color: rgba(250, 204, 21, 0.96);
+  color: #cad4e1;
 }
 
 .api-terminal-line-metric .api-terminal-line-main,
 .api-terminal-line-summary .api-terminal-line-main {
-  color: rgba(219, 234, 254, 0.96);
+  color: #d6e0ec;
 }
 
 .api-terminal-line-decision-buy {
-  background: rgba(92, 212, 190, 0.06);
-  border-color: rgba(92, 212, 190, 0.18);
+  background: rgba(53, 92, 83, 0.24);
+  border-color: rgba(98, 173, 151, 0.28);
 }
 
 .api-terminal-line-decision-sell {
-  background: rgba(251, 146, 60, 0.06);
-  border-color: rgba(251, 146, 60, 0.18);
+  background: rgba(104, 73, 47, 0.24);
+  border-color: rgba(194, 136, 88, 0.28);
 }
 
 .api-terminal-line-decision-neutral,
 .api-terminal-line-decision-pending {
-  background: rgba(147, 197, 253, 0.06);
-  border-color: rgba(147, 197, 253, 0.18);
+  background: rgba(50, 71, 98, 0.24);
+  border-color: rgba(101, 145, 194, 0.28);
 }
 
 .api-terminal-line-decision-reject {
-  background: rgba(251, 113, 133, 0.06);
-  border-color: rgba(251, 113, 133, 0.18);
+  background: rgba(96, 54, 64, 0.24);
+  border-color: rgba(174, 100, 116, 0.28);
 }
 
 .api-terminal-line-decision-buy .api-terminal-line-main {
-  color: #74f3d4;
+  color: #8fe1c8;
 }
 
 .api-terminal-line-decision-sell .api-terminal-line-main {
-  color: #fb923c;
+  color: #f0b17a;
 }
 
 .api-terminal-line-decision-neutral .api-terminal-line-main,
 .api-terminal-line-decision-pending .api-terminal-line-main {
-  color: #93c5fd;
+  color: #90bff2;
 }
 
 .api-terminal-line-decision-reject .api-terminal-line-main {
-  color: #fb7185;
+  color: #e6a1af;
 }
 
 .api-terminal-line-separator,
@@ -2618,7 +2654,7 @@ button {
 }
 
 .api-terminal-line-separator .api-terminal-line-main {
-  color: rgba(148, 163, 184, 0.35);
+  color: rgba(127, 141, 163, 0.28);
   font-size: 0.78rem;
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -2629,7 +2665,7 @@ button {
 }
 
 .api-terminal-line-ascii .api-terminal-line-main {
-  color: rgba(116, 243, 212, 0.62);
+  color: rgba(117, 186, 198, 0.5);
   font-size: clamp(0.35rem, 0.48vw, 0.58rem);
   line-height: 1.14;
   white-space: pre;
@@ -5602,10 +5638,12 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .api-visual-decision {
+  .api-visual-status-rail {
     min-width: 0;
     width: 100%;
-    text-align: left;
+    padding: 12px 0 0;
+    border-left: 0;
+    border-top: 1px solid rgba(127, 141, 163, 0.16);
   }
 
   .api-visual-panel {
@@ -5654,6 +5692,10 @@ button {
     padding: 12px;
   }
 
+  .api-terminal-line-has-endpoint {
+    grid-template-rows: auto;
+  }
+
   .api-terminal-line-prefix,
   .api-terminal-line-badge {
     justify-self: start;
@@ -5665,6 +5707,17 @@ button {
 
   .api-terminal-line-badge {
     min-width: 0;
+  }
+
+  .api-terminal-line-has-endpoint .api-terminal-line-text,
+  .api-terminal-line-endpoint {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .api-terminal-line-endpoint {
+    margin-top: -2px;
+    font-size: 0.6rem;
   }
 
   .api-terminal-line-main {
