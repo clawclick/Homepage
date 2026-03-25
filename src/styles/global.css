@@ -4163,9 +4163,10 @@ button {
 .deploy-session-grid,
 .terminal-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.35fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.35fr);
   gap: 24px;
   margin-top: 28px;
+  align-items: start;
 }
 
 .deploy-panel,
@@ -4335,6 +4336,10 @@ button {
   background:
     radial-gradient(circle at top right, rgba(243, 155, 131, 0.08), transparent 34%),
     rgba(22, 14, 14, 0.92);
+}
+
+.deploy-warning-card-mobile-only {
+  display: none;
 }
 
 .deploy-warning-kicker {
@@ -4957,6 +4962,246 @@ button {
 
 .deploy-cancel-link {
   justify-content: center;
+}
+
+@media (max-width: 1180px) {
+  .deploy-session-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-top: 20px;
+  }
+
+  .deploy-panel-highlight,
+  .deploy-panel {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .deploy-session-shell {
+    width: min(100%, calc(100% - 20px));
+    padding: 20px 0 32px;
+  }
+
+  .deploy-session-topbar {
+    gap: 12px;
+  }
+
+  .deploy-wallet-row {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .deploy-wallet-chip,
+  .deploy-wallet-address,
+  .deploy-wallet-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .deploy-panel {
+    padding: 18px;
+  }
+
+  .deploy-kicker {
+    margin-bottom: 12px;
+  }
+
+  .deploy-panel h1 {
+    font-size: clamp(1.9rem, 9vw, 2.7rem);
+    line-height: 1;
+  }
+
+  .deploy-panel > p {
+    margin-top: 12px;
+    font-size: 0.95rem;
+  }
+
+  .deploy-strategy-card,
+  .deploy-price-card,
+  .deploy-status-banner,
+  .deploy-estimate-grid {
+    margin-top: 18px;
+  }
+
+  .deploy-strategy-card,
+  .deploy-config-section,
+  .deploy-api-spotlight {
+    padding: 16px;
+  }
+
+  .deploy-strategy-topline,
+  .deploy-slider-meta {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .deploy-price-card,
+  .deploy-estimate-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .deploy-price-card strong,
+  .deploy-estimate-grid strong {
+    font-size: 0.98rem;
+  }
+
+  .deploy-location-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .deploy-gpu-source-row {
+    margin: 12px 0 14px;
+    padding: 12px 14px;
+  }
+
+  .deploy-chip-row {
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .deploy-pill-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .deploy-pill-button,
+  .deploy-select-card,
+  .deploy-toggle,
+  .deploy-toggle-flashy {
+    min-height: 48px;
+  }
+
+  .deploy-pill-button {
+    width: 100%;
+    padding: 12px 10px;
+  }
+
+  .deploy-select-card {
+    padding: 13px;
+  }
+
+  .deploy-select-card-title-row {
+    align-items: flex-start;
+  }
+
+  .deploy-select-card-title-row span {
+    font-size: 0.68rem;
+  }
+
+  .deploy-select-card p,
+  .deploy-api-spotlight-copy p {
+    font-size: 0.78rem;
+  }
+
+  .deploy-api-spotlight {
+    gap: 14px;
+  }
+
+  .deploy-api-spotlight-copy strong {
+    font-size: 1rem;
+  }
+
+  .deploy-toggle-flashy {
+    min-width: 0;
+    padding: 14px 18px;
+  }
+
+  .deploy-help-tooltip-bubble {
+    left: auto;
+    right: 0;
+    width: min(280px, calc(100vw - 40px));
+    max-width: calc(100vw - 40px);
+  }
+
+  .deploy-actions-row {
+    margin-top: 20px;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .deploy-main-button,
+  .deploy-cancel-link {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .deploy-loading-content {
+    width: min(100%, calc(100% - 32px));
+    padding: 1.5rem;
+  }
+
+  .deploy-loading-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .deploy-loading-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .deploy-warning-card-desktop-only {
+    display: none;
+  }
+
+  .deploy-warning-card-mobile-only {
+    display: block;
+    margin-top: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .deploy-session-shell {
+    width: min(100%, calc(100% - 16px));
+    padding: 16px 0 24px;
+  }
+
+  .deploy-panel {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .deploy-panel h1 {
+    font-size: 1.75rem;
+  }
+
+  .deploy-strategy-topline,
+  .deploy-select-card-title-row,
+  .deploy-slider-meta {
+    flex-direction: column;
+  }
+
+  .deploy-price-card,
+  .deploy-estimate-grid,
+  .deploy-location-grid,
+  .deploy-pill-row {
+    grid-template-columns: 1fr;
+  }
+
+  .deploy-gpu-source-row,
+  .deploy-api-spotlight {
+    padding: 14px;
+  }
+
+  .deploy-select-card-compact {
+    text-align: left;
+  }
+
+  .deploy-chip-row > span,
+  .deploy-section-heading small,
+  .deploy-slider-scale {
+    font-size: 0.74rem;
+  }
+
+  .deploy-actions-row {
+    margin-top: 18px;
+  }
 }
 
 .session-terminal-empty {

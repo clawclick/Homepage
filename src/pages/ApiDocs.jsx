@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const ApiDocs = () => {
@@ -11,6 +11,7 @@ const ApiDocs = () => {
   const [copiedCommand, setCopiedCommand] = useState('')
   const [quickStartLanguage, setQuickStartLanguage] = useState('curl')
   const [websocketLanguage, setWebsocketLanguage] = useState('node.js')
+  const touchStartRef = useRef({ x: 0, y: 0 })
 
   const navigationSections = useMemo(() => [
     { id: 'overview', label: 'Overview' },
@@ -223,6 +224,56 @@ ws = WebSocketApp(
 
 ws.run_forever()`,
   }), [])
+
+  useEffect(() => {
+    const handleTouchStart = (event) => {
+      const touch = event.changedTouches?.[0]
+      if (!touch) {
+        return
+      }
+
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+      }
+    }
+
+    const handleTouchEnd = (event) => {
+      if (window.innerWidth > 768) {
+        return
+      }
+
+      const touch = event.changedTouches?.[0]
+      if (!touch) {
+        return
+      }
+
+      const deltaX = touch.clientX - touchStartRef.current.x
+      const deltaY = touch.clientY - touchStartRef.current.y
+
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return
+      }
+
+      const startedNearEdge = touchStartRef.current.x <= 36
+
+      if (!sidebarOpen && startedNearEdge && deltaX > 56) {
+        setSidebarOpen(true)
+      }
+
+      if (sidebarOpen && deltaX < -56) {
+        setSidebarOpen(false)
+      }
+    }
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [sidebarOpen])
 
   // Comprehensive endpoints data from GitHub README
   const endpoints = [
@@ -861,11 +912,13 @@ ws.run_forever()`,
   return (
     <div className="api-docs-page">
       {/* Mobile Menu Toggle */}
-      <button 
-        className="mobile-menu-toggle"
+      <button
+        className={`mobile-menu-toggle ${sidebarOpen ? 'is-open' : ''}`}
         onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-expanded={sidebarOpen}
+        aria-label={sidebarOpen ? 'Close API menu' : 'Open API menu'}
       >
-        ☰ Menu
+        <span className="mobile-menu-toggle-arrow">{sidebarOpen ? '‹' : '›'}</span>
       </button>
 
       {/* Mobile Overlay */}
@@ -935,7 +988,7 @@ ws.run_forever()`,
               </div>
               <button
                 type="button"
-                className={`api-base-url api-base-url--inline ${copiedCommand === 'base-url' ? 'copied' : ''}`.trim()}
+                className={`api-base-url--inline ${copiedCommand === 'base-url' ? 'copied' : ''}`.trim()}
                 onClick={() => copyToClipboard('base-url', 'https://api.claw.click')}
               >
                 <span className="base-url-label">Base URL</span>
@@ -948,12 +1001,12 @@ ws.run_forever()`,
                   <span className="api-docs-overview-label">Documented endpoints</span>
                 </div>
                 <div className="api-docs-overview-card">
-                  <span className="api-docs-overview-value">{protectedEndpointCount}+</span>
-                  <span className="api-docs-overview-label">Protected routes</span>
+                  <span className="api-docs-overview-value">99.87%</span>
+                  <span className="api-docs-overview-label">Success rate</span>
                 </div>
                 <div className="api-docs-overview-card">
-                  <span className="api-docs-overview-value">{supportedChains.length}</span>
-                  <span className="api-docs-overview-label">Supported chains</span>
+                  <span className="api-docs-overview-value">13</span>
+                  <span className="api-docs-overview-label">DEXs</span>
                 </div>
                 <div className="api-docs-overview-card">
                   <span className="api-docs-overview-value">{x402Pricing.length}</span>
@@ -963,7 +1016,7 @@ ws.run_forever()`,
               <div className="api-docs-highlight-row">
                 <div className="api-docs-highlight-card">
                   <h3>One surface for crypto intelligence</h3>
-                  <p>Market data, holder analytics, wallet review, sentiment, risk checks, execution helpers, and live streams.</p>
+                  <p>Market data, holder analytics, wallet review, sentiment, risk checks, execution helpers, live streams, and swaps routed through 13 DEXs with 1 endpoint.</p>
                 </div>
                 <div className="api-docs-highlight-card">
                   <h3>Flexible access</h3>
