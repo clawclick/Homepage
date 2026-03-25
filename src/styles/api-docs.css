@@ -4110,6 +4110,82 @@
   width: 100%;
 }
 
+.error-description {
+  max-width: 760px;
+  margin-bottom: 1.3rem;
+}
+
+.error-reference-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.error-reference-item {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 1.2rem;
+  align-items: start;
+  padding: 1.1rem 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.error-reference-item:first-child {
+  border-top: none;
+  padding-top: 0.2rem;
+}
+
+.error-reference-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.error-reference-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.6rem;
+  height: 1.9rem;
+  padding: 0 0.65rem;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.error-reference-meta h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  color: #f3f5f7;
+}
+
+.error-reference-meta p {
+  margin: 0;
+  color: #b5c0c5;
+  line-height: 1.6;
+}
+
+.error-reference-code {
+  margin: 0;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  background: rgba(7, 9, 11, 0.92);
+  color: #d7e3ea;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 0.86rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 1024px) {
   .api-docs-overview-grid,
   .api-docs-highlight-row,
@@ -4127,6 +4203,10 @@
   }
 
   .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .error-reference-item {
     grid-template-columns: 1fr;
   }
 }

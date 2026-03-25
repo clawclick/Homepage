@@ -922,7 +922,8 @@ ws.run_forever()`,
               <span className="api-docs-kicker">Developer Docs</span>
               <h1 className="api-docs-title">Super API Documentation</h1>
               <p className="api-docs-subtitle">
-                Unified Crypto Intelligence API — 50+ data providers behind clean REST endpoints
+                Unified Crypto Intelligence API — Access 50+ data providers through streamlined REST endpoints. The essential toolkit for crypto builders, analysts, and agents, featuring specialized aggregated data for critical insights. Built by traders, for traders.
+
               </p>
               <div className="api-docs-hero-actions">
                 <button className="cta-button primary" type="button" onClick={() => navigate('/api/my-api')}>
@@ -1277,17 +1278,69 @@ ws.run_forever()`,
         <section className="error-section" id="error-handling">
           <div className="api-docs-container">
             <h2 className="section-title">Error Handling</h2>
-            {[
-              { type: 'Validation Error (400)', response: '{ "error": "Validation error", "message": "Invalid query parameters: tokenAddress — Required" }' },
-              { type: 'Invalid Chain (400)', response: '{ "error": "Invalid chain", "message": "Unsupported chain. Valid: eth, base, bsc, sol" }' },
-              { type: 'Not Found (404)', response: '{ "error": "Not found", "message": "Route does not exist." }' },
-              { type: 'Server Error (500)', response: '{ "error": "Internal server error", "message": "Something went wrong." }' },
-            ].map((e, i) => (
-              <div key={i} className="api-error-block">
-                <h4 className="api-error-type">{e.type}</h4>
-                <JsonBlock>{e.response}</JsonBlock>
-              </div>
-            ))}
+            <p className="section-description error-description">
+              Error responses are returned as JSON with an `error` field and a human-readable `message`.
+            </p>
+            <div className="error-reference-list">
+              {[
+                {
+                  title: 'Validation Error',
+                  status: '400',
+                  summary: 'Returned when required params are missing or request input is malformed.',
+                  response: `{
+  "error": "Validation error",
+  "message": "Invalid query parameters: tokenAddress - Required"
+}`,
+                },
+                {
+                  title: 'Invalid Chain',
+                  status: '400',
+                  summary: 'Returned when the requested chain is unsupported for that route.',
+                  response: `{
+  "error": "Invalid chain",
+  "message": "Unsupported chain. Valid: eth, base, bsc, sol"
+}`,
+                },
+                {
+                  title: 'Payment Required',
+                  status: '402',
+                  summary: 'Returned on x402-enabled routes when the request needs payment. This usually happens when no API key is provided, the key cannot access the route, or rate-limited clients continue through x402. The response includes a PAYMENT-REQUIRED header describing accepted payment options.',
+                  response: `{
+  "error": "Payment required",
+  "message": "This route requires x402 payment or eligible API key access. Check the PAYMENT-REQUIRED header for accepted payment options."
+}`,
+                },
+                {
+                  title: 'Not Found',
+                  status: '404',
+                  summary: 'Returned when the route does not exist or the requested resource cannot be found.',
+                  response: `{
+  "error": "Not found",
+  "message": "Route does not exist."
+}`,
+                },
+                {
+                  title: 'Server Error',
+                  status: '500',
+                  summary: 'Returned when an unexpected server-side failure occurs.',
+                  response: `{
+  "error": "Internal server error",
+  "message": "Something went wrong."
+}`,
+                },
+              ].map((e) => (
+                <div key={`${e.status}-${e.title}`} className="error-reference-item">
+                  <div className="error-reference-meta">
+                    <div className="error-reference-head">
+                      <span className="error-reference-status">{e.status}</span>
+                      <h3>{e.title}</h3>
+                    </div>
+                    <p>{e.summary}</p>
+                  </div>
+                  <pre className="error-reference-code">{e.response}</pre>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
