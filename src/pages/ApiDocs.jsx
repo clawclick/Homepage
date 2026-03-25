@@ -71,21 +71,21 @@ const ApiDocs = () => {
       snippets: {
         curl: `curl --get "https://api.claw.click/tokenPoolInfo" \\
   -H "x-api-key: YOUR_API_KEY" \\
-  --data-urlencode "chain=eth" \\
-  --data-urlencode "tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"`,
+  --data-urlencode "chain=base" \\
+  --data-urlencode "tokenAddress=0xB964cA8757B0d64c50B0da17f0150563139361aC"`,
         python: `import requests
 
 response = requests.get(
     "https://api.claw.click/tokenPoolInfo",
     headers={"x-api-key": "YOUR_API_KEY"},
     params={
-        "chain": "eth",
-        "tokenAddress": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "chain": "base",
+        "tokenAddress": "0xB964cA8757B0d64c50B0da17f0150563139361aC",
     },
 )
 
 print(response.json())`,
-        'node.js': `const response = await fetch("https://api.claw.click/tokenPoolInfo?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", {
+        'node.js': `const response = await fetch("https://api.claw.click/tokenPoolInfo?chain=base&tokenAddress=0xB964cA8757B0d64c50B0da17f0150563139361aC", {
   headers: {
     "x-api-key": "YOUR_API_KEY",
   },
@@ -104,21 +104,21 @@ console.log(data);`,
       snippets: {
         curl: `curl --get "https://api.claw.click/isScam" \\
   -H "x-api-key: YOUR_API_KEY" \\
-  --data-urlencode "chain=eth" \\
-  --data-urlencode "tokenAddress=0x..."`,
+  --data-urlencode "chain=base" \\
+  --data-urlencode "tokenAddress=0xB964cA8757B0d64c50B0da17f0150563139361aC"`,
         python: `import requests
 
 response = requests.get(
     "https://api.claw.click/isScam",
     headers={"x-api-key": "YOUR_API_KEY"},
     params={
-        "chain": "eth",
-        "tokenAddress": "0x...",
+        "chain": "base",
+        "tokenAddress": "0xB964cA8757B0d64c50B0da17f0150563139361aC",
     },
 )
 
 print(response.json())`,
-        'node.js': `const response = await fetch("https://api.claw.click/isScam?chain=eth&tokenAddress=0x...", {
+        'node.js': `const response = await fetch("https://api.claw.click/isScam?chain=base&tokenAddress=0xB964cA8757B0d64c50B0da17f0150563139361aC", {
   headers: {
     "x-api-key": "YOUR_API_KEY",
   },
@@ -137,11 +137,11 @@ console.log(data);`,
       snippets: {
         curl: `curl --get "https://api.claw.click/swap" \\
   -H "x-api-key: YOUR_API_KEY" \\
-  --data-urlencode "chain=eth" \\
-  --data-urlencode "dex=uniswapV3" \\
+  --data-urlencode "chain=base" \\
+  --data-urlencode "dex=uniswapV4" \\
   --data-urlencode "walletAddress=0x..." \\
-  --data-urlencode "tokenIn=0x..." \\
-  --data-urlencode "tokenOut=0x..." \\
+  --data-urlencode "tokenIn=native" \\
+  --data-urlencode "tokenOut=0xB964cA8757B0d64c50B0da17f0150563139361aC" \\
   --data-urlencode "amountIn=1000000000000000000"`,
         python: `import requests
 
@@ -149,22 +149,22 @@ response = requests.get(
     "https://api.claw.click/swap",
     headers={"x-api-key": "YOUR_API_KEY"},
     params={
-        "chain": "eth",
-        "dex": "uniswapV3",
+        "chain": "base",
+        "dex": "uniswapV4",
         "walletAddress": "0x...",
-        "tokenIn": "0x...",
-        "tokenOut": "0x...",
+        "tokenIn": "native",
+        "tokenOut": "0xB964cA8757B0d64c50B0da17f0150563139361aC",
         "amountIn": "1000000000000000000",
     },
 )
 
 print(response.json())`,
         'node.js': `const params = new URLSearchParams({
-  chain: "eth",
-  dex: "uniswapV3",
+  chain: "base",
+  dex: "uniswapV4",
   walletAddress: "0x...",
-  tokenIn: "0x...",
-  tokenOut: "0x...",
+  tokenIn: "native",
+  tokenOut: "0xB964cA8757B0d64c50B0da17f0150563139361aC",
   amountIn: "1000000000000000000",
 });
 
