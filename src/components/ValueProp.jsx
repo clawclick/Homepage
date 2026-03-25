@@ -199,7 +199,7 @@ const demoScenarios = [
     name: 'Weak momentum token',
     pair: 'JUP / SOL',
     command: 'discover --source stream --filter momentum',
-    reasoning: 'The token looked clean, but the move never built enough strength to justify a trade.',
+    reasoning: 'The token resolved cleanly, but market context stayed too soft to justify a trade.',
     steps: [
       createStep({
         time: '08:58:03',
@@ -227,51 +227,27 @@ const demoScenarios = [
       }),
       createStep({
         time: '08:58:05',
-        label: 'Scan',
-        title: 'Volatility came in muted',
-        detail: 'Price expansion stayed shallow and lacked real follow-through.',
-        status: 'Momentum soft',
-        decision: 'Watching',
-        confidence: '28%',
+        label: 'Market',
+        title: 'Market context stayed too soft',
+        detail: 'Recent price history and breadth never expanded into a real momentum move.',
+        status: 'Market soft',
+        decision: 'No edge',
+        confidence: '31%',
         metrics: createMetrics({ volatility: 'Low' }),
-        activatedChecks: ['Volatility'],
-        summary: 'There is movement, but not enough velocity to matter.',
+        activatedChecks: ['Market overview', 'Price history'],
+        summary: 'The market context stayed too quiet to justify deeper signal work.',
       }),
       createStep({
         time: '08:58:06',
-        label: 'Risk',
-        title: 'Risk checks passed',
-        detail: 'Holder and contract quality stayed clean.',
-        status: 'Risk gate cleared',
-        decision: 'Watching',
-        confidence: '39%',
-        metrics: createMetrics({ scamScore: '0.05', holderRisk: 'Low', volatility: 'Low' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
-        summary: 'Risk is not the issue here. Signal quality is.',
-      }),
-      createStep({
-        time: '08:58:07',
-        label: 'TA',
-        title: 'Indicators stayed flat',
-        detail: 'RSI stayed neutral and MACD failed to widen into momentum.',
-        status: 'Indicators weak',
-        decision: 'No edge',
-        confidence: '35%',
-        metrics: createMetrics({ scamScore: '0.05', holderRisk: 'Low', volatility: 'Low', macd: 'Flat' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'The setup stayed clean, but never became strong enough.',
-      }),
-      createStep({
-        time: '08:58:08',
         label: 'Action',
         title: 'Strategy returned NO TRADE',
-        detail: 'The engine withheld capital because momentum was too weak.',
+        detail: 'The engine withheld capital because the market never developed a real edge.',
         status: 'Decision returned',
         decision: 'NO TRADE',
-        confidence: '43%',
-        metrics: createMetrics({ scamScore: '0.05', holderRisk: 'Low', volatility: 'Low', macd: 'Flat' }),
+        confidence: '44%',
+        metrics: createMetrics({ volatility: 'Low' }),
         activatedChecks: ['Decision engine'],
-        summary: 'The token looked clean, but the move never built enough strength to justify a trade.',
+        summary: 'The token resolved cleanly, but market context stayed too soft to justify a trade.',
       }),
     ],
   },
@@ -280,7 +256,7 @@ const demoScenarios = [
     name: 'Scam risk reject',
     pair: 'SHDW / ETH',
     command: 'discover --source stream --filter new-token',
-    reasoning: 'The token was found fast, but the contract scan threw enough red flags to force a rejection.',
+    reasoning: 'The token was found fast, but the audit layer threw enough red flags to reject it immediately.',
     steps: [
       createStep({
         time: '09:21:41',
@@ -308,72 +284,48 @@ const demoScenarios = [
       }),
       createStep({
         time: '09:21:43',
-        label: 'Scan',
-        title: 'Volatility looked acceptable',
-        detail: 'The move was active enough to keep scanning.',
-        status: 'Volatility acceptable',
-        decision: 'Watching',
-        confidence: '26%',
-        metrics: createMetrics({ volatility: 'Medium' }),
-        activatedChecks: ['Volatility'],
-        summary: 'Nothing in the volatility profile blocked the token yet.',
-      }),
-      createStep({
-        time: '09:21:44',
-        label: 'Risk',
-        title: 'Scam checks failed',
-        detail: 'Contract behavior and transfer restrictions scored far above policy.',
+        label: 'Audit',
+        title: 'Full audit flagged critical contract risk',
+        detail: 'Transfer restrictions and policy checks failed hard enough to stop the pipeline immediately.',
         status: 'Critical risk detected',
         decision: 'Unsafe',
-        confidence: '81%',
-        metrics: createMetrics({ scamScore: '0.84', holderRisk: 'Medium', volatility: 'Medium' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
+        confidence: '86%',
+        metrics: createMetrics({ scamScore: '0.84', holderRisk: 'Medium' }),
+        activatedChecks: ['Full audit', 'Scam scan'],
         summary: 'The token failed the safety layer before strategy logic could matter.',
       }),
       createStep({
-        time: '09:21:45',
-        label: 'TA',
-        title: 'Indicators skipped',
-        detail: 'Momentum analysis was deprioritized once policy was tripped.',
-        status: 'Policy override',
-        decision: 'Unsafe',
-        confidence: '88%',
-        metrics: createMetrics({ scamScore: '0.84', holderRisk: 'Medium', volatility: 'Medium', macd: 'Skipped' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'Once the contract failed policy, indicators stopped mattering.',
-      }),
-      createStep({
-        time: '09:21:46',
+        time: '09:21:44',
         label: 'Action',
         title: 'Strategy returned REJECTED',
         detail: 'The engine blocked the trade on contract safety grounds.',
         status: 'Decision returned',
         decision: 'REJECTED',
         confidence: '92%',
-        metrics: createMetrics({ scamScore: '0.84', holderRisk: 'Medium', volatility: 'Medium', macd: 'Skipped' }),
+        metrics: createMetrics({ scamScore: '0.84', holderRisk: 'Medium' }),
         activatedChecks: ['Decision engine'],
-        summary: 'The token was found fast, but the contract scan threw enough red flags to force a rejection.',
+        summary: 'The token was found fast, but the audit layer threw enough red flags to reject it immediately.',
       }),
     ],
   },
   {
     id: 'pumpfun-graduation',
-    name: 'Pump.fun graduation',
+    name: 'Launchpad completion buy',
     pair: 'MOON / SOL',
-    command: 'listen --source pumpfun --event graduation',
-    reasoning: 'The token graduated from pump.fun cleanly, liquidity held up, and the engine promoted it into a buy.',
+    command: 'listen --source pumpfun --event completed',
+    reasoning: 'The token completed its launchpad curve cleanly, liquidity held up, and the engine promoted it into a buy.',
     steps: [
       createStep({
         time: '09:14:02',
         label: 'Event',
-        title: 'Pump.fun graduation event received',
-        detail: 'The event stream flagged MOON as newly graduated and tradable.',
-        status: 'Listening to graduation events',
+        title: 'Launchpad completion event received',
+        detail: 'The event stream flagged MOON as completed and ready for post-curve review.',
+        status: 'Listening to completion events',
         decision: 'Scanning',
         confidence: '--',
         metrics: createMetrics(),
         activatedChecks: ['Live stream'],
-        summary: 'A live event just told the API a fresh token graduated and is ready for analysis.',
+        summary: 'A live event just told the API a launchpad token completed and is ready for analysis.',
       }),
       createStep({
         time: '09:14:03',
@@ -391,7 +343,7 @@ const demoScenarios = [
         time: '09:14:04',
         label: 'Scan',
         title: 'Volatility profile accepted',
-        detail: 'The post-graduation move is active but still inside the strategy risk band.',
+        detail: 'The post-completion move is active but still inside the strategy risk band.',
         status: 'Volatility accepted',
         decision: 'Watching',
         confidence: '33%',
@@ -415,25 +367,25 @@ const demoScenarios = [
         time: '09:14:06',
         label: 'TA',
         title: 'Indicators confirmed continuation',
-        detail: 'RSI held re-entry strength and MACD stayed constructive after graduation.',
+        detail: 'RSI held re-entry strength and MACD stayed constructive after completion.',
         status: 'Indicators aligned',
         decision: 'Prime setup',
         confidence: '73%',
         metrics: createMetrics({ scamScore: '0.07', holderRisk: 'Low', volatility: 'High', macd: 'Bullish' }),
         activatedChecks: ['RSI', 'MACD'],
-        summary: 'Momentum and safety lined up after the graduation event.',
+        summary: 'Momentum and safety lined up after the completion event.',
       }),
       createStep({
         time: '09:14:07',
         label: 'Action',
         title: 'Strategy emitted BUY',
-        detail: 'The decision engine returned a buy after the graduation workflow cleared all checks.',
+        detail: 'The decision engine returned a buy after the completion workflow cleared all checks.',
         status: 'Decision returned',
         decision: 'BUY',
         confidence: '82%',
         metrics: createMetrics({ scamScore: '0.07', holderRisk: 'Low', volatility: 'High', macd: 'Bullish' }),
         activatedChecks: ['Decision engine'],
-        summary: 'The token graduated from pump.fun cleanly, liquidity held up, and the engine promoted it into a buy.',
+        summary: 'The token completed its launchpad curve cleanly, liquidity held up, and the engine promoted it into a buy.',
       }),
     ],
   },
@@ -442,7 +394,7 @@ const demoScenarios = [
     name: 'Twitter ticker discovery',
     pair: 'GIGA / SOL',
     command: 'social-scan --platform twitter --resolve-contracts',
-    reasoning: 'Social attention was real, but after resolving the contract and running the scans the engine still returned no trade.',
+    reasoning: 'Social attention was real, but after resolving the contract and checking source strength plus holder quality, the engine still returned no trade.',
     steps: [
       createStep({
         time: '10:22:18',
@@ -470,51 +422,39 @@ const demoScenarios = [
       }),
       createStep({
         time: '10:22:20',
-        label: 'Scan',
-        title: 'Volatility came in elevated',
-        detail: 'Social momentum pushed price action higher, but the move stayed borderline unstable.',
-        status: 'Volatility elevated',
+        label: 'Sentiment',
+        title: 'Source strength came in mixed',
+        detail: 'Like velocity was real, but the surrounding accounts were too noisy to build conviction.',
+        status: 'Sentiment mixed',
         decision: 'Watching',
         confidence: '31%',
-        metrics: createMetrics({ volatility: 'High' }),
-        activatedChecks: ['Volatility'],
-        summary: 'There is energy here, but social spikes can still be noisy.',
+        metrics: createMetrics(),
+        activatedChecks: ['Like check', 'Follower check'],
+        summary: 'Social attention existed, but source quality stayed mixed.',
       }),
       createStep({
         time: '10:22:21',
         label: 'Risk',
-        title: 'Holder and contract scans returned mixed quality',
-        detail: 'Nothing was malicious, but holder quality and distribution were only average.',
-        status: 'Risk mixed',
-        decision: 'Borderline',
+        title: 'Holder and chatter checks stayed mixed',
+        detail: 'Nothing failed outright, but holder quality and surrounding chatter were not strong enough to keep pushing.',
+        status: 'Edge not clean enough',
+        decision: 'No edge',
         confidence: '44%',
-        metrics: createMetrics({ scamScore: '0.19', holderRisk: 'Medium', volatility: 'High' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
-        summary: 'The contract is tradable, but the holder picture is not strong enough to inspire conviction.',
+        metrics: createMetrics({ scamScore: '0.19', holderRisk: 'Medium' }),
+        activatedChecks: ['Holder scan', 'FUD search'],
+        summary: 'The contract was tradable, but the social edge never became clean enough.',
       }),
       createStep({
         time: '10:22:22',
-        label: 'TA',
-        title: 'Indicators failed to confirm',
-        detail: 'RSI moved fast, but MACD lagged and failed to confirm durable momentum.',
-        status: 'Indicators conflicted',
-        decision: 'No edge',
-        confidence: '41%',
-        metrics: createMetrics({ scamScore: '0.19', holderRisk: 'Medium', volatility: 'High', macd: 'Mixed' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'Social attention alone was not enough to create a clean entry.',
-      }),
-      createStep({
-        time: '10:22:23',
         label: 'Action',
         title: 'Strategy returned NO TRADE',
-        detail: 'The engine withheld capital after the contract search and follow-up scans.',
+        detail: 'The engine withheld capital after the contract search, sentiment check, and holder review.',
         status: 'Decision returned',
         decision: 'NO TRADE',
         confidence: '47%',
-        metrics: createMetrics({ scamScore: '0.19', holderRisk: 'Medium', volatility: 'High', macd: 'Mixed' }),
+        metrics: createMetrics({ scamScore: '0.19', holderRisk: 'Medium' }),
         activatedChecks: ['Decision engine'],
-        summary: 'Social attention was real, but after resolving the contract and running the scans the engine still returned no trade.',
+        summary: 'Social attention was real, but after resolving the contract and checking source strength plus holder quality, the engine still returned no trade.',
       }),
     ],
   },
@@ -523,7 +463,7 @@ const demoScenarios = [
     name: 'Smart money out of SOL',
     pair: 'SOL / USDC',
     command: 'flow-watch --wallet-set smart-money --monitor-rotation',
-    reasoning: 'Smart money started rotating out of SOL, momentum weakened, and the engine converted that flow into a sell.',
+    reasoning: 'Smart money started rotating out of SOL, the wallet cluster weakened, and market context confirmed the sell.',
     steps: [
       createStep({
         time: '13:08:11',
@@ -551,51 +491,39 @@ const demoScenarios = [
       }),
       createStep({
         time: '13:08:13',
-        label: 'Scan',
-        title: 'Volatility stayed tradeable',
-        detail: 'The move accelerated, but remained inside the strategy execution envelope.',
-        status: 'Volatility acceptable',
+        label: 'Wallets',
+        title: 'Related wallets and PnL turned bearish',
+        detail: 'The cluster behind the outflow showed distribution behavior and declining trade quality.',
+        status: 'Wallet quality turning lower',
         decision: 'Watching',
-        confidence: '29%',
+        confidence: '32%',
         metrics: createMetrics({ volatility: 'Medium' }),
-        activatedChecks: ['Volatility'],
-        summary: 'The move is actionable without becoming chaotic.',
+        activatedChecks: ['Wallet cluster', 'PnL'],
+        summary: 'The outflow looked coordinated rather than random.',
       }),
       createStep({
         time: '13:08:14',
-        label: 'Risk',
-        title: 'Risk scans stayed clean',
-        detail: 'No contract or holder issues interfered with the flow-based signal.',
-        status: 'Risk gate cleared',
-        decision: 'Qualified',
-        confidence: '48%',
-        metrics: createMetrics({ scamScore: '0.02', holderRisk: 'Low', volatility: 'Medium' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
-        summary: 'Nothing blocked the strategy from acting on the outflow.',
+        label: 'Market',
+        title: 'Market context confirmed the rotation',
+        detail: 'Broader market structure backed the outflow across the SOL trade path.',
+        status: 'Rotation confirmed',
+        decision: 'Short setup',
+        confidence: '69%',
+        metrics: createMetrics({ volatility: 'Medium' }),
+        activatedChecks: ['Market overview', 'Wallet review'],
+        summary: 'Wallet behavior and broader market context lined up to the downside.',
       }),
       createStep({
         time: '13:08:15',
-        label: 'TA',
-        title: 'Indicators rolled bearish',
-        detail: 'RSI weakened and MACD confirmed downside continuation after the wallet exits.',
-        status: 'Bearish alignment',
-        decision: 'Short setup',
-        confidence: '72%',
-        metrics: createMetrics({ scamScore: '0.02', holderRisk: 'Low', volatility: 'Medium', macd: 'Bearish' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'Wallet flow and chart structure lined up to the downside.',
-      }),
-      createStep({
-        time: '13:08:16',
         label: 'Action',
         title: 'Strategy emitted SELL',
         detail: 'The decision engine turned smart money outflow into a sell action on SOL.',
         status: 'Decision returned',
         decision: 'SELL',
         confidence: '79%',
-        metrics: createMetrics({ scamScore: '0.02', holderRisk: 'Low', volatility: 'Medium', macd: 'Bearish' }),
+        metrics: createMetrics({ volatility: 'Medium' }),
         activatedChecks: ['Decision engine'],
-        summary: 'Smart money started rotating out of SOL, momentum weakened, and the engine converted that flow into a sell.',
+        summary: 'Smart money started rotating out of SOL, the wallet cluster weakened, and market context confirmed the sell.',
       }),
     ],
   },
@@ -766,7 +694,7 @@ const demoScenarios = [
     name: 'Liquidity reclaim buy',
     pair: 'MYRO / SOL',
     command: 'discover --source stream --filter reclaim',
-    reasoning: 'The scanner found a clean liquidity reclaim, the risk layer stayed clear, and the engine promoted it into a buy.',
+    reasoning: 'The scanner found a clean liquidity reclaim, broader market support held up, and entry scoring promoted it into a buy.',
     steps: [
       createStep({
         time: '08:53:11',
@@ -782,63 +710,51 @@ const demoScenarios = [
       }),
       createStep({
         time: '08:53:12',
-        label: 'Meta',
-        title: 'Token context loaded',
-        detail: 'Pair metadata, routing, and venue coverage were resolved successfully.',
-        status: 'Metadata loaded',
+        label: 'Liquidity',
+        title: 'Pool depth held through reclaim',
+        detail: 'Pool info showed stable depth and enough route coverage to stay tradeable after the reclaim.',
+        status: 'Liquidity confirmed',
         decision: 'Scanning',
-        confidence: '17%',
-        metrics: createMetrics(),
-        activatedChecks: ['Token metadata'],
-        summary: 'The engine now knows what it found and where it can execute.',
+        confidence: '26%',
+        metrics: createMetrics({ volatility: 'Medium' }),
+        activatedChecks: ['Pool info', 'Routes'],
+        summary: 'The reclaim still had enough depth behind it to remain actionable.',
       }),
       createStep({
         time: '08:53:13',
-        label: 'Scan',
-        title: 'Volatility normalized after reclaim',
-        detail: 'The move stayed active without stretching outside the reclaim profile.',
-        status: 'Volatility supportive',
-        decision: 'Watching',
-        confidence: '33%',
+        label: 'Market',
+        title: 'Top trader flow supported the reclaim',
+        detail: 'Broader market context and top trader activity stayed constructive instead of fading immediately.',
+        status: 'Market supportive',
+        decision: 'Qualified',
+        confidence: '52%',
         metrics: createMetrics({ volatility: 'Medium' }),
-        activatedChecks: ['Volatility'],
-        summary: 'Momentum held together without turning unstable.',
+        activatedChecks: ['Market overview', 'Top traders'],
+        summary: 'The reclaim kept attracting constructive market participation.',
       }),
       createStep({
         time: '08:53:14',
-        label: 'Risk',
-        title: 'Risk checks passed',
-        detail: 'Holder distribution and contract quality both stayed within policy.',
-        status: 'Risk gate cleared',
-        decision: 'Qualified',
-        confidence: '54%',
-        metrics: createMetrics({ scamScore: '0.04', holderRisk: 'Low', volatility: 'Medium' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
-        summary: 'Nothing in the quality layer blocked the reclaim thesis.',
+        label: 'TA',
+        title: 'Entry scoring confirmed the reclaim',
+        detail: 'Entry scoring and structure both lined up behind the move.',
+        status: 'Entry aligned',
+        decision: 'Prime setup',
+        confidence: '75%',
+        metrics: createMetrics({ volatility: 'Medium', macd: 'Bullish' }),
+        activatedChecks: ['Entry scoring', 'Indicators'],
+        summary: 'The reclaim stayed constructive once the entry model weighed in.',
       }),
       createStep({
         time: '08:53:15',
-        label: 'TA',
-        title: 'Indicators confirmed reversal',
-        detail: 'RSI lifted off reset levels and MACD crossed bullish into continuation.',
-        status: 'Indicators aligned',
-        decision: 'Prime setup',
-        confidence: '75%',
-        metrics: createMetrics({ scamScore: '0.04', holderRisk: 'Low', volatility: 'Medium', macd: 'Bullish' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'Structure and momentum both improved after the reclaim.',
-      }),
-      createStep({
-        time: '08:53:16',
         label: 'Action',
         title: 'Strategy emitted BUY',
         detail: 'The engine promoted the reclaim setup into a buy action.',
         status: 'Decision returned',
         decision: 'BUY',
         confidence: '83%',
-        metrics: createMetrics({ scamScore: '0.04', holderRisk: 'Low', volatility: 'Medium', macd: 'Bullish' }),
+        metrics: createMetrics({ volatility: 'Medium', macd: 'Bullish' }),
         activatedChecks: ['Decision engine'],
-        summary: 'The scanner found a clean liquidity reclaim, the risk layer stayed clear, and the engine promoted it into a buy.',
+        summary: 'The scanner found a clean liquidity reclaim, broader market support held up, and entry scoring promoted it into a buy.',
       }),
     ],
   },
@@ -925,22 +841,22 @@ const demoScenarios = [
   },
   {
     id: 'pumpfun-no-trade',
-    name: 'Launchpad fade no trade',
+    name: 'Launchpad created no trade',
     pair: 'SPRK / SOL',
-    command: 'listen --source pumpfun --event graduation',
-    reasoning: 'The launchpad event resolved cleanly, but the post-graduation move never built enough conviction to trade.',
+    command: 'listen --source pumpfun --event created',
+    reasoning: 'A fresh launchpad create event looked interesting, but the early move never built enough conviction to trade.',
     steps: [
       createStep({
         time: '09:31:07',
         label: 'Event',
-        title: 'Launchpad graduation event received',
-        detail: 'SPRK appeared as a fresh graduate on the event stream.',
-        status: 'Listening to graduation events',
+        title: 'Launchpad created event received',
+        detail: 'SPRK appeared on the event stream as a fresh launchpad create event.',
+        status: 'Listening to creation events',
         decision: 'Scanning',
         confidence: '--',
         metrics: createMetrics(),
         activatedChecks: ['Live stream'],
-        summary: 'A new graduate hit the pipeline and qualified for review.',
+        summary: 'A newly created launchpad token hit the pipeline and qualified for review.',
       }),
       createStep({
         time: '09:31:08',
@@ -958,7 +874,7 @@ const demoScenarios = [
         time: '09:31:09',
         label: 'Scan',
         title: 'Volatility came in light',
-        detail: 'The post-graduation move stayed active but never accelerated.',
+        detail: 'The early launchpad move stayed active but never accelerated.',
         status: 'Momentum soft',
         decision: 'Watching',
         confidence: '29%',
@@ -988,40 +904,40 @@ const demoScenarios = [
         confidence: '40%',
         metrics: createMetrics({ scamScore: '0.06', holderRisk: 'Low', volatility: 'Low', macd: 'Flat' }),
         activatedChecks: ['RSI', 'MACD'],
-        summary: 'The graduate looked safe, but the move never developed a tradeable edge.',
+        summary: 'The fresh launch looked safe, but the move never developed a tradeable edge.',
       }),
       createStep({
         time: '09:31:12',
         label: 'Action',
         title: 'Strategy returned NO TRADE',
-        detail: 'The engine passed on the launchpad graduate because the follow-through stayed weak.',
+        detail: 'The engine passed on the created token because the follow-through stayed weak.',
         status: 'Decision returned',
         decision: 'NO TRADE',
         confidence: '46%',
         metrics: createMetrics({ scamScore: '0.06', holderRisk: 'Low', volatility: 'Low', macd: 'Flat' }),
         activatedChecks: ['Decision engine'],
-        summary: 'The launchpad event resolved cleanly, but the post-graduation move never built enough conviction to trade.',
+        summary: 'A fresh launchpad create event looked interesting, but the early move never built enough conviction to trade.',
       }),
     ],
   },
   {
     id: 'pumpfun-risk-reject',
-    name: 'Launchpad risk reject',
+    name: 'Launchpad created reject',
     pair: 'RUGX / SOL',
-    command: 'listen --source pumpfun --event graduation',
-    reasoning: 'The launchpad event was real, but the contract and holder checks failed hard enough to block the trade.',
+    command: 'listen --source pumpfun --event created',
+    reasoning: 'The launchpad create event was real, but the audit layer blocked the token before any deeper strategy work mattered.',
     steps: [
       createStep({
         time: '09:36:22',
         label: 'Event',
-        title: 'Launchpad graduation event received',
-        detail: 'RUGX came through the graduation listener as newly tradable.',
-        status: 'Listening to graduation events',
+        title: 'Launchpad created event received',
+        detail: 'RUGX came through the listener as a newly created launchpad token.',
+        status: 'Listening to creation events',
         decision: 'Scanning',
         confidence: '--',
         metrics: createMetrics(),
         activatedChecks: ['Live stream'],
-        summary: 'The API found a new graduate and started a full risk review.',
+        summary: 'The API found a fresh launchpad create event and started a full risk review.',
       }),
       createStep({
         time: '09:36:23',
@@ -1037,72 +953,48 @@ const demoScenarios = [
       }),
       createStep({
         time: '09:36:24',
-        label: 'Scan',
-        title: 'Volatility stayed acceptable',
-        detail: 'The move was active enough to keep scanning without looking broken.',
-        status: 'Volatility acceptable',
-        decision: 'Watching',
-        confidence: '31%',
-        metrics: createMetrics({ volatility: 'Medium' }),
-        activatedChecks: ['Volatility'],
-        summary: 'Price action alone did not disqualify the graduate.',
+        label: 'Audit',
+        title: 'Audit layer blocked the new launch',
+        detail: 'Holder concentration and contract permissions triggered a hard stop immediately after hydration.',
+        status: 'Critical risk detected',
+        decision: 'Unsafe',
+        confidence: '84%',
+        metrics: createMetrics({ scamScore: '0.79', holderRisk: 'High' }),
+        activatedChecks: ['Full audit', 'Scam scan'],
+        summary: 'The fresh launch failed the safety layer before the strategy logic mattered.',
       }),
       createStep({
         time: '09:36:25',
-        label: 'Risk',
-        title: 'Safety checks failed',
-        detail: 'Holder concentration spiked and contract permissions scored above policy.',
-        status: 'Critical risk detected',
-        decision: 'Unsafe',
-        confidence: '82%',
-        metrics: createMetrics({ scamScore: '0.79', holderRisk: 'High', volatility: 'Medium' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
-        summary: 'The graduate failed the safety layer before the strategy logic mattered.',
-      }),
-      createStep({
-        time: '09:36:26',
-        label: 'TA',
-        title: 'Indicators deprioritized',
-        detail: 'Momentum checks were skipped once the policy gate was tripped.',
-        status: 'Policy override',
-        decision: 'Unsafe',
-        confidence: '88%',
-        metrics: createMetrics({ scamScore: '0.79', holderRisk: 'High', volatility: 'Medium', macd: 'Skipped' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'Once safety failed, indicators stopped mattering.',
-      }),
-      createStep({
-        time: '09:36:27',
         label: 'Action',
         title: 'Strategy returned REJECTED',
-        detail: 'The engine blocked the launchpad graduate on safety grounds.',
+        detail: 'The engine blocked the created token on safety grounds.',
         status: 'Decision returned',
         decision: 'REJECTED',
         confidence: '93%',
-        metrics: createMetrics({ scamScore: '0.79', holderRisk: 'High', volatility: 'Medium', macd: 'Skipped' }),
+        metrics: createMetrics({ scamScore: '0.79', holderRisk: 'High' }),
         activatedChecks: ['Decision engine'],
-        summary: 'The launchpad event was real, but the contract and holder checks failed hard enough to block the trade.',
+        summary: 'The launchpad create event was real, but the audit layer blocked the token before any deeper strategy work mattered.',
       }),
     ],
   },
   {
     id: 'pumpfun-exit-sell',
-    name: 'Launchpad reversal sell',
+    name: 'Launchpad migration sell',
     pair: 'FLASH / SOL',
-    command: 'listen --source pumpfun --event graduation',
-    reasoning: 'The launchpad graduate opened hot, then rolled over fast enough for the engine to emit a sell.',
+    command: 'listen --source pumpfun --event migrated',
+    reasoning: 'The token migrated out of the launchpad curve into open liquidity, then rolled over fast enough for the engine to emit a sell.',
     steps: [
       createStep({
         time: '09:42:40',
         label: 'Event',
-        title: 'Launchpad graduation event received',
-        detail: 'FLASH hit the feed as a fresh graduation event with active routing.',
-        status: 'Listening to graduation events',
+        title: 'Launchpad migration event received',
+        detail: 'FLASH hit the feed as a fresh migration event with active open-market routing.',
+        status: 'Watching migration events',
         decision: 'Scanning',
         confidence: '--',
         metrics: createMetrics(),
         activatedChecks: ['Live stream'],
-        summary: 'A fresh graduate entered the flow and triggered a continuation check.',
+        summary: 'A freshly migrated launchpad token entered the flow and triggered a continuation check.',
       }),
       createStep({
         time: '09:42:41',
@@ -1120,13 +1012,13 @@ const demoScenarios = [
         time: '09:42:42',
         label: 'Scan',
         title: 'Volatility surged higher',
-        detail: 'The initial move expanded quickly and started to look overextended.',
+        detail: 'The post-migration move expanded quickly and started to look overextended.',
         status: 'Volatility stretched',
         decision: 'Watching',
         confidence: '36%',
         metrics: createMetrics({ volatility: 'High' }),
         activatedChecks: ['Volatility'],
-        summary: 'The graduate opened hot, but the stretch started to look unstable.',
+        summary: 'The migrated token opened hot, but the stretch started to look unstable.',
       }),
       createStep({
         time: '09:42:43',
@@ -1156,34 +1048,34 @@ const demoScenarios = [
         time: '09:42:45',
         label: 'Action',
         title: 'Strategy emitted SELL',
-        detail: 'The engine turned the failed continuation into a sell on the graduate.',
+        detail: 'The engine turned the failed post-migration continuation into a sell.',
         status: 'Decision returned',
         decision: 'SELL',
         confidence: '80%',
         metrics: createMetrics({ scamScore: '0.05', holderRisk: 'Low', volatility: 'High', macd: 'Bearish' }),
         activatedChecks: ['Decision engine'],
-        summary: 'The launchpad graduate opened hot, then rolled over fast enough for the engine to emit a sell.',
+        summary: 'The token migrated out of the launchpad curve into open liquidity, then rolled over fast enough for the engine to emit a sell.',
       }),
     ],
   },
   {
     id: 'pumpfun-breakout-buy',
-    name: 'Launchpad breakout buy',
+    name: 'Launchpad completion breakout buy',
     pair: 'SURF / SOL',
-    command: 'listen --source pumpfun --event graduation',
-    reasoning: 'The graduate held its first pullback, quality checks stayed clean, and the engine promoted the post-launch strength into a buy.',
+    command: 'listen --source pumpfun --event completed',
+    reasoning: 'The completion event held its first pullback, quality checks stayed clean, and the engine promoted the post-launch strength into a buy.',
     steps: [
       createStep({
         time: '09:47:18',
         label: 'Event',
-        title: 'Launchpad graduation event received',
-        detail: 'SURF appeared on the live graduation feed with active routing ready.',
-        status: 'Listening to graduation events',
+        title: 'Launchpad completion event received',
+        detail: 'SURF appeared on the live completion feed with active routing ready.',
+        status: 'Listening to completion events',
         decision: 'Scanning',
         confidence: '--',
         metrics: createMetrics(),
         activatedChecks: ['Live stream'],
-        summary: 'A fresh graduate hit the pipeline and qualified for a continuation review.',
+        summary: 'A freshly completed launchpad token hit the pipeline and qualified for a continuation review.',
       }),
       createStep({
         time: '09:47:19',
@@ -1237,94 +1129,70 @@ const demoScenarios = [
         time: '09:47:23',
         label: 'Action',
         title: 'Strategy emitted BUY',
-        detail: 'The engine promoted the graduate into a buy after the follow-through held.',
+        detail: 'The engine promoted the completed token into a buy after the follow-through held.',
         status: 'Decision returned',
         decision: 'BUY',
         confidence: '84%',
         metrics: createMetrics({ scamScore: '0.05', holderRisk: 'Low', volatility: 'High', macd: 'Bullish' }),
         activatedChecks: ['Decision engine'],
-        summary: 'The graduate held its first pullback, quality checks stayed clean, and the engine promoted the post-launch strength into a buy.',
+        summary: 'The completion event held its first pullback, quality checks stayed clean, and the engine promoted the post-launch strength into a buy.',
       }),
     ],
   },
   {
     id: 'pumpfun-liquidity-buy',
-    name: 'Launchpad liquidity buy',
+    name: 'Launchpad migration liquidity buy',
     pair: 'EMBER / SOL',
-    command: 'listen --source pumpfun --event graduation',
-    reasoning: 'The graduate came through with healthy liquidity, clean holder quality, and enough momentum for the engine to issue a buy.',
+    command: 'listen --source pumpfun --event migrated',
+    reasoning: 'The token migrated into healthy liquidity, clean routes, and stable follow-through, so the engine issued a buy.',
     steps: [
       createStep({
         time: '09:54:41',
         label: 'Event',
-        title: 'Launchpad graduation event received',
-        detail: 'EMBER entered the stream as a newly graduated token with active venues.',
-        status: 'Listening to graduation events',
+        title: 'Launchpad migration event received',
+        detail: 'EMBER entered the stream as a newly migrated token with active venues.',
+        status: 'Watching migration events',
         decision: 'Scanning',
         confidence: '--',
         metrics: createMetrics(),
         activatedChecks: ['Live stream'],
-        summary: 'A new graduate hit the event feed and opened a full review.',
+        summary: 'A newly migrated launchpad token hit the event feed and opened a full review.',
       }),
       createStep({
         time: '09:54:42',
-        label: 'Meta',
-        title: 'Token metadata resolved',
-        detail: 'Routes, pool coverage, and token context were hydrated successfully.',
-        status: 'Metadata loaded',
-        decision: 'Scanning',
-        confidence: '16%',
-        metrics: createMetrics(),
-        activatedChecks: ['Token metadata'],
-        summary: 'The engine now knows where the graduate trades and how to score it.',
+        label: 'Liquidity',
+        title: 'Pool depth and route coverage resolved cleanly',
+        detail: 'Pool info showed healthy depth, clean routes, and stable venue coverage right after migration.',
+        status: 'Liquidity confirmed',
+        decision: 'Qualified',
+        confidence: '34%',
+        metrics: createMetrics({ volatility: 'Medium' }),
+        activatedChecks: ['Pool info', 'Routes'],
+        summary: 'The migrated token had enough depth and route quality to stay in play.',
       }),
       createStep({
         time: '09:54:43',
-        label: 'Scan',
-        title: 'Volatility stayed constructive',
-        detail: 'The post-graduation move stayed active without breaking the strategy envelope.',
-        status: 'Volatility accepted',
-        decision: 'Watching',
-        confidence: '33%',
+        label: 'Market',
+        title: 'Follow-through stayed orderly',
+        detail: 'Market overview showed active participation without the kind of expansion that breaks execution.',
+        status: 'Market aligned',
+        decision: 'Prime setup',
+        confidence: '67%',
         metrics: createMetrics({ volatility: 'Medium' }),
-        activatedChecks: ['Volatility'],
-        summary: 'The graduate has real movement, but not the kind that breaks execution.',
+        activatedChecks: ['Market overview'],
+        summary: 'The graduate held steady after the event instead of turning chaotic.',
       }),
       createStep({
         time: '09:54:44',
-        label: 'Risk',
-        title: 'Holder and scam scans passed',
-        detail: 'Holder concentration stayed healthy and the contract cleared safety heuristics.',
-        status: 'Risk gate cleared',
-        decision: 'Qualified',
-        confidence: '55%',
-        metrics: createMetrics({ scamScore: '0.04', holderRisk: 'Low', volatility: 'Medium' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
-        summary: 'Quality stayed strong enough for the graduate to remain in play.',
-      }),
-      createStep({
-        time: '09:54:45',
-        label: 'TA',
-        title: 'Indicators confirmed upside',
-        detail: 'RSI recovered cleanly and MACD widened into a healthy continuation read.',
-        status: 'Indicators aligned',
-        decision: 'Prime setup',
-        confidence: '76%',
-        metrics: createMetrics({ scamScore: '0.04', holderRisk: 'Low', volatility: 'Medium', macd: 'Bullish' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'Liquidity, momentum, and quality all lined up behind the graduate.',
-      }),
-      createStep({
-        time: '09:54:46',
         label: 'Action',
         title: 'Strategy emitted BUY',
-        detail: 'The engine promoted the launchpad graduate into a buy.',
+        detail: 'The engine promoted the migrated launchpad token into a buy.',
         status: 'Decision returned',
         decision: 'BUY',
         confidence: '85%',
-        metrics: createMetrics({ scamScore: '0.04', holderRisk: 'Low', volatility: 'Medium', macd: 'Bullish' }),
+        metrics: createMetrics({ volatility: 'Medium' }),
         activatedChecks: ['Decision engine'],
-        summary: 'The graduate came through with healthy liquidity, clean holder quality, and enough momentum for the engine to issue a buy.',
+        summary: 'The token migrated into healthy liquidity, clean routes, and stable follow-through, so the engine issued a buy.',
       }),
     ],
   },
@@ -1414,7 +1282,7 @@ const demoScenarios = [
     name: 'Twitter contract reject',
     pair: 'CLIQ / SOL',
     command: 'social-scan --platform twitter --resolve-contracts',
-    reasoning: 'Twitter found the ticker quickly, but contract and holder checks failed hard enough to reject the token.',
+    reasoning: 'Twitter found the ticker quickly, and the audit layer rejected it before the rest of the pipeline had any reason to continue.',
     steps: [
       createStep({
         time: '10:38:19',
@@ -1442,51 +1310,27 @@ const demoScenarios = [
       }),
       createStep({
         time: '10:38:21',
-        label: 'Scan',
-        title: 'Volatility stayed active',
-        detail: 'The move was noisy, but still active enough to keep scanning.',
-        status: 'Volatility elevated',
-        decision: 'Watching',
-        confidence: '32%',
-        metrics: createMetrics({ volatility: 'High' }),
-        activatedChecks: ['Volatility'],
-        summary: 'The market was active, so the engine advanced into risk checks.',
-      }),
-      createStep({
-        time: '10:38:22',
-        label: 'Risk',
-        title: 'Safety checks failed',
-        detail: 'Transfer restrictions and holder concentration both scored above policy.',
+        label: 'Audit',
+        title: 'Audit layer flagged the contract immediately',
+        detail: 'Full audit, scam heuristics, and negative chatter checks all tripped before any further scoring mattered.',
         status: 'Critical risk detected',
         decision: 'Unsafe',
-        confidence: '83%',
-        metrics: createMetrics({ scamScore: '0.76', holderRisk: 'High', volatility: 'High' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
+        confidence: '90%',
+        metrics: createMetrics({ scamScore: '0.76', holderRisk: 'High' }),
+        activatedChecks: ['Full audit', 'FUD search', 'Scam scan'],
         summary: 'The contract failed the safety layer before signal quality could matter.',
       }),
       createStep({
-        time: '10:38:23',
-        label: 'TA',
-        title: 'Indicators deprioritized',
-        detail: 'Momentum analysis was skipped once the contract failed policy.',
-        status: 'Policy override',
-        decision: 'Unsafe',
-        confidence: '89%',
-        metrics: createMetrics({ scamScore: '0.76', holderRisk: 'High', volatility: 'High', macd: 'Skipped' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'Technical strength stopped mattering as soon as safety failed.',
-      }),
-      createStep({
-        time: '10:38:24',
+        time: '10:38:22',
         label: 'Action',
         title: 'Strategy returned REJECTED',
         detail: 'The engine blocked the social ticker on contract safety grounds.',
         status: 'Decision returned',
         decision: 'REJECTED',
         confidence: '94%',
-        metrics: createMetrics({ scamScore: '0.76', holderRisk: 'High', volatility: 'High', macd: 'Skipped' }),
+        metrics: createMetrics({ scamScore: '0.76', holderRisk: 'High' }),
         activatedChecks: ['Decision engine'],
-        summary: 'Twitter found the ticker quickly, but contract and holder checks failed hard enough to reject the token.',
+        summary: 'Twitter found the ticker quickly, and the audit layer rejected it before the rest of the pipeline had any reason to continue.',
       }),
     ],
   },
@@ -1819,7 +1663,7 @@ const demoScenarios = [
     name: 'Smart money out of ETH',
     pair: 'ETH / USDC',
     command: 'flow-watch --wallet-set smart-money --monitor-rotation',
-    reasoning: 'Smart money began trimming ETH, momentum weakened, and the engine converted that rotation into a sell.',
+    reasoning: 'Smart money began trimming ETH, wallet quality rolled over, and the screener confirmed the exit.',
     steps: [
       createStep({
         time: '16:27:44',
@@ -1847,51 +1691,39 @@ const demoScenarios = [
       }),
       createStep({
         time: '16:27:46',
-        label: 'Scan',
-        title: 'Volatility stayed tradeable',
-        detail: 'The move accelerated, but remained inside the execution envelope.',
-        status: 'Volatility acceptable',
+        label: 'Wallets',
+        title: 'Wallet review and PnL weakened',
+        detail: 'The outflow cluster showed deteriorating trade quality and steady net selling pressure.',
+        status: 'Wallet conviction flipped',
         decision: 'Watching',
-        confidence: '32%',
+        confidence: '33%',
         metrics: createMetrics({ volatility: 'Medium' }),
-        activatedChecks: ['Volatility'],
-        summary: 'The market move was actionable without becoming chaotic.',
+        activatedChecks: ['Wallet review', 'PnL'],
+        summary: 'The outflow looked increasingly coordinated rather than random.',
       }),
       createStep({
         time: '16:27:47',
         label: 'Risk',
-        title: 'Risk scans stayed clean',
-        detail: 'Nothing in contract quality or holder structure blocked the signal.',
-        status: 'Risk gate cleared',
-        decision: 'Qualified',
-        confidence: '49%',
-        metrics: createMetrics({ scamScore: '0.02', holderRisk: 'Low', volatility: 'Medium' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
-        summary: 'Risk stayed out of the way, so the wallet flow remained actionable.',
+        title: 'Token screener backed the exit',
+        detail: 'Broader screening confirmed the rotation was happening with fading structure rather than noise.',
+        status: 'Exit confirmed',
+        decision: 'Short setup',
+        confidence: '71%',
+        metrics: createMetrics({ volatility: 'Medium' }),
+        activatedChecks: ['Token screener'],
+        summary: 'Wallet behavior and screening data both pointed toward an exit.',
       }),
       createStep({
         time: '16:27:48',
-        label: 'TA',
-        title: 'Indicators rolled bearish',
-        detail: 'RSI weakened and MACD crossed lower as the outflow intensified.',
-        status: 'Bearish alignment',
-        decision: 'Short setup',
-        confidence: '73%',
-        metrics: createMetrics({ scamScore: '0.02', holderRisk: 'Low', volatility: 'Medium', macd: 'Bearish' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'Wallet flow and technical structure lined up to the downside.',
-      }),
-      createStep({
-        time: '16:27:49',
         label: 'Action',
         title: 'Strategy emitted SELL',
         detail: 'The engine turned the ETH outflow into a sell action.',
         status: 'Decision returned',
         decision: 'SELL',
         confidence: '81%',
-        metrics: createMetrics({ scamScore: '0.02', holderRisk: 'Low', volatility: 'Medium', macd: 'Bearish' }),
+        metrics: createMetrics({ volatility: 'Medium' }),
         activatedChecks: ['Decision engine'],
-        summary: 'Smart money began trimming ETH, momentum weakened, and the engine converted that rotation into a sell.',
+        summary: 'Smart money began trimming ETH, wallet quality rolled over, and the screener confirmed the exit.',
       }),
     ],
   },
@@ -1900,7 +1732,7 @@ const demoScenarios = [
     name: 'Smart money into BTC',
     pair: 'BTC / USDC',
     command: 'flow-watch --wallet-set smart-money --monitor-rotation',
-    reasoning: 'Tracked wallets rotated into BTC, the quality checks stayed clear, and the engine promoted the flow into a buy.',
+    reasoning: 'Tracked wallets rotated into BTC, the wallet cluster stayed high quality, and broader market context supported a buy.',
     steps: [
       createStep({
         time: '16:34:18',
@@ -1928,51 +1760,39 @@ const demoScenarios = [
       }),
       createStep({
         time: '16:34:20',
-        label: 'Scan',
-        title: 'Volatility stayed constructive',
-        detail: 'The move improved without stretching beyond the strategy envelope.',
-        status: 'Volatility supportive',
+        label: 'Wallets',
+        title: 'Related wallet cluster stayed high quality',
+        detail: 'The inflow came from linked wallets with strong realized performance and steady sizing.',
+        status: 'Wallet quality strong',
         decision: 'Watching',
-        confidence: '34%',
+        confidence: '35%',
         metrics: createMetrics({ volatility: 'Medium' }),
-        activatedChecks: ['Volatility'],
-        summary: 'The market is moving with enough energy to matter and still looks orderly.',
+        activatedChecks: ['Wallet cluster', 'Wallet review'],
+        summary: 'The wallets behind the move looked disciplined rather than noisy.',
       }),
       createStep({
         time: '16:34:21',
-        label: 'Risk',
-        title: 'Risk scans passed',
-        detail: 'Nothing in quality or market structure blocked the accumulation thesis.',
-        status: 'Risk gate cleared',
-        decision: 'Qualified',
-        confidence: '55%',
-        metrics: createMetrics({ scamScore: '0.02', holderRisk: 'Low', volatility: 'Medium' }),
-        activatedChecks: ['Holder scan', 'Scam scan'],
-        summary: 'The quality layer stayed out of the way, so the inflow remained actionable.',
+        label: 'Market',
+        title: 'Market overview backed the inflow',
+        detail: 'BTC strength held across the broader market while realized PnL stayed supportive.',
+        status: 'Market aligned',
+        decision: 'Prime setup',
+        confidence: '72%',
+        metrics: createMetrics({ volatility: 'Medium' }),
+        activatedChecks: ['Market overview', 'PnL'],
+        summary: 'Wallet quality and broader market context both stayed supportive.',
       }),
       createStep({
         time: '16:34:22',
-        label: 'TA',
-        title: 'Indicators confirmed continuation',
-        detail: 'RSI improved and MACD widened into a constructive continuation read.',
-        status: 'Indicators aligned',
-        decision: 'Prime setup',
-        confidence: '76%',
-        metrics: createMetrics({ scamScore: '0.02', holderRisk: 'Low', volatility: 'Medium', macd: 'Bullish' }),
-        activatedChecks: ['RSI', 'MACD'],
-        summary: 'Wallet flow and technical structure stayed aligned to the upside.',
-      }),
-      createStep({
-        time: '16:34:23',
         label: 'Action',
         title: 'Strategy emitted BUY',
         detail: 'The engine promoted the BTC inflow into a buy action.',
         status: 'Decision returned',
         decision: 'BUY',
         confidence: '85%',
-        metrics: createMetrics({ scamScore: '0.02', holderRisk: 'Low', volatility: 'Medium', macd: 'Bullish' }),
+        metrics: createMetrics({ volatility: 'Medium' }),
         activatedChecks: ['Decision engine'],
-        summary: 'Tracked wallets rotated into BTC, the quality checks stayed clear, and the engine promoted the flow into a buy.',
+        summary: 'Tracked wallets rotated into BTC, the wallet cluster stayed high quality, and broader market context supported a buy.',
       }),
     ],
   },
@@ -2057,6 +1877,294 @@ const demoScenarios = [
       }),
     ],
   },
+  {
+    id: 'copy-wallet-conviction-buy',
+    name: 'Copy trader conviction buy',
+    pair: 'ORBIT / SOL',
+    command: 'copy-traders --source top-traders --follow-buys',
+    reasoning: 'Top traders surfaced strong wallets to watch, wallet PnL confirmed conviction, and the token buy held up well enough for the engine to copy it.',
+    steps: [
+      createStep({
+        time: '17:02:11',
+        label: 'Flow',
+        title: 'Top traders surfaced wallets to watch',
+        detail: 'Top trader flow on a hot pair surfaced wallets with strong recent execution worth monitoring.',
+        status: 'Finding copyable wallets',
+        decision: 'Scanning',
+        confidence: '--',
+        metrics: createMetrics(),
+        activatedChecks: ['Top traders'],
+        summary: 'The copy-trader flow first found a wallet cluster worth tracking.',
+      }),
+      createStep({
+        time: '17:02:12',
+        label: 'Wallets',
+        title: 'PnL and related wallets confirmed quality',
+        detail: 'Wallet review, PnL, and related-wallet checks showed disciplined sizing and healthy realized performance.',
+        status: 'Wallet cluster approved',
+        decision: 'Watching',
+        confidence: '24%',
+        metrics: createMetrics(),
+        activatedChecks: ['PnL', 'Related wallets', 'Wallet review'],
+        summary: 'The wallet cluster looked good enough to keep following.',
+      }),
+      createStep({
+        time: '17:02:13',
+        label: 'Event',
+        title: 'Fresh token buy detected from watched wallet',
+        detail: 'Listening to wallet activity surfaced a new buy into ORBIT and moved the token into the pipeline.',
+        status: 'New wallet buy detected',
+        decision: 'Watching',
+        confidence: '41%',
+        metrics: createMetrics(),
+        activatedChecks: ['Listening to wallet'],
+        summary: 'The copy-trader flow now has a concrete token to evaluate.',
+      }),
+      createStep({
+        time: '17:02:14',
+        label: 'Liquidity',
+        title: 'Pool depth and routes held up',
+        detail: 'Pool info showed stable depth and enough route coverage to stay tradeable.',
+        status: 'Liquidity confirmed',
+        decision: 'Qualified',
+        confidence: '58%',
+        metrics: createMetrics({ volatility: 'Medium' }),
+        activatedChecks: ['Pool info', 'Routes'],
+        summary: 'The token had enough depth behind the wallet buy to remain actionable.',
+      }),
+      createStep({
+        time: '17:02:15',
+        label: 'Market',
+        title: 'Market context backed the copy',
+        detail: 'Broader market participation stayed constructive instead of fading after the wallet entry.',
+        status: 'Copy candidate approved',
+        decision: 'Prime setup',
+        confidence: '74%',
+        metrics: createMetrics({ holderRisk: 'Low', volatility: 'Medium' }),
+        activatedChecks: ['Market overview', 'Top traders'],
+        summary: 'The wallet buy held up once broader market context was checked.',
+      }),
+      createStep({
+        time: '17:02:16',
+        label: 'Action',
+        title: 'Strategy emitted BUY',
+        detail: 'The engine copied the wallet flow into a buy after the token review cleared.',
+        status: 'Decision returned',
+        decision: 'BUY',
+        confidence: '84%',
+        metrics: createMetrics({ holderRisk: 'Low', volatility: 'Medium' }),
+        activatedChecks: ['Decision engine'],
+        summary: 'Top traders surfaced strong wallets to watch, wallet PnL confirmed conviction, and the token buy held up well enough for the engine to copy it.',
+      }),
+    ],
+  },
+  {
+    id: 'copy-wallet-related-buy',
+    name: 'Copy trader tracked-wallet buy',
+    pair: 'NIMB / SOL',
+    command: 'copy-traders --wallet-set tracked --follow-buys',
+    reasoning: 'A tracked wallet already on the board started buying again, related-wallet quality stayed strong, and the token cleared audit well enough for the engine to copy the trade.',
+    steps: [
+      createStep({
+        time: '17:09:34',
+        label: 'Flow',
+        title: 'Tracked wallet moved back into focus',
+        detail: 'A wallet already on the board started sizing back in with the kind of execution profile the strategy follows.',
+        status: 'Tracked wallet reactivated',
+        decision: 'Scanning',
+        confidence: '--',
+        metrics: createMetrics(),
+        activatedChecks: ['Wallet review'],
+        summary: 'The copy-trader flow already had a wallet and moved it back into active review.',
+      }),
+      createStep({
+        time: '17:09:35',
+        label: 'Wallets',
+        title: 'Related wallets confirmed conviction',
+        detail: 'Linked wallets showed similar entries, healthy realized PnL, and stable sizing behavior.',
+        status: 'Related wallets aligned',
+        decision: 'Watching',
+        confidence: '28%',
+        metrics: createMetrics(),
+        activatedChecks: ['PnL', 'Related wallets', 'Wallet review'],
+        summary: 'The wallet cluster looked coordinated rather than random.',
+      }),
+      createStep({
+        time: '17:09:36',
+        label: 'Event',
+        title: 'New token buy surfaced from watched wallets',
+        detail: 'Listening to wallet activity confirmed fresh buys into NIMB across the related cluster.',
+        status: 'Cluster buy detected',
+        decision: 'Watching',
+        confidence: '43%',
+        metrics: createMetrics(),
+        activatedChecks: ['Listening to wallet'],
+        summary: 'The copy-trader flow now has a specific token to scan.',
+      }),
+      createStep({
+        time: '17:09:37',
+        label: 'Audit',
+        title: 'Audit and holder checks passed',
+        detail: 'Full audit cleared and holder quality stayed healthy enough to keep the copy alive.',
+        status: 'Quality confirmed',
+        decision: 'Prime setup',
+        confidence: '72%',
+        metrics: createMetrics({ scamScore: '0.05', holderRisk: 'Low' }),
+        activatedChecks: ['Full audit', 'Holder scan'],
+        summary: 'The token cleared the quality layer after the wallet cluster buy was detected.',
+      }),
+      createStep({
+        time: '17:09:38',
+        label: 'Action',
+        title: 'Strategy emitted BUY',
+        detail: 'The engine copied the cluster buy after the token cleared audit and holder review.',
+        status: 'Decision returned',
+        decision: 'BUY',
+        confidence: '86%',
+        metrics: createMetrics({ scamScore: '0.05', holderRisk: 'Low' }),
+        activatedChecks: ['Decision engine'],
+        summary: 'A tracked wallet already on the board started buying again, related-wallet quality stayed strong, and the token cleared audit well enough for the engine to copy the trade.',
+      }),
+    ],
+  },
+  {
+    id: 'copy-wallet-no-trade',
+    name: 'Copy trader thin-liquidity pass',
+    pair: 'VALE / SOL',
+    command: 'copy-traders --source top-traders --follow-buys',
+    reasoning: 'Top traders found the wallet first, but related wallets did not confirm strongly enough and pool depth stayed too thin to copy.',
+    steps: [
+      createStep({
+        time: '17:16:08',
+        label: 'Flow',
+        title: 'Top traders surfaced a wallet to watch',
+        detail: 'Top trader flow found a wallet with enough recent edge to move into copy review.',
+        status: 'Finding copyable wallets',
+        decision: 'Scanning',
+        confidence: '--',
+        metrics: createMetrics(),
+        activatedChecks: ['Top traders'],
+        summary: 'The copy-trader flow identified a wallet worth monitoring.',
+      }),
+      createStep({
+        time: '17:16:09',
+        label: 'Wallets',
+        title: 'Related wallets stayed mixed',
+        detail: 'Related wallets did not follow size cleanly and recent realized quality looked uneven.',
+        status: 'Wallet conviction mixed',
+        decision: 'Watching',
+        confidence: '25%',
+        metrics: createMetrics(),
+        activatedChecks: ['PnL', 'Related wallets', 'Wallet review'],
+        summary: 'The wallet cluster did not fully confirm the lead wallet.',
+      }),
+      createStep({
+        time: '17:16:10',
+        label: 'Event',
+        title: 'New token buy detected from watched wallet',
+        detail: 'Listening to wallet activity showed a fresh buy into VALE and moved the token into review.',
+        status: 'New wallet buy detected',
+        decision: 'Watching',
+        confidence: '38%',
+        metrics: createMetrics(),
+        activatedChecks: ['Listening to wallet'],
+        summary: 'The copy-trader flow has a token, but conviction is still thin.',
+      }),
+      createStep({
+        time: '17:16:11',
+        label: 'Liquidity',
+        title: 'Pool depth stayed too thin',
+        detail: 'Pool info showed shallow depth and weaker route quality than the strategy allows.',
+        status: 'Liquidity too thin',
+        decision: 'No edge',
+        confidence: '44%',
+        metrics: createMetrics({ volatility: 'Low' }),
+        activatedChecks: ['Pool info', 'Routes'],
+        summary: 'The token failed liquidity requirements even before deeper signal work mattered.',
+      }),
+      createStep({
+        time: '17:16:12',
+        label: 'Action',
+        title: 'Strategy returned NO TRADE',
+        detail: 'The engine passed on copying the wallet buy because liquidity and wallet confirmation were too weak.',
+        status: 'Decision returned',
+        decision: 'NO TRADE',
+        confidence: '51%',
+        metrics: createMetrics({ volatility: 'Low' }),
+        activatedChecks: ['Decision engine'],
+        summary: 'Top traders found the wallet first, but related wallets did not confirm strongly enough and pool depth stayed too thin to copy.',
+      }),
+    ],
+  },
+  {
+    id: 'copy-wallet-audit-pass',
+    name: 'Copy trader audit block',
+    pair: 'PRYX / SOL',
+    command: 'copy-traders --wallet-set tracked --follow-buys',
+    reasoning: 'A tracked wallet already on the board made a fresh entry, but the token buy failed audit checks, so the engine refused to copy it.',
+    steps: [
+      createStep({
+        time: '17:23:42',
+        label: 'Flow',
+        title: 'Tracked wallet fired a fresh entry',
+        detail: 'A wallet already under watch opened a new position with enough quality to justify token review.',
+        status: 'Tracked wallet active',
+        decision: 'Scanning',
+        confidence: '--',
+        metrics: createMetrics(),
+        activatedChecks: ['Wallet review', 'PnL'],
+        summary: 'The copy-trader flow already had the wallet and moved straight into trade review.',
+      }),
+      createStep({
+        time: '17:23:43',
+        label: 'Wallets',
+        title: 'Wallet review cleared minimum quality',
+        detail: 'Wallet review and related-wallet checks stayed strong enough to keep investigating the trade.',
+        status: 'Wallet quality approved',
+        decision: 'Watching',
+        confidence: '29%',
+        metrics: createMetrics(),
+        activatedChecks: ['PnL', 'Related wallets', 'Wallet review'],
+        summary: 'The wallet looked good enough to justify scanning the token it bought.',
+      }),
+      createStep({
+        time: '17:23:44',
+        label: 'Event',
+        title: 'New token buy surfaced from watched wallet',
+        detail: 'Listening to wallet activity confirmed fresh buying into PRYX and moved the token into the scan pipeline.',
+        status: 'New wallet buy detected',
+        decision: 'Watching',
+        confidence: '42%',
+        metrics: createMetrics(),
+        activatedChecks: ['Listening to wallet'],
+        summary: 'The copy-trader flow now has a concrete token to evaluate.',
+      }),
+      createStep({
+        time: '17:23:45',
+        label: 'Audit',
+        title: 'Audit checks blocked the token',
+        detail: 'Full audit and scam heuristics surfaced enough contract risk to stop the copy outright.',
+        status: 'Audit blocked copy',
+        decision: 'Unsafe',
+        confidence: '83%',
+        metrics: createMetrics({ scamScore: '0.63', holderRisk: 'Medium' }),
+        activatedChecks: ['Full audit', 'Scam scan'],
+        summary: 'The wallet looked strong, but the token itself failed policy.',
+      }),
+      createStep({
+        time: '17:23:46',
+        label: 'Action',
+        title: 'Strategy returned NO TRADE',
+        detail: 'The engine refused to copy the wallet buy because the token failed audit.',
+        status: 'Decision returned',
+        decision: 'NO TRADE',
+        confidence: '88%',
+        metrics: createMetrics({ scamScore: '0.63', holderRisk: 'Medium' }),
+        activatedChecks: ['Decision engine'],
+        summary: 'A tracked wallet already on the board made a fresh entry, but the token buy failed audit checks, so the engine refused to copy it.',
+      }),
+    ],
+  },
 ]
 
 function getDecisionTone(decision) {
@@ -2081,9 +2189,343 @@ function getDecisionTone(decision) {
   return 'pending'
 }
 
+const scenarioEndpointProfiles = {
+  'breakout-buy': {
+    source: 'GET /trendingTokens',
+    steps: {
+      event: 'GET /trendingTokens',
+      meta: 'GET /tokenPoolInfo',
+      scan: 'GET /marketOverview + /topTraders',
+      risk: 'GET /holderAnalysis + /holders',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'weak-momentum': {
+    source: 'GET /newPairs',
+    steps: {
+      event: 'GET /newPairs',
+      meta: 'GET /detailedTokenStats',
+      market: 'GET /marketOverview + /tokenPriceHistory',
+      action: 'Agent Reasoning',
+    },
+  },
+  'scam-risk': {
+    source: 'GET /getNewEthTradableTokens',
+    steps: {
+      event: 'GET /getNewEthTradableTokens',
+      meta: 'GET /detailedTokenStats',
+      audit: 'GET /fullAudit + /isScam',
+      action: 'Agent Reasoning',
+    },
+  },
+  'volume-exhaustion-sell': {
+    source: 'GET /trendingTokens',
+    steps: {
+      event: 'GET /trendingTokens',
+      meta: 'GET /tokenPoolInfo',
+      scan: 'GET /topTraders + /tokenPriceHistory',
+      risk: 'GET /holderAnalysis + /holders',
+      ta: 'GET /priceHistoryIndicators',
+      action: 'Agent Reasoning',
+    },
+  },
+  'liquidity-reclaim-buy': {
+    source: 'GET /newPairs',
+    steps: {
+      event: 'GET /newPairs',
+      liquidity: 'GET /tokenPoolInfo',
+      market: 'GET /marketOverview + /topTraders',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'trend-reversal-buy': {
+    source: 'GET /newPairs',
+    steps: {
+      event: 'GET /newPairs',
+      meta: 'GET /detailedTokenStats',
+      scan: 'GET /marketOverview + /tokenPriceHistory',
+      risk: 'GET /holderAnalysis + /holders',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'pumpfun-graduation': {
+    source: 'WS /ws/launchpadEvents',
+    steps: {
+      event: 'WS /ws/launchpadEvents',
+      meta: 'GET /tokenPoolInfo',
+      scan: 'GET /marketOverview + /topTraders',
+      risk: 'GET /holderAnalysis + /fullAudit',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'pumpfun-no-trade': {
+    source: 'WS /ws/launchpadEvents',
+    steps: {
+      event: 'WS /ws/launchpadEvents',
+      meta: 'GET /detailedTokenStats',
+      scan: 'GET /marketOverview',
+      risk: 'GET /holderAnalysis + /holders',
+      ta: 'GET /priceHistoryIndicators',
+      action: 'Agent Reasoning',
+    },
+  },
+  'pumpfun-risk-reject': {
+    source: 'WS /ws/launchpadEvents',
+    steps: {
+      event: 'WS /ws/launchpadEvents',
+      meta: 'GET /tokenPoolInfo',
+      audit: 'GET /fullAudit + /isScam',
+      action: 'Agent Reasoning',
+    },
+  },
+  'pumpfun-exit-sell': {
+    source: 'WS /ws/launchpadEvents',
+    steps: {
+      event: 'WS /ws/launchpadEvents',
+      meta: 'GET /tokenPoolInfo',
+      scan: 'GET /volatilityScanner + /tokenPriceHistory',
+      risk: 'GET /holderAnalysis + /holders',
+      ta: 'GET /priceHistoryIndicators',
+      action: 'Agent Reasoning',
+    },
+  },
+  'pumpfun-breakout-buy': {
+    source: 'WS /ws/launchpadEvents',
+    steps: {
+      event: 'WS /ws/launchpadEvents',
+      meta: 'GET /detailedTokenStats',
+      scan: 'GET /marketOverview + /topTraders',
+      risk: 'GET /tokenHolders + /fullAudit',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'pumpfun-liquidity-buy': {
+    source: 'WS /ws/launchpadEvents',
+    steps: {
+      event: 'WS /ws/launchpadEvents',
+      liquidity: 'GET /tokenPoolInfo',
+      market: 'GET /marketOverview',
+      action: 'Agent Reasoning',
+    },
+  },
+  'twitter-ticker-discovery': {
+    source: 'GET /xCountRecent + /xSearch',
+    steps: {
+      social: 'GET /xCountRecent + /xSearch',
+      search: 'GET /tokenSearch',
+      sentiment: 'GET /xUserLikes + /xUserFollowers',
+      risk: 'GET /holderAnalysis + /fudSearch',
+      action: 'Agent Reasoning',
+    },
+  },
+  'twitter-conviction-buy': {
+    source: 'GET /xSearch + /xUserFollowers',
+    steps: {
+      social: 'GET /xSearch + /xUserFollowers',
+      search: 'GET /tokenSearch',
+      scan: 'GET /xUserLikes + /marketOverview',
+      risk: 'GET /holderAnalysis + /fullAudit',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'twitter-contract-reject': {
+    source: 'GET /xCountRecent + /xSearch',
+    steps: {
+      social: 'GET /xCountRecent + /xSearch',
+      search: 'GET /tokenSearch',
+      audit: 'GET /fullAudit + /isScam + /fudSearch',
+      action: 'Agent Reasoning',
+    },
+  },
+  'twitter-exhaustion-sell': {
+    source: 'GET /xCountRecent + /xSearch',
+    steps: {
+      social: 'GET /xCountRecent + /xSearch',
+      search: 'GET /tokenSearch',
+      scan: 'GET /xUserLikes + /tokenPriceHistory',
+      risk: 'GET /holderAnalysis + /fudSearch',
+      ta: 'GET /priceHistoryIndicators',
+      action: 'Agent Reasoning',
+    },
+  },
+  'twitter-multi-account-buy': {
+    source: 'GET /xCountRecent + /xSearch',
+    steps: {
+      social: 'GET /xCountRecent + /xSearch',
+      search: 'GET /tokenSearch',
+      scan: 'GET /xUserFollowers + /xUserLikes',
+      risk: 'GET /holderAnalysis + /holders',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'twitter-sentiment-buy': {
+    source: 'GET /xSearch + /xUserLikes',
+    steps: {
+      social: 'GET /xSearch + /xUserLikes',
+      search: 'GET /tokenSearch',
+      scan: 'GET /fudSearch + /marketOverview',
+      risk: 'GET /holderAnalysis + /isScam',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'smart-money-out-sol': {
+    source: 'POST /smartMoneyNetflow + /addressRelatedWallets',
+    steps: {
+      flow: 'POST /smartMoneyNetflow + /addressRelatedWallets',
+      meta: 'GET /walletReview',
+      wallets: 'GET /pnl + /addressRelatedWallets',
+      market: 'GET /marketOverview + /walletReview',
+      action: 'Agent Reasoning',
+    },
+  },
+  'smart-money-into-eth': {
+    source: 'POST /smartMoneyNetflow + GET /getTopEthTokens',
+    steps: {
+      flow: 'POST /smartMoneyNetflow + GET /getTopEthTokens',
+      meta: 'POST /addressRelatedWallets',
+      scan: 'GET /walletReview + /pnl',
+      risk: 'POST /tokenScreener',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'smart-money-into-sol': {
+    source: 'POST /smartMoneyNetflow + GET /nansenPresets',
+    steps: {
+      flow: 'POST /smartMoneyNetflow + GET /nansenPresets',
+      meta: 'POST /addressRelatedWallets',
+      scan: 'GET /walletReview + /pnl',
+      risk: 'POST /tokenScreener',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'smart-money-out-eth': {
+    source: 'POST /smartMoneyNetflow + GET /getTopEthTokens',
+    steps: {
+      flow: 'POST /smartMoneyNetflow + GET /getTopEthTokens',
+      meta: 'GET /walletReview',
+      wallets: 'GET /walletReview + /pnl',
+      risk: 'POST /tokenScreener',
+      action: 'Agent Reasoning',
+    },
+  },
+  'smart-money-into-btc': {
+    source: 'POST /smartMoneyNetflow + GET /marketOverview',
+    steps: {
+      flow: 'POST /smartMoneyNetflow + GET /marketOverview',
+      meta: 'POST /addressRelatedWallets',
+      wallets: 'GET /walletReview + /addressRelatedWallets',
+      market: 'GET /marketOverview + /pnl',
+      action: 'Agent Reasoning',
+    },
+  },
+  'smart-money-into-link': {
+    source: 'POST /smartMoneyNetflow + GET /nansenPresets',
+    steps: {
+      flow: 'POST /smartMoneyNetflow + GET /nansenPresets',
+      meta: 'POST /addressRelatedWallets',
+      scan: 'GET /walletReview + /topTraders',
+      risk: 'POST /tokenScreener',
+      ta: 'GET /priceHistoryIndicators + /rateMyEntry',
+      action: 'Agent Reasoning',
+    },
+  },
+  'copy-wallet-conviction-buy': {
+    source: 'GET /topTraders',
+    steps: {
+      flow: 'GET /topTraders',
+      wallets: 'GET /walletReview + /pnl + POST /addressRelatedWallets',
+      event: 'Listening to wallet activity',
+      liquidity: 'GET /tokenPoolInfo',
+      market: 'GET /marketOverview + /topTraders',
+      action: 'Agent Reasoning',
+    },
+  },
+  'copy-wallet-related-buy': {
+    source: 'GET /walletReview + /pnl',
+    steps: {
+      flow: 'GET /walletReview + /pnl',
+      wallets: 'GET /walletReview + /pnl + POST /addressRelatedWallets',
+      event: 'Listening to wallet activity',
+      audit: 'GET /fullAudit + /holderAnalysis',
+      action: 'Agent Reasoning',
+    },
+  },
+  'copy-wallet-no-trade': {
+    source: 'GET /topTraders',
+    steps: {
+      flow: 'GET /topTraders',
+      wallets: 'GET /walletReview + /pnl + POST /addressRelatedWallets',
+      event: 'Listening to wallet activity',
+      liquidity: 'GET /tokenPoolInfo',
+      action: 'Agent Reasoning',
+    },
+  },
+  'copy-wallet-audit-pass': {
+    source: 'GET /walletReview + /pnl',
+    steps: {
+      flow: 'GET /walletReview + /pnl',
+      wallets: 'GET /walletReview + POST /addressRelatedWallets',
+      event: 'Listening to wallet activity',
+      audit: 'GET /fullAudit + /isScam',
+      action: 'Agent Reasoning',
+    },
+  },
+}
+
+const endpointCheckLabelMap = {
+  '/ws/launchpadEvents': 'Launchpad feed',
+  '/trendingTokens': 'Trending feed',
+  '/newPairs': 'New pairs',
+  '/getNewEthTradableTokens': 'New ETH tradables',
+  '/getTopEthTokens': 'Top ETH',
+  '/tokenSearch': 'Token search',
+  '/tokenPoolInfo': 'Pool info',
+  '/detailedTokenStats': 'Detailed stats',
+  '/marketOverview': 'Market overview',
+  '/tokenPriceHistory': 'Price history',
+  '/priceHistoryIndicators': 'Indicators',
+  '/rateMyEntry': 'Entry score',
+  '/volatilityScanner': 'Volatility',
+  '/holderAnalysis': 'Holder analysis',
+  '/holders': 'Holders',
+  '/tokenHolders': 'Top holders',
+  '/isScam': 'Scam scan',
+  '/fullAudit': 'Full audit',
+  '/fudSearch': 'FUD search',
+  '/topTraders': 'Top traders',
+  '/xSearch': 'Twitter search',
+  '/xCountRecent': 'Mention count',
+  '/xUserFollowers': 'Follower check',
+  '/xUserLikes': 'Like check',
+  '/smartMoneyNetflow': 'Smart money',
+  '/addressRelatedWallets': 'Wallet cluster',
+  '/walletReview': 'Wallet review',
+  '/pnl': 'PnL',
+  '/tokenScreener': 'Token screener',
+  '/nansenPresets': 'Nansen preset',
+}
+
 function getScenarioBootLine(scenario) {
+  if (scenario.id === 'pumpfun-no-trade' || scenario.id === 'pumpfun-risk-reject') {
+    return 'listening for newly created launchpad tokens'
+  }
+
+  if (scenario.id === 'pumpfun-exit-sell' || scenario.id === 'pumpfun-liquidity-buy') {
+    return 'watching launchpad migration events'
+  }
+
   if (scenario.id.startsWith('pumpfun-')) {
-    return 'listening for new launchpad graduation events'
+    return 'listening for launchpad completion events'
   }
 
   if (scenario.id.startsWith('twitter-')) {
@@ -2098,12 +2540,20 @@ function getScenarioBootLine(scenario) {
     return 'tracking smart money inflows'
   }
 
+  if (scenario.id.startsWith('copy-wallet-')) {
+    return 'ranking traders and watching wallet activity'
+  }
+
   return 'monitoring live token sources'
 }
 
 function getPairRevealStepIndex(scenario) {
   if (scenario.id.startsWith('twitter-')) {
     return 1
+  }
+
+  if (scenario.id.startsWith('copy-wallet-')) {
+    return 2
   }
 
   return 0
@@ -2136,9 +2586,19 @@ function getQueuedStageText(step) {
     case 'search':
       return 'Resolving the contract'
     case 'flow':
-      return 'Watching wallet rotation'
+      return 'Watching wallet activity'
     case 'meta':
       return 'Loading token context'
+    case 'liquidity':
+      return 'Checking pool depth and routes'
+    case 'wallets':
+      return 'Reviewing wallet cluster quality'
+    case 'market':
+      return 'Reading broader market context'
+    case 'sentiment':
+      return 'Scoring source strength'
+    case 'audit':
+      return 'Running contract and policy audit'
     case 'scan':
       return 'Running volatility checks'
     case 'risk':
@@ -2166,7 +2626,7 @@ const demoStrategyOptions = [
   {
     id: 'watch-launchpad-events',
     label: 'Watch launchpad events',
-    command: 'listen --source launchpad --event graduation',
+    command: 'listen --source launchpad --event all',
     scenarioIds: ['pumpfun-graduation', 'pumpfun-no-trade', 'pumpfun-risk-reject', 'pumpfun-exit-sell', 'pumpfun-breakout-buy', 'pumpfun-liquidity-buy'],
   },
   {
@@ -2180,6 +2640,12 @@ const demoStrategyOptions = [
     label: 'Follow smart money',
     command: 'flow-watch --wallet-set smart-money --monitor-rotation',
     scenarioIds: ['smart-money-out-sol', 'smart-money-into-eth', 'smart-money-into-sol', 'smart-money-out-eth', 'smart-money-into-btc', 'smart-money-into-link'],
+  },
+  {
+    id: 'copy-wallets',
+    label: 'Copy traders',
+    command: 'copy-traders --source mixed --follow-buys',
+    scenarioIds: ['copy-wallet-conviction-buy', 'copy-wallet-related-buy', 'copy-wallet-no-trade', 'copy-wallet-audit-pass'],
   },
 ]
 
@@ -2240,9 +2706,10 @@ function getSelectionIdFromPrompt(prompt) {
   }
 
   const keywordSets = [
-    { id: 'watch-launchpad-events', keywords: ['pump', 'graduation', 'graduate', 'pumpfun', 'launchpad', 'moon'] },
+    { id: 'watch-launchpad-events', keywords: ['pump', 'graduation', 'graduate', 'pumpfun', 'launchpad', 'moon', 'created', 'creation', 'completed', 'completion', 'migrated', 'migration'] },
     { id: 'search-twitter', keywords: ['twitter', 'social', 'ticker', 'search', 'contract', 'giga'] },
     { id: 'follow-smart-money', keywords: ['smart money', 'wallet flow', 'eth', 'sol', 'rotation', 'inflow', 'outflow'] },
+    { id: 'copy-wallets', keywords: ['copy wallet', 'copy trade', 'copy trader', 'copy traders', 'mirror wallet', 'tracked wallet', 'top traders'] },
     { id: 'scan-live-tokens', keywords: ['breakout', 'volume spike', 'new token', 'momentum', 'honeypot', 'scam', 'bonk', 'jup', 'shdw'] },
   ]
 
@@ -2262,6 +2729,16 @@ function getStepBadge(step) {
       return { text: 'FOUND', tone: 'found' }
     case 'meta':
       return { text: 'META', tone: 'meta' }
+    case 'liquidity':
+      return { text: 'POOL', tone: 'meta' }
+    case 'wallets':
+      return { text: 'WALLET', tone: 'meta' }
+    case 'market':
+      return { text: 'MARKET', tone: 'scan' }
+    case 'sentiment':
+      return { text: 'SOCIAL', tone: 'signal' }
+    case 'audit':
+      return { text: 'AUDIT', tone: 'risk' }
     case 'scan':
       return { text: 'SCAN', tone: 'scan' }
     case 'risk':
@@ -2276,35 +2753,9 @@ function getStepBadge(step) {
 }
 
 function getScenarioSourceEndpoint(scenario) {
-  switch (scenario.id) {
-    case 'breakout-buy':
-    case 'volume-exhaustion-sell':
-      return 'GET /trendingTokens'
-    case 'weak-momentum':
-    case 'liquidity-reclaim-buy':
-    case 'trend-reversal-buy':
-      return 'GET /newPairs'
-    case 'scam-risk':
-      return 'GET /getNewEthTradableTokens'
-    case 'twitter-ticker-discovery':
-    case 'twitter-exhaustion-sell':
-      return 'GET /xCountRecent + /xSearch'
-    case 'twitter-multi-account-buy':
-      return 'GET /xSearch + /xUserFollowers'
-    case 'twitter-sentiment-buy':
-      return 'GET /xSearch + /xUserLikes'
-    case 'twitter-conviction-buy':
-    case 'twitter-contract-reject':
-      return 'GET /xSearch'
-    case 'smart-money-into-eth':
-    case 'smart-money-out-eth':
-      return 'POST /smartMoneyNetflow + GET /getTopEthTokens'
-    case 'smart-money-into-btc':
-      return 'POST /smartMoneyNetflow + GET /marketOverview'
-    case 'smart-money-into-link':
-      return 'POST /smartMoneyNetflow + GET /trendingTokens'
-    default:
-      break
+  const profile = scenarioEndpointProfiles[scenario.id]
+  if (profile?.source) {
+    return profile.source
   }
 
   if (scenario.id.startsWith('pumpfun-')) {
@@ -2323,50 +2774,12 @@ function getScenarioSourceEndpoint(scenario) {
 }
 
 function getStepEndpoint(scenario, step) {
-  const scenarioId = String(scenario?.id || '')
   const label = String(step?.label || '').trim().toLowerCase()
-  const title = String(step?.title || '').toLowerCase()
-  const status = String(step?.status || '').toLowerCase()
+  const profile = scenarioEndpointProfiles[scenario.id]
 
-  const tokenPoolInfoScenarios = new Set([
-    'breakout-buy',
-    'volume-exhaustion-sell',
-    'pumpfun-graduation',
-    'pumpfun-no-trade',
-    'pumpfun-exit-sell',
-    'pumpfun-breakout-buy',
-    'pumpfun-liquidity-buy',
-    'twitter-ticker-discovery',
-    'twitter-multi-account-buy',
-    'smart-money-out-sol',
-    'smart-money-into-sol',
-  ])
-
-  const marketContextScenarios = new Set([
-    'weak-momentum',
-    'twitter-ticker-discovery',
-    'twitter-exhaustion-sell',
-    'smart-money-out-sol',
-    'smart-money-out-eth',
-    'smart-money-into-btc',
-  ])
-
-  const auditHeavyScenarios = new Set([
-    'scam-risk',
-    'pumpfun-risk-reject',
-    'twitter-contract-reject',
-  ])
-
-  const rateMyEntryScenarios = new Set([
-    'breakout-buy',
-    'pumpfun-graduation',
-    'twitter-conviction-buy',
-    'smart-money-into-eth',
-    'liquidity-reclaim-buy',
-    'pumpfun-breakout-buy',
-    'twitter-sentiment-buy',
-    'smart-money-into-link',
-  ])
+  if (profile?.steps?.[label]) {
+    return profile.steps[label]
+  }
 
   switch (label) {
     case 'event':
@@ -2378,40 +2791,42 @@ function getStepEndpoint(scenario, step) {
     case 'flow':
       return getScenarioSourceEndpoint(scenario)
     case 'meta':
-      return tokenPoolInfoScenarios.has(scenarioId) ? 'GET /tokenPoolInfo' : 'GET /detailedTokenStats'
+      return 'GET /detailedTokenStats'
+    case 'liquidity':
+      return 'GET /tokenPoolInfo'
+    case 'wallets':
+      return 'GET /walletReview + /pnl'
+    case 'market':
+      return 'GET /marketOverview'
+    case 'sentiment':
+      return 'GET /xUserLikes + /xUserFollowers'
+    case 'audit':
+      return 'GET /fullAudit + /isScam'
     case 'scan':
-      return marketContextScenarios.has(scenarioId)
-        ? 'GET /marketOverview + /tokenPriceHistory'
-        : 'GET /volatilityScanner'
+      return 'GET /volatilityScanner'
     case 'risk':
-      if (auditHeavyScenarios.has(scenarioId)) {
-        return 'GET /fullAudit'
-      }
-
-      if (scenarioId.startsWith('pumpfun-')) {
-        return 'GET /holderAnalysis + /fullAudit'
-      }
-
-      if (scenarioId === 'twitter-ticker-discovery') {
-        return 'GET /holderAnalysis'
-      }
-
       return 'GET /holderAnalysis + /isScam'
     case 'ta':
-      if (title.includes('skipped') || title.includes('deprioritized') || status.includes('policy override')) {
-        return 'Agent Reasoning'
-      }
-
-      if (rateMyEntryScenarios.has(scenarioId)) {
-        return 'GET /priceHistoryIndicators + /rateMyEntry'
-      }
-
       return 'GET /priceHistoryIndicators'
     case 'action':
       return 'Agent Reasoning'
     default:
       return 'Agent Reasoning'
   }
+}
+
+function getEndpointCheckLabels(endpoint, fallback = []) {
+  const text = String(endpoint || '')
+
+  if (!text || text.includes('Agent Reasoning')) {
+    return Array.isArray(fallback) && fallback.length > 0 ? fallback : ['Decision engine']
+  }
+
+  const labels = Object.entries(endpointCheckLabelMap)
+    .filter(([route]) => text.includes(route))
+    .map(([, label]) => label)
+
+  return labels.length > 0 ? [...new Set(labels)] : fallback
 }
 
 const CLAW_CLICK_ASCII = [
@@ -2847,7 +3262,12 @@ const ValueProp = () => {
     ? 'select-strategy --interactive'
     : currentScenario.command || 'run'
   const visualMetrics = getVisualMetrics(currentPipelineState.metrics)
-  const completedChecks = currentPipelineState.activatedChecks || []
+  const currentEndpoint = isBootingFlow
+    ? getScenarioSourceEndpoint(currentScenario)
+    : activePipelineStep >= 0
+      ? getStepEndpoint(currentScenario, currentPipelineState)
+      : getScenarioSourceEndpoint(currentScenario)
+  const completedChecks = getEndpointCheckLabels(currentEndpoint, currentPipelineState.activatedChecks || [])
   const pairIsRevealed = activePipelineStep >= getPairRevealStepIndex(currentScenario)
   const displayPair = pairIsRevealed ? currentScenario.pair : 'Candidate pending'
   const liveRunLabel = !hasActivatedTerminal
@@ -2879,7 +3299,7 @@ const ValueProp = () => {
         kind: 'menu-heading',
         prefix: '',
         text: 'Select your strategy',
-        detail: 'Use arrow keys or press 1-4, then hit Enter to run',
+        detail: `Use arrow keys or press 1-${demoStrategyOptions.length}, then hit Enter to run`,
       },
       ...demoStrategyOptions.map((strategy, index) => ({
         kind: index === selectedStrategyIndex ? 'menu-selected' : 'menu-option',
@@ -3077,7 +3497,7 @@ const ValueProp = () => {
       return
     }
 
-    if (/^[1-4]$/.test(event.key)) {
+    if (/^[1-9]$/.test(event.key)) {
       event.preventDefault()
       const nextIndex = Number(event.key) - 1
       if (demoStrategyOptions[nextIndex]) {
