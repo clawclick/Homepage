@@ -18,9 +18,46 @@ const ApiDocs = () => {
     { id: 'websockets', label: 'WebSockets' },
     { id: 'error-handling', label: 'Error Handling' },
     { id: 'integrations', label: 'Capabilities' },
+    { id: 'x402', label: 'x402', tone: 'muted' },
     { id: 'my-api', label: 'My Api', path: '/api/my-api', tone: 'muted' }
   ], [])
   const scrollSections = useMemo(() => navigationSections.filter((section) => !section.path), [navigationSections])
+
+  const x402Pricing = useMemo(() => [
+    { method: 'GET', path: '/holderAnalysis', price: '$0.0037', note: 'Holder concentration and whale distribution analysis' },
+    { method: 'GET', path: '/tokenPriceHistory', price: '$0.0013', note: 'Historical OHLCV price history' },
+    { method: 'GET', path: '/tokenPoolInfo', price: '$0.0001', note: 'Token price, liquidity, volume, and pool details' },
+    { method: 'GET', path: '/marketOverview', price: '$0.0070', note: 'Market, risk, and sentiment overview' },
+    { method: 'GET', path: '/isScam', price: '$0.0001', note: 'Fast token risk screen' },
+    { method: 'GET', path: '/tokenSearch', price: '$0.0001', note: 'Search tokens by name, symbol, or address' },
+    { method: 'GET', path: '/detailedTokenStats', price: '$0.0005', note: 'Detailed token statistics across time windows' },
+    { method: 'GET', path: '/priceHistoryIndicators', price: '$0.0013', note: 'Price history with indicators and signal summary' },
+    { method: 'GET', path: '/rateMyEntry', price: '$0.0018', note: 'Swing-trade entry score with levels and checks' },
+    { method: 'GET', path: '/filterTokens', price: '$0.0005', note: 'Filter tokens by liquidity, volume, market cap, and more' },
+    { method: 'GET', path: '/volatilityScanner', price: '$0.0096', note: 'Volatility scan for swing setups' },
+    { method: 'GET', path: '/fullAudit', price: '$0.0001', note: 'Deep token audit with taxes and trading flags' },
+    { method: 'GET', path: '/holders', price: '$0.0032', note: 'Top holder rows for a token' },
+    { method: 'GET', path: '/fudSearch', price: '$0.0065', note: 'Search social mentions for FUD signals' },
+    { method: 'GET', path: '/walletReview', price: '$0.0132', note: 'Comprehensive wallet review' },
+    { method: 'GET', path: '/pnl', price: '$0.0007', note: 'Wallet PnL summary' },
+    { method: 'GET', path: '/xSearch', price: '$0.0033', note: 'Search recent X posts' },
+    { method: 'GET', path: '/xCountRecent', price: '$0.0019', note: 'Count recent X posts for a query' },
+    { method: 'GET', path: '/xUserByUsername', price: '$0.0013', note: 'Look up an X user profile' },
+    { method: 'GET', path: '/xUserLikes', price: '$0.0039', note: 'Get liked X posts for a user' },
+    { method: 'GET', path: '/xUserFollowers', price: '$0.0039', note: 'Get followers for an X user' },
+    { method: 'POST', path: '/tokenScreener', price: '$0.0013', note: 'Token screening by smart-money flow and filters' },
+    { method: 'POST', path: '/addressRelatedWallets', price: '$0.0013', note: 'Related wallet lookups and linked activity' },
+    { method: 'POST', path: '/jupiterDcas', price: '$0.0013', note: 'Active DCA order insights for a token' },
+    { method: 'POST', path: '/smartMoneyNetflow', price: '$0.0065', note: 'Smart-money inflow and outflow analytics' },
+    { method: 'GET', path: '/trendingTokens', price: '$0.0001', note: 'Trending token discovery' },
+    { method: 'GET', path: '/getTopEthTokens', price: '$0.0001', note: 'Top Ethereum token listings' },
+    { method: 'GET', path: '/getNewEthTradableTokens', price: '$0.0001', note: 'New tradable Ethereum token listings' },
+    { method: 'GET', path: '/newPairs', price: '$0.0001', note: 'New token pairs and pools' },
+    { method: 'GET', path: '/topTraders', price: '$0.0004', note: 'Top trader wallets and activity' },
+    { method: 'GET', path: '/gasFeed', price: '$0.0001', note: 'EVM gas prices and fee estimates' },
+    { method: 'GET', path: '/tokenHolders', price: '$0.0006', note: 'Paginated token holder ledger' },
+    { method: 'GET', path: '/strats/:id', price: '$0.0001', note: 'Strategy guide markdown' }
+  ], [])
 
   // Comprehensive endpoints data from GitHub README
   const endpoints = [
@@ -944,6 +981,74 @@ ws.on('message', (data) => {
           </div>
         </section>
 
+        <section className="x402-section" id="x402">
+          <div className="api-docs-container">
+            <div className="x402-header">
+              <div>
+                <h2 className="section-title">x402 Payments</h2>
+                <p className="section-description">
+                  Continue using paid Claw.Click endpoints with x402 when you do not have an API key or when you want pay-per-request access.
+                </p>
+              </div>
+              <a href="https://docs.x402.org/" target="_blank" rel="noopener noreferrer" className="x402-doc-link">
+                x402.org
+              </a>
+            </div>
+
+            <div className="x402-grid">
+              <div className="x402-card">
+                <h3>How It Works</h3>
+                <p>
+                  Protected endpoints return <code>402 Payment Required</code> with machine-readable payment requirements.
+                  Your client signs the payment payload, retries the same request, and the response is delivered after settlement.
+                </p>
+                <ul className="x402-list">
+                  <li>Base and Solana USDC payment rails supported</li>
+                  <li>Works for agentic clients and normal server-side integrations</li>
+                  <li>No account creation required for pay-per-request access</li>
+                </ul>
+              </div>
+
+              <div className="x402-card">
+                <h3>Setup</h3>
+                <ol className="x402-list x402-list-numbered">
+                  <li>Read the x402 seller and buyer guides at <a href="https://docs.x402.org/" target="_blank" rel="noopener noreferrer">x402.org</a>.</li>
+                  <li>Call a paid Claw.Click endpoint and inspect the <code>PAYMENT-REQUIRED</code> header.</li>
+                  <li>Create a payment payload with an x402 client for Base or Solana.</li>
+                  <li>Retry the same request with <code>PAYMENT-SIGNATURE</code>.</li>
+                </ol>
+                <p className="x402-note">
+                  Learn more about our API surface at <a href="https://claw.click/api" target="_blank" rel="noopener noreferrer">claw.click/api</a>.
+                </p>
+              </div>
+            </div>
+
+            <div className="x402-pricing">
+              <div className="x402-pricing-header">
+                <h3>x402 Endpoint Pricing</h3>
+                <p>Current pay-per-request prices for x402-enabled endpoints.</p>
+              </div>
+              <div className="x402-pricing-table">
+                <div className="x402-pricing-table-header">
+                  <span>Endpoint</span>
+                  <span>Returns</span>
+                  <span>Price</span>
+                </div>
+                {x402Pricing.map((endpoint) => (
+                  <div key={`${endpoint.method}_${endpoint.path}`} className="x402-pricing-row">
+                    <div className="x402-endpoint-cell">
+                      <span className={`method method-${endpoint.method.toLowerCase()}`}>{endpoint.method}</span>
+                      <code>{endpoint.path}</code>
+                    </div>
+                    <span className="x402-endpoint-note">{endpoint.note}</span>
+                    <span className="x402-price">{endpoint.price}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="api-cta-section">
           <div className="api-docs-container">
@@ -954,6 +1059,7 @@ ws.on('message', (data) => {
               </p>
               <div className="cta-buttons">
                 <button className="cta-button primary" type="button" onClick={() => navigate('/api/my-api')}>Get API Key</button>
+                <button className="cta-button secondary" type="button" onClick={() => scrollToSection('x402')}>Explore x402</button>
                 <a href="https://github.com/clawclick" target="_blank" rel="noopener noreferrer" className="cta-button secondary">
                   View GitHub
                 </a>

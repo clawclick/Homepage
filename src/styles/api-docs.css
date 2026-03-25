@@ -888,6 +888,173 @@
   margin-top: 2rem;
 }
 
+/* x402 Section */
+.x402-section {
+  padding: 4rem 0;
+  border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.x402-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.x402-doc-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  background: rgba(31, 41, 55, 0.78);
+  border: 1px solid rgba(75, 85, 99, 0.45);
+  color: #e5e7eb;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.x402-doc-link:hover {
+  transform: translateY(-1px);
+  background: rgba(55, 65, 81, 0.88);
+  color: #f9fafb;
+}
+
+.x402-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.x402-card {
+  background: rgba(15,15,15,0.92);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.16);
+}
+
+.x402-card h3 {
+  color: #f9fafb;
+  margin-bottom: 0.9rem;
+  font-size: 1.2rem;
+}
+
+.x402-card p,
+.x402-note {
+  color: #d1d5db;
+  line-height: 1.65;
+}
+
+.x402-card a,
+.x402-note a {
+  color: #5cd4be;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.x402-card a:hover,
+.x402-note a:hover {
+  color: #8ce6d5;
+}
+
+.x402-list {
+  margin: 1rem 0 0;
+  padding-left: 1.15rem;
+  color: #d1d5db;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.x402-list-numbered {
+  list-style: decimal;
+}
+
+.x402-card code {
+  background: rgba(13, 158, 138, 0.14);
+  border: 1px solid rgba(13, 158, 138, 0.24);
+  color: #5cd4be;
+  padding: 0.15rem 0.38rem;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 0.9em;
+}
+
+.x402-pricing {
+  background: rgba(10,10,10,0.95);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.x402-pricing-header {
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid rgba(75, 85, 99, 0.24);
+}
+
+.x402-pricing-header h3 {
+  color: #f9fafb;
+  font-size: 1.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.x402-pricing-header p {
+  color: #9ca3af;
+}
+
+.x402-pricing-table-header,
+.x402-pricing-row {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.95fr) minmax(0, 1.6fr) 110px;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.5rem;
+}
+
+.x402-pricing-table-header {
+  color: #f9fafb;
+  background: rgba(13, 158, 138, 0.08);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.x402-pricing-row {
+  border-top: 1px solid rgba(75, 85, 99, 0.18);
+}
+
+.x402-endpoint-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.x402-endpoint-cell code {
+  color: #5cd4be;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 0.92rem;
+}
+
+.x402-endpoint-note {
+  color: #d1d5db;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.x402-price {
+  justify-self: end;
+  color: #f9fafb;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
 .integration-item {
   background: rgba(15,15,15,0.9);
   padding: 1rem;
@@ -1473,6 +1640,36 @@
   .chains-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
+  }
+
+  .x402-header {
+    flex-direction: column;
+  }
+
+  .x402-doc-link {
+    width: 100%;
+  }
+
+  .x402-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .x402-pricing-table-header {
+    display: none;
+  }
+
+  .x402-pricing-row {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+    padding: 1rem;
+  }
+
+  .x402-endpoint-note {
+    font-size: 0.85rem;
+  }
+
+  .x402-price {
+    justify-self: start;
   }
 
   .integrations-grid {
