@@ -10,6 +10,7 @@ const ApiDocs = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [copiedCommand, setCopiedCommand] = useState('')
   const [quickStartLanguage, setQuickStartLanguage] = useState('curl')
+  const [websocketLanguage, setWebsocketLanguage] = useState('node.js')
 
   const navigationSections = useMemo(() => [
     { id: 'overview', label: 'Overview' },
@@ -179,6 +180,49 @@ console.log(data);`,
       },
     },
   ], [])
+
+  const websocketExamples = useMemo(() => ({
+    'node.js': `const WebSocket = require('ws');
+
+const ws = new WebSocket('wss://api.claw.click/ws/launchpadEvents');
+
+ws.on('message', (data) => {
+  const msg = JSON.parse(data);
+
+  if (msg.type === 'info') {
+    ws.send(JSON.stringify({ protocol: 'PumpDotFun' }));
+    return;
+  }
+
+  if (msg.type === 'events') {
+    msg.data.forEach((event) => {
+      console.log(\`New token: \${event.tokenSymbol} - $\${event.marketCap} mcap\`);
+    });
+  }
+});`,
+    python: `import json
+from websocket import WebSocketApp
+
+
+def on_message(ws, message):
+    msg = json.loads(message)
+
+    if msg.get("type") == "info":
+        ws.send(json.dumps({"protocol": "PumpDotFun"}))
+        return
+
+    if msg.get("type") == "events":
+        for event in msg.get("data", []):
+            print(f"New token: {event['tokenSymbol']} - ${event['marketCap']} mcap")
+
+
+ws = WebSocketApp(
+    "wss://api.claw.click/ws/launchpadEvents",
+    on_message=on_message,
+)
+
+ws.run_forever()`,
+  }), [])
 
   // Comprehensive endpoints data from GitHub README
   const endpoints = [
@@ -888,10 +932,15 @@ console.log(data);`,
                   Explore x402
                 </button>
               </div>
-              <div className="api-base-url api-base-url--inline">
+              <button
+                type="button"
+                className={`api-base-url api-base-url--inline ${copiedCommand === 'base-url' ? 'copied' : ''}`.trim()}
+                onClick={() => copyToClipboard('base-url', 'https://api.claw.click')}
+              >
                 <span className="base-url-label">Base URL</span>
                 <code className="base-url">https://api.claw.click</code>
-              </div>
+                <span className="base-url-copy-state">{copiedCommand === 'base-url' ? 'Copied' : 'Click to copy'}</span>
+              </button>
               <div className="api-docs-overview-grid">
                 <div className="api-docs-overview-card">
                   <span className="api-docs-overview-value">{totalEndpointCount}+</span>
@@ -1176,39 +1225,49 @@ console.log(data);`,
               Subscribe to live event streams when polling is too slow for launches, social firehoses, and market triggers.
             </p>
             <div className="websocket-grid">
-              <div className="websocket-card websocket-card-feature">
-                <div className="websocket-card-head">
-                  <span className="websocket-pill">Live Feed</span>
-                  <span className="websocket-url">wss://api.claw.click/ws/launchpadEvents</span>
+              <div className="websocket-reference">
+                <div className="websocket-reference-block">
+                  <h3>Live feed</h3>
+                  <p>Connect to <code>wss://api.claw.click/ws/launchpadEvents</code> for realtime launchpad events.</p>
                 </div>
-                <h3>Real-time Launchpad Events</h3>
-                <p>Stream token launches and protocol events as they happen, then filter down to the launchpads you care about.</p>
-                <div className="websocket-bullets">
-                  <span>Low-latency event delivery</span>
-                  <span>Protocol-level filtering</span>
-                  <span>JSON payloads for bots and frontends</span>
+                <div className="websocket-reference-block">
+                  <h3>What it delivers</h3>
+                  <p>Stream token launches and protocol events as they happen, then filter down to the launchpads you care about.</p>
+                  <ul className="websocket-reference-list">
+                    <li>Low-latency event delivery</li>
+                    <li>Protocol-level filtering</li>
+                    <li>JSON payloads for bots and frontends</li>
+                  </ul>
                 </div>
               </div>
               <div className="websocket-card websocket-card-code">
-                <div className="websocket-code-meta">
-                  <span>Node example</span>
-                  <span>Subscribe after the info handshake</span>
+                <div className="auth-example-panel websocket-example-panel">
+                  <div className="auth-example-tabs">
+                    {['node.js', 'python'].map((language) => (
+                      <button
+                        key={language}
+                        type="button"
+                        className={`auth-example-tab ${websocketLanguage === language ? 'active' : ''}`.trim()}
+                        onClick={() => setWebsocketLanguage(language)}
+                      >
+                        {language}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="auth-example-shell">
+                    <div className="auth-example-top">
+                      <span className="auth-example-label">Subscribe after the info handshake</span>
+                      <button
+                        type="button"
+                        className={`quick-start-copy-button ${copiedCommand === `websocket-${websocketLanguage}` ? 'copied' : ''}`.trim()}
+                        onClick={() => copyToClipboard(`websocket-${websocketLanguage}`, websocketExamples[websocketLanguage])}
+                      >
+                        {copiedCommand === `websocket-${websocketLanguage}` ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                    <pre className="auth-example-code">{websocketExamples[websocketLanguage]}</pre>
+                  </div>
                 </div>
-                <CodeBlock language="javascript">
-{`const WebSocket = require('ws');
-const ws = new WebSocket('wss://api.claw.click/ws/launchpadEvents');
-
-ws.on('message', (data) => {
-  const msg = JSON.parse(data);
-  if (msg.type === 'info') {
-    ws.send(JSON.stringify({ protocol: 'PumpDotFun' }));
-  } else if (msg.type === 'events') {
-    msg.data.forEach(event => {
-      console.log(\`New token: \${event.tokenSymbol} — $\${event.marketCap} mcap\`);
-    });
-  }
-});`}
-                </CodeBlock>
               </div>
             </div>
           </div>
