@@ -9,6 +9,7 @@ const ApiDocs = () => {
   const [loading, setLoading] = useState({})
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [copiedCommand, setCopiedCommand] = useState('')
+  const [quickStartLanguage, setQuickStartLanguage] = useState('curl')
 
   const navigationSections = useMemo(() => [
     { id: 'overview', label: 'Overview' },
@@ -58,6 +59,125 @@ const ApiDocs = () => {
     { method: 'GET', path: '/gasFeed', price: '$0.0001', note: 'EVM gas prices and fee estimates' },
     { method: 'GET', path: '/tokenHolders', price: '$0.0006', note: 'Paginated token holder ledger' },
     { method: 'GET', path: '/strats/:id', price: '$0.0001', note: 'Strategy guide markdown' }
+  ], [])
+
+  const quickStartExamples = useMemo(() => [
+    {
+      key: 'token-info',
+      index: '01',
+      kicker: 'Market Data',
+      title: 'Get Token Info',
+      description: 'Fetch price, liquidity, market cap, and pair metadata for a live token.',
+      snippets: {
+        curl: `curl --get "https://api.claw.click/tokenPoolInfo" \\
+  -H "x-api-key: YOUR_API_KEY" \\
+  --data-urlencode "chain=eth" \\
+  --data-urlencode "tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"`,
+        python: `import requests
+
+response = requests.get(
+    "https://api.claw.click/tokenPoolInfo",
+    headers={"x-api-key": "YOUR_API_KEY"},
+    params={
+        "chain": "eth",
+        "tokenAddress": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    },
+)
+
+print(response.json())`,
+        'node.js': `const response = await fetch("https://api.claw.click/tokenPoolInfo?chain=eth&tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", {
+  headers: {
+    "x-api-key": "YOUR_API_KEY",
+  },
+});
+
+const data = await response.json();
+console.log(data);`,
+      },
+    },
+    {
+      key: 'risk',
+      index: '02',
+      kicker: 'Risk',
+      title: 'Check Risk',
+      description: 'Run a lightweight fraud and contract safety screen before taking a position.',
+      snippets: {
+        curl: `curl --get "https://api.claw.click/isScam" \\
+  -H "x-api-key: YOUR_API_KEY" \\
+  --data-urlencode "chain=eth" \\
+  --data-urlencode "tokenAddress=0x..."`,
+        python: `import requests
+
+response = requests.get(
+    "https://api.claw.click/isScam",
+    headers={"x-api-key": "YOUR_API_KEY"},
+    params={
+        "chain": "eth",
+        "tokenAddress": "0x...",
+    },
+)
+
+print(response.json())`,
+        'node.js': `const response = await fetch("https://api.claw.click/isScam?chain=eth&tokenAddress=0x...", {
+  headers: {
+    "x-api-key": "YOUR_API_KEY",
+  },
+});
+
+const data = await response.json();
+console.log(data);`,
+      },
+    },
+    {
+      key: 'swap',
+      index: '03',
+      kicker: 'Execution',
+      title: 'Build Swap',
+      description: 'Create unsigned swap transaction payloads your app or agent can sign and submit.',
+      snippets: {
+        curl: `curl --get "https://api.claw.click/swap" \\
+  -H "x-api-key: YOUR_API_KEY" \\
+  --data-urlencode "chain=eth" \\
+  --data-urlencode "dex=uniswapV3" \\
+  --data-urlencode "walletAddress=0x..." \\
+  --data-urlencode "tokenIn=0x..." \\
+  --data-urlencode "tokenOut=0x..." \\
+  --data-urlencode "amountIn=1000000000000000000"`,
+        python: `import requests
+
+response = requests.get(
+    "https://api.claw.click/swap",
+    headers={"x-api-key": "YOUR_API_KEY"},
+    params={
+        "chain": "eth",
+        "dex": "uniswapV3",
+        "walletAddress": "0x...",
+        "tokenIn": "0x...",
+        "tokenOut": "0x...",
+        "amountIn": "1000000000000000000",
+    },
+)
+
+print(response.json())`,
+        'node.js': `const params = new URLSearchParams({
+  chain: "eth",
+  dex: "uniswapV3",
+  walletAddress: "0x...",
+  tokenIn: "0x...",
+  tokenOut: "0x...",
+  amountIn: "1000000000000000000",
+});
+
+const response = await fetch(\`https://api.claw.click/swap?\${params.toString()}\`, {
+  headers: {
+    "x-api-key": "YOUR_API_KEY",
+  },
+});
+
+const data = await response.json();
+console.log(data);`,
+      },
+    },
   ], [])
 
   // Comprehensive endpoints data from GitHub README
@@ -660,21 +780,39 @@ const ApiDocs = () => {
     )
   }
 
-  const QuickStartCommand = ({ commandKey, children }) => (
-    <div className="quick-start-command">
-      <div className="quick-start-command-top">
-        <span className="quick-start-command-label">Example request</span>
-        <button
-          type="button"
-          className={`quick-start-copy-button ${copiedCommand === commandKey ? 'copied' : ''}`.trim()}
-          onClick={() => copyToClipboard(commandKey, children)}
-        >
-          {copiedCommand === commandKey ? 'Copied' : 'Copy'}
-        </button>
+  const QuickStartExamplePanel = ({ commandKey, snippets }) => {
+    const snippet = snippets[quickStartLanguage]
+
+    return (
+      <div className="auth-example-panel quick-start-example-panel">
+        <div className="auth-example-tabs">
+          {['curl', 'python', 'node.js'].map((language) => (
+            <button
+              key={language}
+              type="button"
+              className={`auth-example-tab ${quickStartLanguage === language ? 'active' : ''}`.trim()}
+              onClick={() => setQuickStartLanguage(language)}
+            >
+              {language}
+            </button>
+          ))}
+        </div>
+        <div className="auth-example-shell">
+          <div className="auth-example-top">
+            <span className="auth-example-label">Example request</span>
+            <button
+              type="button"
+              className={`quick-start-copy-button ${copiedCommand === commandKey ? 'copied' : ''}`.trim()}
+              onClick={() => copyToClipboard(commandKey, snippet)}
+            >
+              {copiedCommand === commandKey ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+          <pre className="auth-example-code">{snippet}</pre>
+        </div>
       </div>
-      <pre>{children}</pre>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="api-docs-page">
@@ -798,58 +936,24 @@ const ApiDocs = () => {
               Start with three common flows: inspect a token, run a fast risk check, then generate unsigned execution data.
             </p>
             <div className="quick-start-flow">
-              <div className="quick-start-item">
-                <div className="quick-start-item-meta">
-                  <div className="quick-start-step-head">
-                    <span className="quick-start-step-index">01</span>
-                    <span className="quick-start-step-kicker">Market Data</span>
+              {quickStartExamples.map((example) => (
+                <div key={example.key} className="quick-start-item">
+                  <div className="quick-start-item-meta">
+                    <div className="quick-start-step-head">
+                      <span className="quick-start-step-index">{example.index}</span>
+                      <span className="quick-start-step-kicker">{example.kicker}</span>
+                    </div>
+                  </div>
+                  <div className="quick-start-item-body">
+                    <h3>{example.title}</h3>
+                    <p>{example.description}</p>
+                    <QuickStartExamplePanel
+                      commandKey={`quickstart-${example.key}-${quickStartLanguage}`}
+                      snippets={example.snippets}
+                    />
                   </div>
                 </div>
-                <div className="quick-start-item-body">
-                  <h3>Get Token Info</h3>
-                  <p>Fetch price, liquidity, market cap, and pair metadata for a live token.</p>
-                  <QuickStartCommand commandKey="quickstart-token-info">{`curl --get "https://api.claw.click/tokenPoolInfo" \\
-  -H "x-api-key: YOUR_API_KEY" \\
-  --data-urlencode "chain=eth" \\
-  --data-urlencode "tokenAddress=0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"`}</QuickStartCommand>
-                </div>
-              </div>
-              <div className="quick-start-item">
-                <div className="quick-start-item-meta">
-                  <div className="quick-start-step-head">
-                    <span className="quick-start-step-index">02</span>
-                    <span className="quick-start-step-kicker">Risk</span>
-                  </div>
-                </div>
-                <div className="quick-start-item-body">
-                  <h3>Check Risk</h3>
-                  <p>Run a lightweight fraud and contract safety screen before taking a position.</p>
-                  <QuickStartCommand commandKey="quickstart-risk">{`curl --get "https://api.claw.click/isScam" \\
-  -H "x-api-key: YOUR_API_KEY" \\
-  --data-urlencode "chain=eth" \\
-  --data-urlencode "tokenAddress=0x..."`}</QuickStartCommand>
-                </div>
-              </div>
-              <div className="quick-start-item">
-                <div className="quick-start-item-meta">
-                  <div className="quick-start-step-head">
-                    <span className="quick-start-step-index">03</span>
-                    <span className="quick-start-step-kicker">Execution</span>
-                  </div>
-                </div>
-                <div className="quick-start-item-body">
-                  <h3>Build Swap</h3>
-                  <p>Create unsigned swap transaction payloads your app or agent can sign and submit.</p>
-                  <QuickStartCommand commandKey="quickstart-swap">{`curl --get "https://api.claw.click/swap" \\
-  -H "x-api-key: YOUR_API_KEY" \\
-  --data-urlencode "chain=eth" \\
-  --data-urlencode "dex=uniswapV3" \\
-  --data-urlencode "walletAddress=0x..." \\
-  --data-urlencode "tokenIn=0x..." \\
-  --data-urlencode "tokenOut=0x..." \\
-  --data-urlencode "amountIn=1000000000000000000"`}</QuickStartCommand>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>

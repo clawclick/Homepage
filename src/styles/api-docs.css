@@ -3870,29 +3870,6 @@
   overflow-wrap: anywhere;
 }
 
-.quick-start-command {
-  margin-top: 0.9rem;
-  padding-left: 1rem;
-  border-left: 2px solid rgba(92, 212, 190, 0.2);
-}
-
-.quick-start-command-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.45rem;
-}
-
-.quick-start-command-label {
-  display: inline-block;
-  color: #7e8c97;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .quick-start-copy-button {
   appearance: none;
   border: 1px solid rgba(255,255,255,0.08);
@@ -3997,10 +3974,16 @@
 }
 
 .auth-example-tab {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
   position: relative;
   color: #87959f;
   font-size: 0.82rem;
   font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .auth-example-tab.active {
@@ -4053,18 +4036,8 @@
   overflow-wrap: anywhere;
 }
 
-.quick-start-command pre {
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  border: none;
-  color: #d7e3ea;
-  font-family: 'JetBrains Mono', 'Consolas', monospace;
-  font-size: 0.84rem;
-  line-height: 1.62;
-  white-space: pre-wrap;
-  word-break: normal;
-  overflow-wrap: anywhere;
+.quick-start-example-panel {
+  margin-top: 0.95rem;
 }
 
 .websocket-grid {
@@ -4193,11 +4166,6 @@
   .quick-start-step-head,
   .websocket-card-head,
   .websocket-code-meta {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .quick-start-command-top {
     align-items: flex-start;
     flex-direction: column;
   }
