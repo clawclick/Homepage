@@ -441,14 +441,14 @@ const demoScenarios = [
     id: 'twitter-ticker-discovery',
     name: 'Twitter ticker discovery',
     pair: 'GIGA / SOL',
-    command: 'social-scan --platform twitter --ticker GIGA',
+    command: 'social-scan --platform twitter --resolve-contracts',
     reasoning: 'Social attention was real, but after resolving the contract and running the scans the engine still returned no trade.',
     steps: [
       createStep({
         time: '10:22:18',
         label: 'Social',
         title: 'Ticker started clustering on Twitter',
-        detail: 'The same GIGA ticker began appearing across multiple monitored accounts.',
+        detail: 'The same ticker began appearing across multiple monitored accounts.',
         status: 'Watching social bursts',
         decision: 'Scanning',
         confidence: '--',
@@ -522,7 +522,7 @@ const demoScenarios = [
     id: 'smart-money-out-sol',
     name: 'Smart money out of SOL',
     pair: 'SOL / USDC',
-    command: 'flow-watch --wallet-set smart-money --asset SOL',
+    command: 'flow-watch --wallet-set smart-money --monitor-rotation',
     reasoning: 'Smart money started rotating out of SOL, momentum weakened, and the engine converted that flow into a sell.',
     steps: [
       createStep({
@@ -603,7 +603,7 @@ const demoScenarios = [
     id: 'smart-money-into-eth',
     name: 'Smart money into ETH',
     pair: 'ETH / USDC',
-    command: 'flow-watch --wallet-set smart-money --asset ETH',
+    command: 'flow-watch --wallet-set smart-money --monitor-rotation',
     reasoning: 'Smart money began accumulating ETH, the quality checks stayed clean, and the engine promoted the flow into a buy.',
     steps: [
       createStep({
@@ -707,16 +707,167 @@ function getDecisionTone(decision) {
 function getScenarioBootLine(scenario) {
   switch (scenario.id) {
     case 'pumpfun-graduation':
-      return 'listening for new pump.fun graduates'
+      return 'listening for new pump.fun graduation events'
     case 'twitter-ticker-discovery':
       return 'watching twitter for repeated ticker mentions'
     case 'smart-money-out-sol':
-      return 'tracking smart money exits on SOL'
+      return 'tracking smart money outflows'
     case 'smart-money-into-eth':
-      return 'tracking smart money inflows on ETH'
+      return 'tracking smart money inflows'
     default:
-      return `loading ${scenario.name.toLowerCase()}`
+      return 'monitoring live token sources'
   }
+}
+
+function getPairRevealStepIndex(scenario) {
+  switch (scenario.id) {
+    case 'twitter-ticker-discovery':
+      return 1
+    default:
+      return 0
+  }
+}
+
+function getLiveRunLabel(scenario, activePipelineStep, currentPipelineState, hasFinalDecision) {
+  if (activePipelineStep < 0) {
+    return 'Listening for live signals'
+  }
+
+  if (hasFinalDecision) {
+    return 'Decision returned'
+  }
+
+  if (activePipelineStep < getPairRevealStepIndex(scenario)) {
+    return 'Candidate detected'
+  }
+
+  return currentPipelineState.status || 'Reviewing candidate'
+}
+
+function getQueuedStageText(step) {
+  const label = String(step.label || '').trim().toLowerCase()
+
+  switch (label) {
+    case 'event':
+      return 'Waiting for a live trigger'
+    case 'social':
+      return 'Watching for a social burst'
+    case 'search':
+      return 'Resolving the contract'
+    case 'flow':
+      return 'Watching wallet rotation'
+    case 'meta':
+      return 'Loading token context'
+    case 'scan':
+      return 'Running volatility checks'
+    case 'risk':
+      return 'Checking holders and safety'
+    case 'ta':
+      return 'Reading indicators'
+    case 'action':
+      return 'Preparing a decision'
+    default:
+      return 'Waiting for the next module'
+  }
+}
+
+function getScenarioIndexById(id) {
+  return demoScenarios.findIndex((scenario) => scenario.id === id)
+}
+
+const demoStrategyOptions = [
+  {
+    id: 'scan-live-tokens',
+    label: 'Scan live tokens',
+    command: 'discover --source stream --filter candidates',
+    scenarioIds: ['breakout-buy', 'weak-momentum', 'scam-risk'],
+  },
+  {
+    id: 'watch-launchpad-events',
+    label: 'Watch launchpad events',
+    command: 'listen --source launchpad --event graduation',
+    scenarioIds: ['pumpfun-graduation'],
+  },
+  {
+    id: 'search-twitter',
+    label: 'Search Twitter',
+    command: 'social-scan --platform twitter --resolve-contracts',
+    scenarioIds: ['twitter-ticker-discovery'],
+  },
+  {
+    id: 'follow-smart-money',
+    label: 'Follow smart money',
+    command: 'flow-watch --wallet-set smart-money --monitor-rotation',
+    scenarioIds: ['smart-money-out-sol', 'smart-money-into-eth'],
+  },
+]
+
+function getStrategyOptionById(id) {
+  return demoStrategyOptions.find((option) => option.id === id) || null
+}
+
+function getStrategyScenarioIndexes(id) {
+  const option = getStrategyOptionById(id)
+
+  if (!option) {
+    return []
+  }
+
+  return option.scenarioIds
+    .map((scenarioId) => getScenarioIndexById(scenarioId))
+    .filter((index) => index >= 0)
+}
+
+function getStrategyAnchorIndex(id) {
+  const indexes = getStrategyScenarioIndexes(id)
+  return indexes[0] ?? 0
+}
+
+function pickScenarioIndexForSelection(id) {
+  const indexes = getStrategyScenarioIndexes(id)
+
+  if (indexes.length === 0) {
+    return 0
+  }
+
+  return indexes[Math.floor(Math.random() * indexes.length)]
+}
+
+function getStrategyLabel(id) {
+  return getStrategyOptionById(id)?.label || 'Selected strategy'
+}
+
+function getStrategyCommand(id) {
+  return getStrategyOptionById(id)?.command || 'run'
+}
+
+function getNextStrategyId(id) {
+  const index = demoStrategyOptions.findIndex((option) => option.id === id)
+
+  if (index < 0) {
+    return demoStrategyOptions[0]?.id || ''
+  }
+
+  return demoStrategyOptions[(index + 1) % demoStrategyOptions.length]?.id || id
+}
+
+function getSelectionIdFromPrompt(prompt) {
+  const normalized = String(prompt || '').trim().toLowerCase()
+
+  if (!normalized) {
+    return ''
+  }
+
+  const keywordSets = [
+    { id: 'watch-launchpad-events', keywords: ['pump', 'graduation', 'graduate', 'pumpfun', 'launchpad', 'moon'] },
+    { id: 'search-twitter', keywords: ['twitter', 'social', 'ticker', 'search', 'contract', 'giga'] },
+    { id: 'follow-smart-money', keywords: ['smart money', 'wallet flow', 'eth', 'sol', 'rotation', 'inflow', 'outflow'] },
+    { id: 'scan-live-tokens', keywords: ['breakout', 'volume spike', 'new token', 'momentum', 'honeypot', 'scam', 'bonk', 'jup', 'shdw'] },
+  ]
+
+  const matched = keywordSets.find(({ keywords }) => keywords.some((keyword) => normalized.includes(keyword)))
+
+  return matched ? matched.id : ''
 }
 
 function getStepBadge(step) {
@@ -781,15 +932,128 @@ function formatMetricsLine(metrics) {
     : 'holders, scam, volatility, and indicators are still loading'
 }
 
+function getMetricBarValue(type, value) {
+  const normalized = String(value || '').trim().toLowerCase()
+
+  if (type === 'safety') {
+    const numeric = Number.parseFloat(value)
+    if (!Number.isFinite(numeric)) {
+      return 14
+    }
+
+    return Math.max(6, Math.min(96, Math.round((1 - numeric) * 100)))
+  }
+
+  if (type === 'holders') {
+    if (normalized === 'low') return 82
+    if (normalized === 'medium') return 54
+    if (normalized === 'high') return 24
+    return 16
+  }
+
+  if (type === 'volatility') {
+    if (normalized === 'low') return 40
+    if (normalized === 'medium') return 62
+    if (normalized === 'high') return 84
+    return 16
+  }
+
+  if (type === 'signal') {
+    if (normalized === 'bullish') return 80
+    if (normalized === 'bearish') return 30
+    if (normalized === 'mixed') return 50
+    if (normalized === 'flat') return 42
+    if (normalized === 'skipped') return 12
+    return 16
+  }
+
+  return 16
+}
+
+function getMetricBarTone(type, value) {
+  const normalized = String(value || '').trim().toLowerCase()
+
+  if (type === 'safety') {
+    const numeric = Number.parseFloat(value)
+
+    if (!Number.isFinite(numeric)) {
+      return 'neutral'
+    }
+
+    if (numeric <= 0.15) return 'good'
+    if (numeric <= 0.35) return 'caution'
+    return 'danger'
+  }
+
+  if (type === 'holders') {
+    if (normalized === 'low') return 'good'
+    if (normalized === 'medium') return 'caution'
+    if (normalized === 'high') return 'danger'
+    return 'neutral'
+  }
+
+  if (type === 'volatility') {
+    if (normalized === 'medium') return 'good'
+    if (normalized === 'low') return 'neutral'
+    if (normalized === 'high') return 'caution'
+    return 'neutral'
+  }
+
+  if (type === 'signal') {
+    if (normalized === 'bullish') return 'good'
+    if (normalized === 'mixed' || normalized === 'flat') return 'neutral'
+    if (normalized === 'bearish' || normalized === 'skipped') return 'danger'
+    return 'neutral'
+  }
+
+  return 'neutral'
+}
+
+function getVisualMetrics(metrics) {
+  return [
+    {
+      label: 'Safety',
+      value: metrics.scamScore === '--' ? 'Pending' : `score ${metrics.scamScore}`,
+      width: getMetricBarValue('safety', metrics.scamScore),
+      tone: getMetricBarTone('safety', metrics.scamScore),
+    },
+    {
+      label: 'Holders',
+      value: metrics.holderRisk,
+      width: getMetricBarValue('holders', metrics.holderRisk),
+      tone: getMetricBarTone('holders', metrics.holderRisk),
+    },
+    {
+      label: 'Volatility',
+      value: metrics.volatility,
+      width: getMetricBarValue('volatility', metrics.volatility),
+      tone: getMetricBarTone('volatility', metrics.volatility),
+    },
+    {
+      label: 'Signal',
+      value: metrics.macd,
+      width: getMetricBarValue('signal', metrics.macd),
+      tone: getMetricBarTone('signal', metrics.macd),
+    },
+  ]
+}
+
 const ValueProp = () => {
   const navigate = useNavigate()
   const [agents, setAgents] = useState([])
   const [liveTelemetry, setLiveTelemetry] = useState({})
   const [loopDistance, setLoopDistance] = useState(0)
+  const [hasActivatedTerminal, setHasActivatedTerminal] = useState(false)
+  const [selectedScenarioId, setSelectedScenarioId] = useState(demoStrategyOptions[0].id)
+  const [idleCountdown, setIdleCountdown] = useState(10)
   const [activeScenarioIndex, setActiveScenarioIndex] = useState(0)
   const [activePipelineStep, setActivePipelineStep] = useState(-1)
+  const [isBootingFlow, setIsBootingFlow] = useState(false)
+  const showcaseRef = useRef(null)
   const trackRef = useRef(null)
+  const terminalShellRef = useRef(null)
   const terminalViewportRef = useRef(null)
+  const visualStageListRef = useRef(null)
   const reconnectTimeoutRef = useRef(null)
 
   useEffect(() => {
@@ -805,6 +1069,26 @@ const ValueProp = () => {
 
     return () => {
       isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const target = showcaseRef.current
+    if (!target) return undefined
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasActivatedTerminal(true)
+        }
+      },
+      { threshold: 0.35 },
+    )
+
+    observer.observe(target)
+
+    return () => {
+      observer.disconnect()
     }
   }, [])
 
@@ -933,13 +1217,34 @@ const ValueProp = () => {
 
   useEffect(() => {
     const activeScenario = demoScenarios[activeScenarioIndex]
+
+    if (!hasActivatedTerminal) {
+      return undefined
+    }
+
+    if (isBootingFlow) {
+      const timeoutId = window.setTimeout(() => {
+        setIsBootingFlow(false)
+        setActivePipelineStep(0)
+      }, 2400)
+
+      return () => {
+        window.clearTimeout(timeoutId)
+      }
+    }
+
+    if (activePipelineStep < 0) {
+      return undefined
+    }
+
     const isFinalStep = activePipelineStep >= activeScenario.steps.length - 1
     const delay = isFinalStep ? 7800 : 4500
 
     const timeoutId = window.setTimeout(() => {
       if (isFinalStep) {
-        setActiveScenarioIndex((scenarioIndex) => (scenarioIndex + 1) % demoScenarios.length)
         setActivePipelineStep(-1)
+        setIsBootingFlow(false)
+        setSelectedScenarioId((current) => getNextStrategyId(current))
         return
       }
 
@@ -949,7 +1254,37 @@ const ValueProp = () => {
     return () => {
       window.clearTimeout(timeoutId)
     }
-  }, [activeScenarioIndex, activePipelineStep])
+  }, [activeScenarioIndex, activePipelineStep, hasActivatedTerminal, isBootingFlow, selectedScenarioId])
+
+  useEffect(() => {
+    if (!hasActivatedTerminal || activePipelineStep >= 0 || isBootingFlow) {
+      return undefined
+    }
+
+    if (idleCountdown <= 0) {
+      setActiveScenarioIndex(pickScenarioIndexForSelection(selectedScenarioId))
+      setActivePipelineStep(0)
+      return undefined
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIdleCountdown((current) => current - 1)
+    }, 1000)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [activePipelineStep, hasActivatedTerminal, idleCountdown, isBootingFlow, selectedScenarioId])
+
+  useEffect(() => {
+    if (!hasActivatedTerminal) {
+      return
+    }
+
+    if (activePipelineStep < 0 && !isBootingFlow) {
+      setIdleCountdown(10)
+    }
+  }, [activePipelineStep, hasActivatedTerminal, isBootingFlow])
 
   const getSparklinePoints = (agent, index) => {
     const seed = getAgentSeed(agent, index) * 0.0073 + index * 0.37
@@ -967,7 +1302,15 @@ const ValueProp = () => {
   }
 
   const strategyRail = agents.length > 0 ? [...agents, ...agents] : []
-  const currentScenario = demoScenarios[activeScenarioIndex]
+  const selectedStrategyIndex = Math.max(
+    demoStrategyOptions.findIndex((strategy) => strategy.id === selectedScenarioId),
+    0,
+  )
+  const selectedScenarioIndex = getStrategyAnchorIndex(selectedScenarioId)
+  const currentScenarioIndex = activePipelineStep >= 0
+    ? activeScenarioIndex
+    : selectedScenarioIndex
+  const currentScenario = demoScenarios[currentScenarioIndex]
   const visiblePipelineSteps = activePipelineStep >= 0
     ? currentScenario.steps.slice(0, activePipelineStep + 1)
     : []
@@ -982,73 +1325,112 @@ const ValueProp = () => {
       }
   const hasFinalDecision = activePipelineStep === currentScenario.steps.length - 1
   const decisionTone = getDecisionTone(currentPipelineState.decision)
-  const terminalCommand = `${currentScenario.command || 'run'} --pair ${currentScenario.pair}`
-  const nextStep = activePipelineStep >= 0
-    ? currentScenario.steps[activePipelineStep + 1]
-    : null
+  const terminalCommand = activePipelineStep < 0
+    ? 'select-strategy --interactive'
+    : currentScenario.command || 'run'
+  const visualMetrics = getVisualMetrics(currentPipelineState.metrics)
+  const completedChecks = currentPipelineState.activatedChecks || []
+  const pairIsRevealed = activePipelineStep >= getPairRevealStepIndex(currentScenario)
+  const displayPair = pairIsRevealed ? currentScenario.pair : 'Candidate pending'
+  const liveRunLabel = !hasActivatedTerminal
+    ? 'Scroll to start live CLI'
+    : isBootingFlow
+      ? 'Initializing selected strategy'
+    : activePipelineStep < 0
+      ? 'Select a strategy'
+      : getLiveRunLabel(currentScenario, activePipelineStep, currentPipelineState, hasFinalDecision)
+  const liveStatusPill = !hasActivatedTerminal
+    ? 'Idle until visible'
+    : isBootingFlow
+      ? 'Booting flow'
+    : activePipelineStep < 0
+      ? `Enter to run | auto in ${idleCountdown}s`
+      : hasFinalDecision
+        ? 'Decision returned'
+        : `${visiblePipelineSteps.length} / ${currentScenario.steps.length} checks`
+  const menuIsActive = hasActivatedTerminal && activePipelineStep < 0 && !isBootingFlow
   const terminalLines = [
     { kind: 'separator', text: '_______________________________________________' },
     ...CLAW_CLICK_ASCII.map((line) => ({ kind: 'ascii', text: line })),
     { kind: 'separator', text: '_______________________________________________' },
-    {
-      kind: 'meta',
-      prefix: 'boot',
-      text: activePipelineStep < 0
-        ? 'Starting insight generation'
-        : getScenarioBootLine(currentScenario),
-      detail: activePipelineStep < 0
-        ? 'waiting for the first live signal to come in'
-        : `scenario: ${currentScenario.name}`,
-    },
-    ...visiblePipelineSteps.map((step) => {
-      const badge = getStepBadge(step)
-
-      return {
-        kind: 'stage',
-        prefix: step.time,
-        badge,
-        text: step.title,
-        detail: step.detail,
-      }
-    }),
   ]
 
-  if (activePipelineStep >= 0) {
+  if (menuIsActive) {
+    terminalLines.push(
+      {
+        kind: 'menu-heading',
+        prefix: '',
+        text: 'Select your strategy',
+        detail: 'Use arrow keys or press 1-4, then hit Enter to run',
+      },
+      ...demoStrategyOptions.map((strategy, index) => ({
+        kind: index === selectedStrategyIndex ? 'menu-selected' : 'menu-option',
+        prefix: index === selectedStrategyIndex ? '>' : `${index + 1}`,
+        text: `${index + 1}. ${strategy.label}`,
+        detail: strategy.command,
+      })),
+      {
+        kind: 'menu-meta',
+        prefix: '',
+        text: `Press Enter to run ${getStrategyLabel(selectedScenarioId)}`,
+        detail: `Auto run starts in ${idleCountdown}s`,
+      },
+    )
+  } else if (isBootingFlow) {
     terminalLines.push({
-      kind: hasFinalDecision ? `decision ${decisionTone}` : 'pending',
-      prefix: hasFinalDecision ? 'model' : 'queue',
-      badge: hasFinalDecision
-        ? {
-            text: currentPipelineState.decision,
-            tone: decisionTone,
-          }
-        : { text: 'LIVE', tone: 'pending' },
-      text: hasFinalDecision
-        ? `Decision returned with ${currentPipelineState.confidence} confidence`
-        : `Running ${visiblePipelineSteps.length} of ${currentScenario.steps.length} checks`,
-      detail: hasFinalDecision
-        ? currentPipelineState.summary || currentScenario.reasoning
-        : nextStep
-          ? `next up: ${nextStep.title.toLowerCase()}`
-          : 'waiting for the current scan to finish',
+      kind: 'meta',
+      prefix: 'boot',
+      text: 'Starting insight generation',
+      detail: `${getStrategyLabel(selectedScenarioId)} selected. initializing live modules`,
+    })
+  } else {
+    terminalLines.push(
+      {
+        kind: 'meta',
+        prefix: 'boot',
+        text: getScenarioBootLine(currentScenario),
+        detail: pairIsRevealed
+          ? `${currentScenario.pair} moved into the pipeline`
+          : 'candidate detected. resolving more context',
+      },
+      ...visiblePipelineSteps.map((step) => {
+        const badge = getStepBadge(step)
+
+        return {
+          kind: 'stage',
+          prefix: step.time,
+          badge,
+          text: step.title,
+          detail: step.detail,
+        }
+      }),
+    )
+  }
+
+  if (activePipelineStep >= 0 && hasFinalDecision) {
+    terminalLines.push({
+      kind: `decision ${decisionTone}`,
+      prefix: 'model',
+      badge: {
+        text: currentPipelineState.decision,
+        tone: decisionTone,
+      },
+      text: `Decision returned with ${currentPipelineState.confidence} confidence`,
+      detail: currentPipelineState.summary || currentScenario.reasoning,
     })
 
     terminalLines.push({
-      kind: hasFinalDecision ? 'summary' : 'metric',
-      prefix: hasFinalDecision ? 'why' : 'read',
-      badge: { text: hasFinalDecision ? 'WHY' : 'READ', tone: hasFinalDecision ? 'signal' : 'meta' },
-      text: hasFinalDecision
-        ? `Why it landed on ${currentPipelineState.decision}`
-        : 'Current model read',
-      detail: hasFinalDecision
-        ? `${formatMetricsLine(currentPipelineState.metrics)}.`
-        : `${formatMetricsLine(currentPipelineState.metrics)}. ${currentPipelineState.summary}`,
+      kind: 'summary',
+      prefix: 'why',
+      badge: { text: 'WHY', tone: 'signal' },
+      text: `Why it landed on ${currentPipelineState.decision}`,
+      detail: `${formatMetricsLine(currentPipelineState.metrics)}.`,
     })
   }
 
   useEffect(() => {
     const viewport = terminalViewportRef.current
-    if (!viewport) return
+    if (!viewport || !hasActivatedTerminal || activePipelineStep < 0) return
 
     const syncScroll = () => {
       viewport.scrollTop = viewport.scrollHeight
@@ -1060,6 +1442,32 @@ const ValueProp = () => {
     return () => {
       cancelAnimationFrame(raf)
     }
+  }, [activeScenarioIndex, activePipelineStep, hasActivatedTerminal])
+
+  useEffect(() => {
+    const stageList = visualStageListRef.current
+    if (!stageList) return
+
+    if (activePipelineStep < 2) {
+      stageList.scrollTo({
+        top: 0,
+        behavior: activePipelineStep < 0 ? 'auto' : 'smooth',
+      })
+      return
+    }
+
+    const activeStage = stageList.querySelector('.api-visual-stage-active, .api-visual-stage-up-next')
+    if (!activeStage) {
+      stageList.scrollTop = 0
+      return
+    }
+
+    const targetTop = Math.max(0, activeStage.offsetTop - stageList.clientHeight * 0.32)
+
+    stageList.scrollTo({
+      top: targetTop,
+      behavior: 'smooth',
+    })
   }, [activeScenarioIndex, activePipelineStep])
 
   useEffect(() => {
@@ -1102,6 +1510,65 @@ const ValueProp = () => {
     }
   }, [strategyRail.length])
 
+  useEffect(() => {
+    if (!menuIsActive) {
+      return
+    }
+
+    terminalShellRef.current?.focus({ preventScroll: true })
+  }, [menuIsActive, selectedScenarioId])
+
+  const runScenarioByIndex = (scenarioIndex) => {
+    if (scenarioIndex < 0 || scenarioIndex >= demoScenarios.length) {
+      return
+    }
+
+    setHasActivatedTerminal(true)
+    setActiveScenarioIndex(scenarioIndex)
+    setActivePipelineStep(-1)
+    setIsBootingFlow(true)
+    setIdleCountdown(10)
+  }
+
+  const runSelectedStrategy = (strategyId) => {
+    setSelectedScenarioId(strategyId)
+    runScenarioByIndex(pickScenarioIndexForSelection(strategyId))
+  }
+
+  const handleTerminalMenuKeyDown = (event) => {
+    if (!menuIsActive) {
+      return
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setSelectedScenarioId((current) => getNextStrategyId(current))
+      return
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      const currentIndex = demoStrategyOptions.findIndex((option) => option.id === selectedScenarioId)
+      const nextIndex = currentIndex <= 0 ? demoStrategyOptions.length - 1 : currentIndex - 1
+      setSelectedScenarioId(demoStrategyOptions[nextIndex].id)
+      return
+    }
+
+    if (/^[1-4]$/.test(event.key)) {
+      event.preventDefault()
+      const nextIndex = Number(event.key) - 1
+      if (demoStrategyOptions[nextIndex]) {
+        setSelectedScenarioId(demoStrategyOptions[nextIndex].id)
+      }
+      return
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      runSelectedStrategy(selectedScenarioId)
+    }
+  }
+
   return (
     <section className="valueprop">
       <div className="valueprop-inner">
@@ -1115,54 +1582,170 @@ const ValueProp = () => {
           </p>
         </div>
 
-        <div className="api-pipeline-showcase">
-          <div className="api-terminal-shell">
-            <div className="api-terminal-topbar">
-              <div className="api-terminal-dots" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </div>
-              <div className="api-terminal-meta">
-                <span className="api-terminal-title">superapi-terminal</span>
-                <span className="api-terminal-scenario">{currentScenario.name}</span>
-              </div>
-              <div className="api-terminal-status">
-                <span>{currentScenario.pair}</span>
-                <span>{currentPipelineState.status}</span>
-              </div>
-            </div>
-
-            <div className="api-terminal-command-row">
-              <span className="api-terminal-command-prompt">scan@superapi:~$</span>
-              <span className="api-terminal-command-value">{terminalCommand}</span>
-            </div>
-
-            <div className="api-terminal-viewport" ref={terminalViewportRef} aria-label="Live terminal pipeline demo">
-              {terminalLines.map((line, index) => (
-                <div
-                  key={`${activeScenarioIndex}-${activePipelineStep}-${index}-${line.text}`}
-                  className={`api-terminal-line api-terminal-line-${line.kind.replace(/\s+/g, '-')}`}
-                >
-                  <span className="api-terminal-line-prefix">
-                    {line.prefix || ''}
-                  </span>
-                  {line.badge ? (
-                    <span className={`api-terminal-line-badge api-terminal-line-badge-${line.badge.tone}`}>
-                      [{line.badge.text}]
-                    </span>
-                  ) : (
-                    <span className="api-terminal-line-badge api-terminal-line-badge-placeholder" aria-hidden="true" />
-                  )}
-                  <span className="api-terminal-line-text">
-                    <span className="api-terminal-line-main">{line.text}</span>
-                    {line.detail ? (
-                      <span className="api-terminal-line-detail">{line.detail}</span>
-                    ) : null}
-                  </span>
+        <div className="api-pipeline-showcase" ref={showcaseRef}>
+          <div className="api-pipeline-grid">
+            <div
+              className="api-terminal-shell"
+              ref={terminalShellRef}
+              tabIndex={0}
+              onKeyDown={handleTerminalMenuKeyDown}
+            >
+              <div className="api-terminal-topbar">
+                <div className="api-terminal-dots" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
                 </div>
-              ))}
+                <div className="api-terminal-meta">
+                  <span className="api-terminal-title">superapi-terminal</span>
+                  <span className="api-terminal-scenario">{liveRunLabel}</span>
+                </div>
+                <div className="api-terminal-status">
+                  <span>{displayPair}</span>
+                  <span>{liveStatusPill}</span>
+                </div>
+              </div>
+
+              <div className="api-terminal-command-row">
+                <span className="api-terminal-command-prompt">scan@superapi:~$</span>
+                <span className="api-terminal-command-value">{terminalCommand}</span>
+              </div>
+
+              <div className="api-terminal-viewport" ref={terminalViewportRef} aria-label="Live terminal pipeline demo">
+                {terminalLines.map((line, index) => (
+                  (() => {
+                    const isMenuLine = line.kind.startsWith('menu')
+
+                    return (
+                      <div
+                        key={`${activeScenarioIndex}-${activePipelineStep}-${index}-${line.text}`}
+                        className={`api-terminal-line api-terminal-line-${line.kind.replace(/\s+/g, '-')}`}
+                        onClick={
+                          line.kind === 'menu-option' || line.kind === 'menu-selected'
+                            ? () => {
+                                const menuIndex = Number(line.text.split('.')[0]) - 1
+                                const nextStrategy = demoStrategyOptions[menuIndex]
+                                if (nextStrategy) {
+                                  setSelectedScenarioId(nextStrategy.id)
+                                  terminalShellRef.current?.focus({ preventScroll: true })
+                                }
+                              }
+                            : undefined
+                        }
+                      >
+                        <span className="api-terminal-line-prefix">
+                          {line.prefix || ''}
+                        </span>
+                        {!isMenuLine ? (
+                          line.badge ? (
+                            <span className={`api-terminal-line-badge api-terminal-line-badge-${line.badge.tone}`}>
+                              [{line.badge.text}]
+                            </span>
+                          ) : (
+                            <span className="api-terminal-line-badge api-terminal-line-badge-placeholder" aria-hidden="true" />
+                          )
+                        ) : null}
+                        <span className="api-terminal-line-text">
+                          <span className="api-terminal-line-main">{line.text}</span>
+                          {line.detail ? (
+                            <span className="api-terminal-line-detail">{line.detail}</span>
+                          ) : null}
+                        </span>
+                      </div>
+                    )
+                  })()
+                ))}
+              </div>
             </div>
+
+            <aside className={`api-visual-shell api-visual-shell-${decisionTone}`} aria-label="Live scan visualization">
+              <div className="api-visual-hero">
+                <div className="api-visual-hero-copy">
+                  <span className="api-visual-kicker">Live scan map</span>
+                  <h3>{displayPair}</h3>
+                  <p>
+                    {activePipelineStep < 0
+                      ? `${getStrategyLabel(selectedScenarioId)} is selected. Press Enter to run it, or wait for auto launch.`
+                      : currentPipelineState.summary || currentScenario.reasoning}
+                  </p>
+                </div>
+                <div className={`api-visual-decision api-visual-decision-${decisionTone}`}>
+                  <span className="api-visual-decision-label">Decision</span>
+                  <strong>{currentPipelineState.decision}</strong>
+                  <span className="api-visual-decision-confidence">{currentPipelineState.confidence}</span>
+                </div>
+              </div>
+
+              <div className="api-visual-panel api-visual-panel-pipeline">
+                <div className="api-visual-panel-header">
+                  <span>Pipeline</span>
+                  <span>{Math.max(activePipelineStep + 1, 0)} / {currentScenario.steps.length} complete</span>
+                </div>
+                <div className="api-visual-stage-list" ref={visualStageListRef}>
+                  {currentScenario.steps.map((step, index) => {
+                    let stageState = 'queued'
+
+                    if (activePipelineStep < 0) {
+                      stageState = index === 0 ? 'up-next' : 'queued'
+                    } else if (index < activePipelineStep) {
+                      stageState = 'complete'
+                    } else if (index === activePipelineStep) {
+                      stageState = 'active'
+                    }
+
+                    return (
+                      <div
+                        key={`${currentScenario.id}-${step.label}-${step.time}`}
+                        className={`api-visual-stage api-visual-stage-${stageState}`}
+                      >
+                        <span className="api-visual-stage-dot" aria-hidden="true" />
+                        <div className="api-visual-stage-copy">
+                          <strong>{step.label}</strong>
+                          <span>{stageState === 'queued' || stageState === 'up-next' ? getQueuedStageText(step) : step.title}</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="api-visual-panel api-visual-panel-metrics">
+                <div className="api-visual-panel-header">
+                  <span>Model read</span>
+                  <span>{currentPipelineState.status}</span>
+                </div>
+                <div className="api-visual-metric-list">
+                  {visualMetrics.map((metric) => (
+                    <div key={`${currentScenario.id}-${metric.label}`} className="api-visual-metric">
+                      <div className="api-visual-metric-topline">
+                        <span>{metric.label}</span>
+                        <strong>{metric.value}</strong>
+                      </div>
+                      <div className="api-visual-metric-track">
+                        <span
+                          className={`api-visual-metric-fill api-visual-metric-fill-${metric.tone}`}
+                          style={{ width: `${metric.width}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="api-visual-panel api-visual-panel-checks">
+                <div className="api-visual-panel-header">
+                  <span>Checks used</span>
+                  <span>{completedChecks.length || 1} active</span>
+                </div>
+                <div className="api-visual-checks">
+                  {(completedChecks.length > 0 ? completedChecks : ['Listening']).map((check) => (
+                    <span key={`${currentScenario.id}-${check}`} className="api-visual-check-pill">
+                      {check}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </aside>
           </div>
         </div>
 
