@@ -677,33 +677,41 @@ ws.run_forever()`,
       ]
     },
     {
-      category: 'Signal Monitoring',
-      items: [
-        {
-          method: 'GET', path: '/signalSol/chartHealth', description: 'Touch/start per-token chart-health tracking and return the latest cached token health state',
-          requiresAuth: true,
-          params: [
-            { name: 'tokenAddress', required: true, default: '—', description: 'Token address to monitor' },
-            { name: 'tokenName', required: false, default: '—', description: 'Optional display name stored with the token interest' }
-          ],
-          example: 'GET https://api.claw.click/signalSol/chartHealth?tokenAddress=So11111111111111111111111111111111111111112&tokenName=Wrapped%20SOL',
-          response: '{"stream":"chartHealth","scope":"token","tokenAddress":"So11111111111111111111111111111111111111112","status":"warming_up","running":false,"updatedAt":"2026-03-27T08:10:00.000Z","lastEvent":null,"lastSummary":null,"lastSnapshot":null,"lastError":null,"recentSignals":[],"recentAlerts":[],"meta":{"expiresAt":"2026-03-27T08:25:00.000Z","tokenName":"Wrapped SOL"}}'
-        },
-        {
-          method: 'GET', path: '/signals/chartHealth', description: 'Alias for /signalSol/chartHealth with the same touch-and-read behavior',
-          requiresAuth: true,
-          params: [
-            { name: 'tokenAddress', required: true, default: '—', description: 'Token address to monitor' },
-            { name: 'tokenName', required: false, default: '—', description: 'Optional display name stored with the token interest' }
-          ],
-          example: 'GET https://api.claw.click/signals/chartHealth?tokenAddress=So11111111111111111111111111111111111111112',
-          response: '{"stream":"chartHealth","scope":"token","tokenAddress":"So11111111111111111111111111111111111111112","status":"running","running":true,"updatedAt":"2026-03-27T08:12:00.000Z","lastEvent":{"stream":"chartHealth","scope":"token","tokenAddress":"So11111111111111111111111111111111111111112","type":"status","emittedAt":"2026-03-27T08:12:00.000Z","source":"signal-worker","data":{"status":"running","running":true,"pid":91,"script":"chartHealth.js"},"id":"1774599120000-0"},"lastSummary":null,"lastSnapshot":null,"lastError":null,"recentSignals":[],"recentAlerts":[],"meta":{"expiresAt":"2026-03-27T08:27:00.000Z"}}'
-        }
-      ]
-    },
-    {
       category: 'Strategies & Resources',
       items: [
+        {
+          method: 'GET', path: '/artificialVolumeScan', description: 'One-shot Solana artificial volume analysis for a token',
+          requiresAuth: true,
+          params: [
+            { name: 'tokenAddress', required: true, default: '—', description: 'Solana token mint address to analyze' }
+          ],
+          example: 'GET https://api.claw.click/artificialVolumeScan?tokenAddress=So11111111111111111111111111111111111111112',
+          response: '{"output":"[2026-03-27T08:30:00.000Z] artificialVolumeScan complete\\nToken: Wrapped SOL\\nRisk: low\\nVerdict: no obvious artificial volume pattern detected"}'
+        },
+        {
+          method: 'GET', path: '/bottomsUp', description: 'Latest cached bottom-reversal scan state',
+          requiresAuth: true,
+          example: 'GET https://api.claw.click/bottomsUp',
+          response: '{"stream":"bottomsUp","scope":"global","status":"running","running":true,"updatedAt":"2026-03-27T06:43:39.326Z","lastEvent":{"stream":"bottomsUp","scope":"global","type":"status","emittedAt":"2026-03-27T06:43:39.326Z","source":"signal-sol-script","data":{"status":"running","running":true},"id":"1774593819332-0"},"lastSummary":null,"lastSnapshot":null,"lastError":null,"recentSignals":[],"recentAlerts":[],"meta":{"status":"running","running":true,"script":"bottomsUp.js","pid":57}}'
+        },
+        {
+          method: 'GET', path: '/momentumGains', description: 'Latest cached momentum-gains scan state',
+          requiresAuth: true,
+          example: 'GET https://api.claw.click/momentumGains',
+          response: '{"stream":"momentumGains","scope":"global","status":"running","running":true,"updatedAt":"2026-03-27T06:47:41.557Z","lastEvent":{"stream":"momentumGains","scope":"global","type":"scan_completed","emittedAt":"2026-03-27T06:47:41.557Z","source":"signal-sol-script","data":{"trackedTokens":0,"candidatesFound":0},"id":"1774594061558-0"},"lastSummary":{"trackedTokens":0,"candidatesFound":0},"lastSnapshot":null,"lastError":null,"recentSignals":[],"recentAlerts":[],"meta":{"status":"running","running":true,"script":"momentumGains.js","pid":63}}'
+        },
+        {
+          method: 'GET', path: '/momentumStart', description: 'Latest cached early-momentum scan state',
+          requiresAuth: true,
+          example: 'GET https://api.claw.click/momentumStart',
+          response: '{"stream":"momentumStart","scope":"global","status":"running","running":true,"updatedAt":"2026-03-27T06:48:41.622Z","lastEvent":{"stream":"momentumStart","scope":"global","type":"scan_completed","emittedAt":"2026-03-27T06:48:41.622Z","source":"signal-sol-script","data":{"trackedTokens":0,"detectedSignals":0,"pairsFound":0},"id":"1774594121623-0"},"lastSummary":{"trackedTokens":0,"detectedSignals":0,"pairsFound":0},"lastSnapshot":null,"lastError":null,"recentSignals":[],"recentAlerts":[],"meta":{"status":"running","running":true,"script":"momentumStart.js","pid":69}}'
+        },
+        {
+          method: 'GET', path: '/newPump', description: 'Latest cached fresh-token discovery state',
+          requiresAuth: true,
+          example: 'GET https://api.claw.click/newPump',
+          response: '{"stream":"newPump","scope":"global","status":"running","running":true,"updatedAt":"2026-03-27T06:50:47.726Z","lastEvent":{"stream":"newPump","scope":"global","type":"scan_completed","emittedAt":"2026-03-27T06:50:47.726Z","source":"signal-sol-script","data":{"uniqueAddresses":26,"enrichedTokens":18,"passedFilters":3,"newSignals":0,"freshSignals":0},"id":"1774594247727-0"},"lastSummary":{"uniqueAddresses":26,"enrichedTokens":18,"passedFilters":3,"newSignals":0,"freshSignals":0},"lastSnapshot":null,"lastError":null,"recentSignals":[],"recentAlerts":[],"meta":{"status":"running","running":true,"script":"newPump.js","pid":76}}'
+        },
         {
           method: 'GET', path: '/strats', description: 'List all available trading strategy guides',
           requiresAuth: false,
@@ -751,11 +759,21 @@ ws.run_forever()`,
           requiresAuth: true,
           params: [
             { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' },
-            { name: 'streams', required: false, default: '{} => all', description: 'Single stream name, array of stream names, or "all"' },
-            { name: 'chartHealth', required: false, default: '—', description: 'Optional chart-health token address list' }
+            { name: 'streams', required: false, default: '{} => all', description: 'Single stream name, array of stream names, or "all"' }
           ],
           example: 'WS wss://api.claw.click/ws/signals',
-          response: '{"type":"subscribed","data":{"streams":["bottomsUp"],"chartHealthTokens":[],"snapshots":[{"stream":"bottomsUp","scope":"global","status":"running","running":true,"updatedAt":"2026-03-27T06:43:39.326Z","lastEvent":{"stream":"bottomsUp","scope":"global","type":"status","emittedAt":"2026-03-27T06:43:39.326Z","source":"signal-sol-script","data":{"status":"running","running":true},"id":"1774593819332-0"},"recentSignals":[],"recentAlerts":[],"meta":{"status":"running","running":true,"script":"bottomsUp.js","pid":57}}]}}'
+          response: '{"type":"subscribed","data":{"streams":["bottomsUp"],"snapshots":[{"stream":"bottomsUp","scope":"global","status":"running","running":true,"updatedAt":"2026-03-27T06:43:39.326Z","lastEvent":{"stream":"bottomsUp","scope":"global","type":"status","emittedAt":"2026-03-27T06:43:39.326Z","source":"signal-sol-script","data":{"status":"running","running":true},"id":"1774593819332-0"},"recentSignals":[],"recentAlerts":[],"meta":{"status":"running","running":true,"script":"bottomsUp.js","pid":57}}]}}'
+        },
+        {
+          method: 'WS', path: '/ws/chartHealth', description: 'Per-token chart-health stream that stays active only while subscribed',
+          requiresAuth: true,
+          params: [
+            { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' },
+            { name: 'tokenAddress', required: false, default: '—', description: 'Single token address to monitor' },
+            { name: 'tokenAddresses', required: false, default: '—', description: 'Optional array of token addresses to monitor together' }
+          ],
+          example: 'WS wss://api.claw.click/ws/chartHealth',
+          response: '{"type":"subscribed","data":{"tokenAddresses":["So11111111111111111111111111111111111111112"],"snapshots":[{"stream":"chartHealth","scope":"token","tokenAddress":"So11111111111111111111111111111111111111112","status":"running","running":true,"updatedAt":"2026-03-27T08:12:00.000Z","lastEvent":{"stream":"chartHealth","scope":"token","tokenAddress":"So11111111111111111111111111111111111111112","type":"status","emittedAt":"2026-03-27T08:12:00.000Z","source":"signal-worker","data":{"status":"running","running":true,"pid":91,"script":"chartHealth.js"},"id":"1774599120000-0"},"lastSummary":null,"lastSnapshot":null,"lastError":null,"recentSignals":[],"recentAlerts":[],"meta":{"tokenName":"Wrapped SOL"}}]}}'
         }
       ]
     }
