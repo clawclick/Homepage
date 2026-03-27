@@ -49,6 +49,7 @@ const ApiDocs = () => {
     { method: 'GET', path: '/xUserByUsername', price: '$0.0013', note: 'Look up an X user profile' },
     { method: 'GET', path: '/xUserLikes', price: '$0.0039', note: 'Get liked X posts for a user' },
     { method: 'GET', path: '/xUserFollowers', price: '$0.0039', note: 'Get followers for an X user' },
+    { method: 'GET', path: '/xKolVolume', price: '$0.0049', note: 'Analyze token volume impact around an X post' },
     { method: 'POST', path: '/tokenScreener', price: '$0.0013', note: 'Token screening by smart-money flow and filters' },
     { method: 'POST', path: '/addressRelatedWallets', price: '$0.0013', note: 'Related wallet lookups and linked activity' },
     { method: 'POST', path: '/jupiterDcas', price: '$0.0013', note: 'Active DCA order insights for a token' },
@@ -420,6 +421,21 @@ ws.run_forever()`,
           response: '{"endpoint":"xUserFollowers","status":"live","username":"XDevelopers","userId":"2244994945","count":10,"nextToken":"next_def","followers":[{"id":"6253282","name":"X API","username":"api","verified":true,"protected":false,"createdAt":"2007-05-23T06:01:13Z","description":"Platform account","profileImageUrl":"https://...","metrics":{"followers":2400000,"following":150,"tweets":52000,"listed":18000,"likes":5400}}],"providers":[{"provider":"x:userByUsername","status":"ok"},{"provider":"x:userFollowers","status":"ok"}]}'
         },
         {
+          method: 'GET', path: '/xKolVolume', description: 'Analyze volume and price movement around an X post or search recent X posts by token',
+          requiresAuth: true,
+          params: [
+            { name: 'tweetUrl', required: false, default: '—', description: 'Direct X post URL to analyze' },
+            { name: 'tokenAddress', required: false, default: '—', description: 'Search recent X posts by exact token address and use it for analysis' },
+            { name: 'tokenName', required: false, default: '—', description: 'Search recent X posts by token name' },
+            { name: 'symbol', required: false, default: '—', description: 'Search recent X posts by token symbol' },
+            { name: 'chain', required: false, default: 'base', description: 'Chain for token metadata and price history' },
+            { name: 'timeWindowMinutes', required: false, default: '60', description: 'Minutes before and after the post used in the impact analysis' },
+            { name: 'maxResults', required: false, default: '10', description: 'Search-mode X result count (1–25)' }
+          ],
+          example: 'GET https://api.claw.click/xKolVolume?tokenAddress=0xB964cA8757B0d64c50B0da17f0150563139361aC&chain=base&timeWindowMinutes=60',
+          response: '{"endpoint":"xKolVolume","status":"live","cached":false,"chain":"base","tweetUrl":"https://x.com/GemsofRa/status/2033569275579937003","tweetId":"2033569275579937003","timeWindowMinutes":60,"searchQuery":"0xB964cA8757B0d64c50B0da17f0150563139361aC -is:retweet","requestedTokenAddress":"0xB964cA8757B0d64c50B0da17f0150563139361aC","requestedTokenName":null,"requestedSymbol":null,"matchedTweets":[{"id":"2033569275579937003","text":"Watching 0xB964cA8757B0d64c50B0da17f0150563139361aC here","createdAt":"2026-03-27T05:14:00.000Z","authorId":"2244994945","authorName":"Gem Call","authorUsername":"GemsofRa","authorVerified":false,"authorFollowers":84000,"url":"https://x.com/GemsofRa/status/2033569275579937003","metrics":{"likes":152,"replies":12,"reposts":18,"quotes":3,"bookmarks":7,"impressions":42000}}],"tweet":{"id":"2033569275579937003","text":"Watching 0xB964cA8757B0d64c50B0da17f0150563139361aC here","createdAt":"2026-03-27T05:14:00.000Z","authorId":"2244994945","authorName":"Gem Call","authorUsername":"GemsofRa","authorVerified":false,"authorFollowers":84000,"url":"https://x.com/GemsofRa/status/2033569275579937003","metrics":{"likes":152,"replies":12,"reposts":18,"quotes":3,"bookmarks":7,"impressions":42000}},"contractAddresses":["0xB964cA8757B0d64c50B0da17f0150563139361aC"],"contractAddress":"0xB964cA8757B0d64c50B0da17f0150563139361aC","token":{"name":"Claw","symbol":"CLAW","priceUsd":0.0123,"marketCapUsd":12300000,"liquidityUsd":2100000,"pairAddress":"0xabc...","dex":"Uniswap V2"},"windows":{"beforeStartAt":"2026-03-27T04:14:00.000Z","postAt":"2026-03-27T05:14:00.000Z","afterEndAt":"2026-03-27T06:14:00.000Z","beforeCount":12,"afterCount":12},"volume":{"beforeUsd":8420,"afterUsd":19240,"diffUsd":10820,"diffPct":128.5},"price":{"beforePostUsd":0.0108,"atPostUsd":0.0112,"afterPostUsd":0.0123,"athAfterPostUsd":0.0131,"changeFromPostPct":9.82,"athFromPostPct":16.96},"error":null,"providers":[{"provider":"x:searchRecentPosts","status":"ok"},{"provider":"dexScreener","status":"ok"},{"provider":"geckoTerminalOhlcv","status":"ok"}]}'
+        },
+        {
           method: 'GET', path: '/trendingTokens', description: 'Currently trending tokens across all chains',
           requiresAuth: true,
           example: 'GET https://api.claw.click/trendingTokens',
@@ -661,6 +677,31 @@ ws.run_forever()`,
       ]
     },
     {
+      category: 'Signal Monitoring',
+      items: [
+        {
+          method: 'GET', path: '/signalSol/chartHealth', description: 'Touch/start per-token chart-health tracking and return the latest cached token health state',
+          requiresAuth: true,
+          params: [
+            { name: 'tokenAddress', required: true, default: '—', description: 'Token address to monitor' },
+            { name: 'tokenName', required: false, default: '—', description: 'Optional display name stored with the token interest' }
+          ],
+          example: 'GET https://api.claw.click/signalSol/chartHealth?tokenAddress=So11111111111111111111111111111111111111112&tokenName=Wrapped%20SOL',
+          response: '{"stream":"chartHealth","scope":"token","tokenAddress":"So11111111111111111111111111111111111111112","status":"warming_up","running":false,"updatedAt":"2026-03-27T08:10:00.000Z","lastEvent":null,"lastSummary":null,"lastSnapshot":null,"lastError":null,"recentSignals":[],"recentAlerts":[],"meta":{"expiresAt":"2026-03-27T08:25:00.000Z","tokenName":"Wrapped SOL"}}'
+        },
+        {
+          method: 'GET', path: '/signals/chartHealth', description: 'Alias for /signalSol/chartHealth with the same touch-and-read behavior',
+          requiresAuth: true,
+          params: [
+            { name: 'tokenAddress', required: true, default: '—', description: 'Token address to monitor' },
+            { name: 'tokenName', required: false, default: '—', description: 'Optional display name stored with the token interest' }
+          ],
+          example: 'GET https://api.claw.click/signals/chartHealth?tokenAddress=So11111111111111111111111111111111111111112',
+          response: '{"stream":"chartHealth","scope":"token","tokenAddress":"So11111111111111111111111111111111111111112","status":"running","running":true,"updatedAt":"2026-03-27T08:12:00.000Z","lastEvent":{"stream":"chartHealth","scope":"token","tokenAddress":"So11111111111111111111111111111111111111112","type":"status","emittedAt":"2026-03-27T08:12:00.000Z","source":"signal-worker","data":{"status":"running","running":true,"pid":91,"script":"chartHealth.js"},"id":"1774599120000-0"},"lastSummary":null,"lastSnapshot":null,"lastError":null,"recentSignals":[],"recentAlerts":[],"meta":{"expiresAt":"2026-03-27T08:27:00.000Z"}}'
+        }
+      ]
+    },
+    {
       category: 'Strategies & Resources',
       items: [
         {
@@ -699,10 +740,22 @@ ws.run_forever()`,
             { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' },
             { name: 'username', required: false, default: '—', description: 'Single X username to stream posts from' },
             { name: 'usernames', required: false, default: '—', description: 'Multiple X usernames to stream posts from' },
-            { name: 'rules', required: false, default: '—', description: 'Optional raw X filtered-stream rules array' }
+            { name: 'rules', required: false, default: '—', description: 'Optional raw X filtered-stream rules array' },
+            { name: 'backfillMinutes', required: false, default: '—', description: 'Optional one-time recent backfill window sent before live posts' }
           ],
           example: 'WS wss://api.claw.click/ws/xFilteredStream',
           response: '{"type":"post","data":{"id":"1900000000000000000","text":"Bitcoin is moving again","createdAt":"2026-03-24T10:15:00.000Z","authorId":"2244994945","authorName":"X Dev","authorUsername":"XDevelopers","authorVerified":true,"authorFollowers":500000,"url":"https://x.com/XDevelopers/status/1900000000000000000","metrics":{"likes":152,"replies":12,"reposts":18,"quotes":3,"bookmarks":7,"impressions":42000}}}'
+        },
+        {
+          method: 'WS', path: '/ws/signals', description: 'Live SIGNAL_SOL stream with snapshots and signal-only events',
+          requiresAuth: true,
+          params: [
+            { name: 'Protocol', required: true, default: '—', description: 'Use: ws:// or wss://' },
+            { name: 'streams', required: false, default: '{} => all', description: 'Single stream name, array of stream names, or "all"' },
+            { name: 'chartHealth', required: false, default: '—', description: 'Optional chart-health token address list' }
+          ],
+          example: 'WS wss://api.claw.click/ws/signals',
+          response: '{"type":"subscribed","data":{"streams":["bottomsUp"],"chartHealthTokens":[],"snapshots":[{"stream":"bottomsUp","scope":"global","status":"running","running":true,"updatedAt":"2026-03-27T06:43:39.326Z","lastEvent":{"stream":"bottomsUp","scope":"global","type":"status","emittedAt":"2026-03-27T06:43:39.326Z","source":"signal-sol-script","data":{"status":"running","running":true},"id":"1774593819332-0"},"recentSignals":[],"recentAlerts":[],"meta":{"status":"running","running":true,"script":"bottomsUp.js","pid":57}}]}}'
         }
       ]
     }
